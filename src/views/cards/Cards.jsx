@@ -11,6 +11,8 @@ import cards from "../../services/cards";
 import common from "../../services/common";
 import { isEmpty } from "lodash";
 import PrintIcon from "@mui/icons-material/Print";
+import { useNavigate } from "react-router-dom";
+import ArogyamComponent from "../../components/ArogyaCard";
 
 let typingTimer;
 
@@ -67,8 +69,14 @@ const TableWithCheckBox = ({
   id,
   checkBoxClicked,
   allSelectCheckBox = false,
+  isImageMode = false,
 }) => {
   const [checkBox, setCheckBox] = useState(false);
+  const navigate = useNavigate();
+  const handleRowClick = (row) => {
+    navigate(`${row._id}`);
+  };
+
   useEffect(() => {
     setCheckBox(allSelectCheckBox);
   }, [allSelectCheckBox]);
@@ -136,19 +144,39 @@ const TableWithCheckBox = ({
           </Grid>
         </Button>
       </Grid>
-      <Grid item xs={12} sx={{ mb: 3 }}>
-        <CustomTable
-          headers={tableHeaders}
-          rows={groupedData}
-          actions={actions}
-        />
-      </Grid>
+      {isImageMode ? (
+        <Box sx={{ width: "100%" }}>
+          {groupedData.map((cardData, index) => {
+            return (
+              <ArogyamComponent
+                key={cardData._id + index + "ImageMode"}
+                cardData={cardData}
+                enableClick={true}
+                handleClick={handleRowClick}
+              />
+            );
+          })}
+        </Box>
+      ) : (
+        <Grid item xs={12} sx={{ mb: 3 }}>
+          <CustomTable
+            headers={tableHeaders}
+            rows={groupedData}
+            actions={actions}
+            rowClick={handleRowClick}
+          />
+        </Grid>
+      )}
     </Grid>
   );
 };
 
 // Extra Elements
-const TableWithExtraElements = ({ groupName = "", groupedData = {} }) => {
+const TableWithExtraElements = ({
+  groupName = "",
+  groupedData = {},
+  isImageMode,
+}) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const [groupedCheckBox, setGroupedCheckBox] = useState(false);
@@ -205,6 +233,7 @@ const TableWithExtraElements = ({ groupName = "", groupedData = {} }) => {
             checkBoxClicked={(id, value) => {
               setGroupedCheckBox(value);
             }}
+            isImageMode={isImageMode}
           />
         );
       })}
@@ -230,6 +259,9 @@ const Cards = () => {
   const [duration, setDuration] = useState("");
   const [status, setStatus] = useState("");
   const [districtOption, setDistrictOption] = useState([]);
+
+  // view mode state
+  const [isImageMode, setIsImageMode] = useState(false);
 
   const getTableData = ({
     search = null,
@@ -400,6 +432,8 @@ const Cards = () => {
             { label: "DISCARDED" },
           ]}
           handleStatusChange={handleStatusChange}
+          isImageMode={isImageMode}
+          handleViewChange={() => setIsImageMode(!isImageMode)}
         />
       </Grid>
 
@@ -427,6 +461,7 @@ const Cards = () => {
                   key={key + index}
                   groupName={key}
                   groupedData={cardsDataGroupedBy[key]}
+                  isImageMode={isImageMode}
                 />
               );
             })}

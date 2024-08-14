@@ -17,6 +17,8 @@ import moment from "moment";
 import { isEmpty } from "lodash";
 import DashboardCard from "./StatsCard";
 import getCardStack from "./ChipStack";
+import ImageComponent from "../../components/ImageComponent";
+import CardViewer from "../../components/cardViewer";
 
 const defaultPercentages = {
   unverifiedUsersPercentage: 0.0,
@@ -230,6 +232,14 @@ const Dashboard = () => {
   const yesterdayPercentage = 10.0;
   return (
     <Container maxWidth={false} sx={{ m: 2, padding: 0 }} disableGutters>
+      {/* <ImageComponent
+        url={
+          "https://storage.googleapis.com/download/storage/v1/b/arogyam-super.appspot.com/o/1720941908699.png?generation=1720941911109063&alt=media"
+        }
+      /> */}
+      {/* <CardViewer
+        cardId={"66937e7e6c40d43cd5381b6e?token=6vTmn8wGx8PAvtNVDRKHyP"}
+      /> */}
       <Box display="flex" justifyContent="flex-end" alignItems="center" mb={3}>
         <CustomDateRangePicker
           open={filter === "CUSTOM" && openDialog}

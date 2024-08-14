@@ -8,6 +8,7 @@ import Protected from "./routes/Protected";
 import Public from "./routes/Public";
 import Dashboard from "./views/dashboard/Dashboard";
 import Cards from "./views/cards/Cards";
+import InfoCard from "./views/cards/InfoCard";
 import PageNotFound from "./components/PageNotFound";
 
 function App() {
@@ -26,6 +27,7 @@ function App() {
             <Route element={<HomeLayout />}>
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/cards" element={<Cards />} />
+              <Route path="/cards/:id" element={<InfoCard />} />
             </Route>
           </Route>
           <Route path="*" element={<PageNotFound />} />

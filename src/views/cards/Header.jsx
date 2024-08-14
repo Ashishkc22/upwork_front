@@ -13,6 +13,7 @@ import CustomAutocompleteDropDown from "../../components/CustomAutocompleteDropD
 import SearchTextinput from "../../components/SearchTextInput";
 import { useNavigate } from "react-router-dom";
 import { isElement, isEmpty } from "lodash";
+import ViewModuleIcon from "@mui/icons-material/ViewModule";
 
 const ScoreCard = ({
   value,
@@ -246,8 +247,18 @@ const Header = (headerData) => {
           </Box>
 
           <Box sx={{ mx: 1 }}>
-            <IconButton onClick={() => {}} color="primary" aria-label="table">
-              <TableChartIcon />
+            <IconButton
+              onClick={() => {
+                headerData.handleViewChange();
+              }}
+              color="primary"
+              aria-label="table"
+            >
+              {headerData.isImageMode ? (
+                <ViewModuleIcon></ViewModuleIcon>
+              ) : (
+                <TableChartIcon />
+              )}
             </IconButton>
 
             <IconButton onClick={() => {}} color="primary" aria-label="refresh">

@@ -92,6 +92,25 @@ async function getUsersByIds({ ids = [] } = {}) {
   }
 }
 
+async function getCardById({ id = "" } = {}) {
+  const {
+    status,
+    data,
+    message,
+    error = "",
+  } = await axiosUtil.get({
+    path: `cards/${id}`,
+    params: {
+      token: tokenUtil.getAuthToken(),
+    },
+  });
+  if (status === "failed") {
+    return { status, error: error || message };
+  } else if (!isEmpty(data)) {
+    return data;
+  }
+}
+
 async function getDistrictData({ stateId }) {
   const {
     status,
@@ -113,4 +132,5 @@ export default {
   getCardsData,
   getUsersByIds,
   getDistrictData,
+  getCardById,
 };

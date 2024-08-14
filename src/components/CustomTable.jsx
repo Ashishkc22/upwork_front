@@ -16,6 +16,7 @@ import {
   AccordionDetails,
   AccordionSummary,
   Grid,
+  Button,
 } from "@mui/material";
 import moment from "moment";
 
@@ -147,26 +148,37 @@ const DynamicTable = ({ headers, rows, actions, rowClick }) => {
                 aria-controls={`panel${rowIndex}-content`}
                 id={`panel${rowIndex}-header`}
               >
-                <Typography variant="h6">
-                  {`${row?.name} - ${row.unique_number} - ${row.father_husband_name} - ${row.status}` ||
-                    "Unknown Name"}
-                </Typography>
-                {actions?.map((action, actionIndex) => (
-                  <IconButton
-                    key={row._id + action.label + actionIndex}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      action.handler(row);
-                    }}
-                    aria-label={action.label}
-                    color="primary"
-                    sx={{
-                      padding: isSmallScreen ? "4px" : "8px",
-                    }}
-                  >
-                    {action.smallIcon}
-                  </IconButton>
-                ))}
+                <Box
+                  display="inline-flex"
+                  justifyContent="space-between"
+                  sx={{ width: "100%" }}
+                >
+                  <Typography variant="h6">
+                    {`${row?.name} - ${row.unique_number} - ${row.father_husband_name} - ${row.status}` ||
+                      "Unknown Name"}
+                  </Typography>
+                  <div>
+                    <Button variant="text" onClick={() => rowClick(row)}>
+                      Details
+                    </Button>
+                    {actions?.map((action, actionIndex) => (
+                      <IconButton
+                        key={row._id + action.label + actionIndex}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          action.handler(row);
+                        }}
+                        aria-label={action.label}
+                        color="primary"
+                        sx={{
+                          padding: isSmallScreen ? "4px" : "8px",
+                        }}
+                      >
+                        {action.smallIcon}
+                      </IconButton>
+                    ))}
+                  </div>
+                </Box>
               </AccordionSummary>
               <AccordionDetails>
                 <Grid
