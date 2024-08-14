@@ -6,7 +6,7 @@ const apiInfo = {
   },
   pro: {
     protocol: "https",
-    url: "ticketing-system-backend-70zx.onrender.com",
+    url: "https://upwork-back-csr2.onrender.com",
   },
 };
 
