@@ -1,0 +1,106 @@
+GET
+---URL -https://asia-south1-arogyam-super.cloudfunctions.net/app/address/state?type=ADMIN
+---PAYLOAD -type: ADMIN
+---RESPONSE - {
+--------"status": "success",
+--------"data": [
+--------{
+--------"_id": "63c681806072b29c2133326e",
+--------"name": "MP",
+--------"__v": 0,
+--------"active": true
+--------},
+--------{
+--------"_id": "665737a6a9e60b78b235cc87",
+--------"name": "Gujarat",
+--------"active": true,
+--------"__v": 0
+--------}
+--------]
+--------}
+
+GET
+----URL - https://asia-south1-arogyam-super.cloudfunctions.net/app/cards?token=JkiBq5xpfuNHuoxse7Fs3r&responseType=LIST&mode=ADMIN&limit=100&page=0&status=SUBMITTED
+----PAYLOAD - token: JkiBq5xpfuNHuoxse7Fs3r
+--------responseType: LIST
+--------mode: ADMIN
+--------limit: 100
+--------page: 0
+--------status: SUBMITTED
+RESPONSE{
+"status": "success",
+"page_number": "0",
+"total": 9373,
+"total_showing": 67,
+"total_print_card": 67,
+"total_print_card_showing": 67,
+"data": [
+{
+"_id": "66891b06173e6b8a1bf1ff55",
+"image": "https://storage.googleapis.com/download/storage/v1/b/arogyam-super.appspot.com/o/1720261371987.png?generation=1720261381428143&alt=media",
+"name": "Rakesh ",
+"birth_year": "1993",
+"gender": "Male",
+"id_proof": {
+"type": "Aadhaar",
+"value": "798044282756"
+},
+"state": "MP",
+"district": "Raisen",
+"tehsil": "Begumganj",
+"area": "Umarhari Ta.Silwani ( उमरहारी ता सिलवानी ) , UMARHARI",
+"phone": "7843034587",
+"father_husband_name": "Balkishan ",
+"blood_group": "",
+"emergency_contact": "",
+"status": "SUBMITTED",
+"created_by": "66821fd6d638341accab6bf9",
+"created_by_uid": "FE84115",
+"created_at": 1720261382535,
+"issue_date": "06/07/2024",
+"unique_number": "3686029",
+"expiry_date": 1783333382535,
+"expiry_years": 2,
+"s_no": "5",
+"__v": 0
+}
+]
+}
+
+GET
+url - https://asia-south1-arogyam-super.cloudfunctions.net/app/address/state?type=ADMIN
+PAYLOAD - type: ADMIN
+RESPONSE - {
+"status": "success",
+"data": [
+{
+"_id": "63c681806072b29c2133326e",
+"name": "MP",
+"__v": 0,
+"active": true
+},
+{
+"_id": "665737a6a9e60b78b235cc87",
+"name": "Gujarat",
+"active": true,
+"__v": 0
+}
+]
+}
+
+GET
+URL - https://asia-south1-arogyam-super.cloudfunctions.net/app/auth/users?token=JkiBq5xpfuNHuoxse7Fs3r&onlyInfo=true&mode=ADMIN
+PAYLOAD - token: JkiBq5xpfuNHuoxse7Fs3r
+onlyInfo: true
+mode: ADMIN
+
+    RESPONSE - {"status": "success",
+
+"data": [
+{
+"_id": "642e768afd03cdac9ed07f76",
+"name": "Admin",
+"uid": "FE00000",
+"tl_id": "TL84184"
+},
+]}
