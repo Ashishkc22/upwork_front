@@ -118,7 +118,7 @@ const ArogyamComponent = ({
         }}
       >
         <div className="circle-container">
-          <img src="/cardImages/arlogo.png" alt="logo" />
+          <img src="/cardImages/arlogoLight.png" alt="logo" />
         </div>
         <div
           style={{
@@ -186,7 +186,7 @@ const ArogyamComponent = ({
         >
           <div style={{ alignContent: "center", marginRight: "5px" }}>
             <img
-              src="/cardImages/support.png"
+              src="/cardImages/supportSmall.png"
               width="30px"
               alt="support-icon"
             />
