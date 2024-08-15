@@ -20,6 +20,18 @@ import CheckIcon from "@mui/icons-material/Check";
 
 let typingTimer;
 
+const SupportImage = () => {
+  return (
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAMAAAC7IEhfAAAAV1BMVEVHcExWVWlaWW1PTmNPTmNPTmNPTmNhYHNvbn9PTmNQT2RcXG9UU2hWVWpSUWVXVmpRUGVVVWlXVmpYV2tUU2dRUGVXVmpTUmdTUmZSUWZXVmpRUGVOTWK6xRS/AAAAHHRSTlMAXybq++D3Dgbx1hZUHrx0y2pLQ4ikL32dlDixMiTPfAAAAfZJREFUOMvNVNuypCAMlJsCIoLcvOT/v3MRHGc8Oqf2Zau2H6Y00yZNJ6Rp/jG6ONnkfbIq9t9ZfPWGwAEhl6l75q1BANHLiJRC46IZUD09pbMEzIg573GMuOd8QJoKf0vKEyVj18SkJRGCMO0d50hC+Mm0VLoGz6fELHLLAQ0Lv+ojxDWThAuIbbCh6FI4wNhMBH6gzUFhPn1ahemwhBvE1MzwmdLnhDM8wHSObm+VnRFxLYWpphciRZ1h+CRiYjp/1ArXlJrP8Lbd0dCbEpd9Hy45CR6zrBcU+ChKfMk6bDnVi47yn2+3wY8lyuL+OqCNCZ82todmu39d0W/QtkXhywmOrdp/sp5WgIxHeDmqSJUppxMlRfVM14b31Wljh6ZBus4Ltzrt30xFqlgLcShaytn2R7XHIoHWncTyeCVKoC9iSfNELCZMYax6VEB7afVJPDSGp+tRXWurRr4d/X8g1obKob5Fsxdo0Z1XVFGmTscnhDSQsY5ohwd+tkxapPDlY5V7Y5LDvTKEhVorT0q67wid73zbEimO4chIIPFdjxPUu3He3kQlwD5ZkcpQ8LO0Y/dbXYvPIFJ3HgYx0MOXVZZnZVvrifHSgsZfl17KayqgNaolr6h5+GU/Op1dEiI3wCD++yadZsOYDKj/i607DH3zP+EP/z42JH14Mu8AAAAASUVORK5CYII=" />
+  );
+};
+
+const LogoImage = () => {
+  return (
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAeCAYAAAA2Lt7lAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAIRSURBVHgB7VPNSxtBFH9vs7q7KSmh9IMUqSn0UApC6aHWnkJ77bmU9lQKLaGH2q800lLS9lA/EQUxQfADRETEP0BUAh707FnwAyF+R0VNNLszzqzZZIOzRu/7O8x78+a99/vNYwbAhQsXyJfdrkf3VFmRL1Jwe0sRxiUEfaMhOS8kyCaeLDA3COXUIPbfSWvXWdULh4QUUDqSkQ//7n2Z2TaJ4RIgBvkjy0dfGUFGmEBpgK2fNN077Y+F/DxkjkX9MHtXlJ9N1LGbQdCsBUho4dnF/JHXnhdofVatGxiSkLawa9xgoQeVmlTPbMzxBpn407dWc0TYAUIbnXJT36aWNn5MDrCB/C8EEV5x40iASH/btp029Y6gQCuK/dEco/DlZHrq3gE5VQ9IV46Nwy44B9eaQlWy5HnJ3AY+y9MyHBISbHXWXkUCv2yhZl94bl3U+GbT80E2vjd5+UUQ6FiNTrRw98yIrmjIC4L57aKSU/vAAZQYsZI9xTFAo2YtOllvxUoI0u0P/UAwYgu14cfkvhMB/1gINF5ohvTx0QGs2HNKCDRNeV2iPqXEoQwoys3MZE0foEr14mchwX5P7S1AKVIshH8YS+rlCNa+j/O/MlqoAykSaA3dP0NQQTxhZqot9dr7mV64II4J/mTqLTEqIZ5u66zwinJ6Lk4IGea+r9K3CZdAOjqxzFTXgAsXLoQ4AaqmomXW42E6AAAAAElFTkSuQmCC" />
+  );
+};
+
 const tableHeaders = [
   { label: "SNO", key: "s_no" },
   { label: "NAME", key: "name" },
@@ -54,7 +66,16 @@ const actions = [
     handler: (row) => {
       console.log("Download row:", row);
       downloadCards.downloadSingleCard({
-        Element: <ArogyamComponent showCardTag cardData={row} />,
+        Element: (
+          <ArogyamComponent
+            showCardTag
+            cardData={row}
+            images={{
+              SupportImage: <SupportImage />,
+              LogoImage: <LogoImage />,
+            }}
+          />
+        ),
         cardData: row,
       });
     },
@@ -151,6 +172,10 @@ const TableWithCheckBox = ({
                     cardData: groupedData,
                     Element: ArogyamComponent,
                     handleDownloadCompleted: () => setIsDownloadCompleted(true),
+                    images: {
+                      SupportImage: <SupportImage />,
+                      LogoImage: <LogoImage />,
+                    },
                   });
                 }}
               >
@@ -183,6 +208,10 @@ const TableWithCheckBox = ({
                 cardData={cardData}
                 enableClick={true}
                 handleClick={handleRowClick}
+                images={{
+                  SupportImage: <SupportImage />,
+                  LogoImage: <LogoImage />,
+                }}
               />
             );
           })}
@@ -298,6 +327,10 @@ const TableWithExtraElements = ({
                 cardData: groupedData,
                 handleDownloadCompleted: () => {
                   setIsDownloadCompleted({ [groupName]: true });
+                },
+                images: {
+                  SupportImage: <SupportImage />,
+                  LogoImage: <LogoImage />,
                 },
               });
             }}
@@ -586,6 +619,10 @@ const Cards = () => {
       downloadCompleted: () => {
         setIsDownloadCompleted(_isDownloadCompleted);
       },
+      images: {
+        SupportImage: <SupportImage />,
+        LogoImage: <LogoImage />,
+      },
     });
   };
 
@@ -639,7 +676,7 @@ const Cards = () => {
           isImageMode={isImageMode}
           handleViewChange={() => setIsImageMode(!isImageMode)}
         />
-        {Object.keys(downloadCardMaps).length && (
+        {Boolean(Object.keys(downloadCardMaps).length) && (
           <Fab
             sx={{
               position: "fixed",
@@ -699,6 +736,10 @@ const Cards = () => {
                 cardData={cardData}
                 enableClick={true}
                 handleClick={handleRowClick}
+                images={{
+                  SupportImage: <SupportImage />,
+                  LogoImage: <LogoImage />,
+                }}
               />
             );
           })}

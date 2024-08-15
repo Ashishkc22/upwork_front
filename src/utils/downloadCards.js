@@ -3,6 +3,11 @@ import jsPDF from "jspdf";
 import { createRoot } from "react-dom/client";
 import ReactDOM from "react-dom";
 
+// images: {
+//   SupportImage: <SupportImage />,
+//   LogoImage: <LogoImage />,
+// }
+
 async function downloadSingleCard({ Element, cardData }) {
   let container;
   let root;
@@ -66,7 +71,7 @@ async function downloadSingleCard({ Element, cardData }) {
   }
 }
 
-function getImageData({ Element, cardData = [] }) {
+function getImageData({ Element, cardData = [], images }) {
   return new Promise((myResolve, myReject) => {
     try {
       const elementData = [];
@@ -81,7 +86,7 @@ function getImageData({ Element, cardData = [] }) {
 
         // Render the component into the container
         root = createRoot(container);
-        root.render(<Element cardData={cardData[i]} />);
+        root.render(<Element cardData={cardData[i]} images={images} />);
 
         const observer = new MutationObserver(async (mutationsList) => {
           // If any mutations are observed, assume rendering is complete
@@ -128,6 +133,7 @@ async function downloadMultipleCard({
   Element,
   cardData,
   handleDownloadCompleted,
+  images,
 }) {
   const doc = new jsPDF("p", "mm", "letter");
   const width = doc.internal.pageSize.getWidth() * 0.4;
@@ -135,7 +141,7 @@ async function downloadMultipleCard({
   let xposition = 10;
   let yposition = 0;
   let count = 0;
-  const imageData = (await getImageData({ Element, cardData })) || [];
+  const imageData = (await getImageData({ Element, cardData, images })) || [];
 
   imageData.forEach((dataUrl, index) => {
     doc.addImage(dataUrl, "PNG", xposition, yposition, width, height);
@@ -176,6 +182,7 @@ async function downloadMultipleCardWithMultipleAgent({
   Element,
   cardData,
   handleDownloadCompleted = () => {},
+  images,
 }) {
   const doc = new jsPDF("p", "mm", "letter");
   const width = doc.internal.pageSize.getWidth() * 0.4;
@@ -190,7 +197,7 @@ async function downloadMultipleCardWithMultipleAgent({
     const key = cardDataKeys[i];
 
     imageData[key] =
-      (await getImageData({ Element, cardData: cardData[key] })) || [];
+      (await getImageData({ Element, cardData: cardData[key], images })) || [];
   }
 
   console.log("imageData", imageData);
@@ -241,134 +248,11 @@ async function downloadMultipleCardWithMultipleAgent({
   handleDownloadCompleted();
 }
 
-// {
-//     "MP/Raisen/Begumganj": {
-//         "FE84115": [
-//             {
-//                 "_id": "66891b06173e6b8a1bf1ff55",
-//                 "image": "https://storage.googleapis.com/download/storage/v1/b/arogyam-super.appspot.com/o/1720261371987.png?generation=1720261381428143&alt=media",
-//                 "name": "Rakesh ",
-//                 "birth_year": "1993",
-//                 "gender": "Male",
-//                 "id_proof": {
-//                     "type": "Aadhaar",
-//                     "value": "798044282756"
-//                 },
-//                 "state": "MP",
-//                 "district": "Raisen",
-//                 "tehsil": "Begumganj",
-//                 "area": "Umarhari Ta.Silwani ( उमरहारी ता सिलवानी ) , UMARHARI",
-//                 "phone": "7843034587",
-//                 "father_husband_name": "Balkishan ",
-//                 "blood_group": "",
-//                 "emergency_contact": "",
-//                 "status": "SUBMITTED",
-//                 "created_by": "66821fd6d638341accab6bf9",
-//                 "created_by_uid": "FE84115",
-//                 "created_at": 1720261382535,
-//                 "issue_date": "06/07/2024",
-//                 "unique_number": "3686029",
-//                 "expiry_date": 1783333382535,
-//                 "expiry_years": 2,
-//                 "s_no": "5",
-//                 "__v": 0
-//             },
-//             {
-//                 "_id": "66891a77173e6b8a1bf1ff28",
-//                 "image": "https://storage.googleapis.com/download/storage/v1/b/arogyam-super.appspot.com/o/1720261230218.png?generation=1720261236172443&alt=media",
-//                 "name": "Arti",
-//                 "birth_year": "2004",
-//                 "gender": "Female",
-//                 "id_proof": {
-//                     "type": "Aadhaar",
-//                     "value": "472027824407"
-//                 },
-//                 "state": "MP",
-//                 "district": "Raisen",
-//                 "tehsil": "Begumganj",
-//                 "area": "Umarhari Ta.Silwani ( उमरहारी ता सिलवानी ) , UMARHARI",
-//                 "phone": "7843034587",
-//                 "father_husband_name": "Rakesh ",
-//                 "blood_group": "",
-//                 "emergency_contact": "",
-//                 "status": "SUBMITTED",
-//                 "created_by": "66821fd6d638341accab6bf9",
-//                 "created_by_uid": "FE84115",
-//                 "created_at": 1720261239368,
-//                 "issue_date": "06/07/2024",
-//                 "unique_number": "7025484",
-//                 "expiry_date": 1783333239368,
-//                 "expiry_years": 2,
-//                 "s_no": "6",
-//                 "__v": 0
-//             },
-//             {
-//                 "_id": "6687aee504294682075de025",
-//                 "image": "https://storage.googleapis.com/download/storage/v1/b/arogyam-super.appspot.com/o/1720168160975.png?generation=1720168164202462&alt=media",
-//                 "name": "Amit Sahu",
-//                 "birth_year": "2007",
-//                 "gender": "Male",
-//                 "id_proof": {
-//                     "type": "Aadhaar",
-//                     "value": "423219706987"
-//                 },
-//                 "state": "MP",
-//                 "district": "Raisen",
-//                 "tehsil": "Begumganj",
-//                 "area": "Beelkheda Jagir ( बीलखेडा जगीर ) , BICHHUWA JAGIR",
-//                 "phone": "8253085141",
-//                 "father_husband_name": "RamGopal  Sahu",
-//                 "blood_group": "",
-//                 "emergency_contact": "",
-//                 "status": "SUBMITTED",
-//                 "created_by": "66821fd6d638341accab6bf9",
-//                 "created_by_uid": "FE84115",
-//                 "created_at": 1720168165367,
-//                 "issue_date": "05/07/2024",
-//                 "unique_number": "4254822",
-//                 "expiry_date": 1783240165367,
-//                 "expiry_years": 2,
-//                 "s_no": "4",
-//                 "__v": 0
-//             },
-//             {
-//                 "_id": "66865c0909765c5dd677056c",
-//                 "image": "https://storage.googleapis.com/download/storage/v1/b/arogyam-super.appspot.com/o/1720081414050.png?generation=1720081416920654&alt=media",
-//                 "name": "Krishn Kumar",
-//                 "birth_year": "2000",
-//                 "gender": "Male",
-//                 "id_proof": {
-//                     "type": "Aadhaar",
-//                     "value": "975604815015"
-//                 },
-//                 "state": "MP",
-//                 "district": "Raisen",
-//                 "tehsil": "Begumganj",
-//                 "area": "Bichhuwa Jagir ( बिछुआ जागीर ) , BICHHUWA JAGIR",
-//                 "phone": "6260859884",
-//                 "father_husband_name": "Ramesh Singh ",
-//                 "blood_group": "",
-//                 "emergency_contact": "",
-//                 "status": "SUBMITTED",
-//                 "created_by": "66821fd6d638341accab6bf9",
-//                 "created_by_uid": "FE84115",
-//                 "created_at": 1720081417988,
-//                 "issue_date": "04/07/2024",
-//                 "unique_number": "4649189",
-//                 "expiry_date": 1783153417988,
-//                 "expiry_years": 2,
-//                 "s_no": "3",
-//                 "__v": 0
-//             }
-//         ]
-//     },
-//     "MP/Raisen/Gairatganj": {}
-// }
-
 async function downloadMultipleLevelCardData({
   Element,
   cardData,
   downloadCompleted,
+  images,
 }) {
   try {
     const groupNamekeys = Object.keys(cardData);
@@ -377,6 +261,7 @@ async function downloadMultipleLevelCardData({
       await downloadMultipleCardWithMultipleAgent({
         Element,
         cardData: cardData[groupNamekeys[i]],
+        images: images,
       });
     }
     downloadCompleted({ downloadCompleted: true });
