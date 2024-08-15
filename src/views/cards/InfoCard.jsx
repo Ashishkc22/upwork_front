@@ -7,6 +7,10 @@ import {
   Grid,
   Box,
   IconButton,
+  TextField,
+  Select,
+  FormControl,
+  InputLabel,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ArogyamComponent from "../../components/ArogyaCard";
@@ -23,15 +27,29 @@ import { useParams } from "react-router-dom";
 import cards from "../../services/cards";
 import moment from "moment";
 import { useNavigate } from "react-router-dom";
+import downloadCards from "../../utils/downloadCards";
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogContentText from "@mui/material/DialogContentText";
+import DialogTitle from "@mui/material/DialogTitle";
+import cardService from "../../services/cards";
+import { isEmpty } from "lodash";
+import RestoreIcon from "@mui/icons-material/Restore";
 
 const CardComponent = () => {
   const [isMenuOpened, setIsMenuOpened] = useState(false);
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [cardData, setCardData] = useState({});
+  const [renewCalculation, setRenewCalculation] = useState("");
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
     setIsMenuOpened(true);
   };
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [dialogType, setDialogType] = useState(""); //renew and discard
+  const [selectReason, setSelectReason] = useState("");
+  const [discardMessageReason, setDiscardMessageReason] = useState("");
   const navigate = useNavigate();
 
   const { id } = useParams();
@@ -64,6 +82,51 @@ const CardComponent = () => {
     );
   };
 
+  // https://asia-south1-arogyam-super.cloudfunctions.net/app/cards/66891b06173e6b8a1bf1ff55?token=7wWnejhnZjhHWyzDF8yHk9
+  // FromData {status: DISCARDED
+  // discard_reason: Wrong Mobile No.: testing discard feature}
+  const handleRenewCard = async () => {
+    try {
+      const updatedCardData = await cardService.renewCard({
+        issueDate: cardData?.issue_date,
+        createdAt: cardData?.created_at,
+        expiryYears: cardData?.expiry_years,
+        id: cardData._id,
+      });
+      if (!isEmpty(updatedCardData)) {
+        setCardData(updatedCardData);
+      }
+      setRenewCalculation("");
+      setIsDialogOpen(false);
+    } catch (error) {
+      console.log("error", error);
+    }
+  };
+
+  const handleStatusChange = async ({ payload }) => {
+    try {
+      const updatedCardData = await cardService.changeStatus(
+        payload,
+        cardData._id
+      );
+      if (!isEmpty(updatedCardData)) {
+        setCardData(updatedCardData);
+      }
+      setIsDialogOpen(false);
+    } catch (error) {
+      console.log("error", error);
+    }
+  };
+
+  const handleDownloadCard = () => {
+    console.log("cardData", cardData);
+
+    downloadCards.downloadSingleCard({
+      Element: <ArogyamComponent cardData={cardData} />,
+      cardData,
+    });
+  };
+
   return (
     <Card
       sx={{
@@ -79,6 +142,83 @@ const CardComponent = () => {
         boxShadow: 3,
       }}
     >
+      <Dialog
+        open={isDialogOpen}
+        onClose={() => setIsDialogOpen(false)}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">
+          {dialogType == "renew" ? "Renew Card" : "Discard Reason?"}
+        </DialogTitle>
+        <DialogContent>
+          {dialogType == "renew" ? (
+            <DialogContentText id="alert-dialog-description">
+              Renew {cardData.name}'s card, extending expiry till{" "}
+              {renewCalculation}
+            </DialogContentText>
+          ) : (
+            <Box alignItems="center">
+              <TextField
+                id="standard-basic"
+                label="Discard Reason"
+                variant="standard"
+                placeholder="Discard Reason"
+                onChange={(e) => setDiscardMessageReason(e.target.value)}
+                sx={{ mt: 1, width: "250px" }}
+              />
+              <FormControl variant="standard" sx={{ m: 1, minWidth: 120 }}>
+                <InputLabel id="demo-simple-select-standard-label">
+                  Select Reason
+                </InputLabel>
+                <Select
+                  labelId="demo-simple-select-standard-label"
+                  id="demo-simple-select-standard"
+                  variant="standard"
+                  placeholder="Select Reason"
+                  sx={{
+                    width: "150px",
+                    mb: 1,
+                  }}
+                  // value={age}
+                  onChange={(e) => setSelectReason(e.target.value)}
+                  label="Select Reason"
+                >
+                  <MenuItem value="">
+                    <em>None</em>
+                  </MenuItem>
+                  <MenuItem value={"Wrong ID"}>Wrong ID</MenuItem>
+                  <MenuItem value={"Wrong Mobile No."}>
+                    Wrong Mobile No.
+                  </MenuItem>
+                  <MenuItem value={"Wrong Name/TOB"}>Wrong Name/TOB</MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setIsDialogOpen(false)}>Cancel</Button>
+          <Button
+            onClick={() => {
+              if (dialogType == "renew") {
+                handleRenewCard();
+              } else {
+                handleStatusChange({
+                  status: "DISCARDED",
+                  payload: {
+                    status: "DISCARDED",
+                    discard_reason: `${selectReason}: ${discardMessageReason}`,
+                  },
+                });
+              }
+            }}
+            autoFocus
+          >
+            {dialogType == "renew" ? "Renew" : "Save"}
+          </Button>
+        </DialogActions>
+      </Dialog>
       <CardHeader
         sx={{ p: 0, mt: 1 }}
         action={
@@ -160,8 +300,8 @@ const CardComponent = () => {
                 <TextElement
                   label="Expiry"
                   value={
-                    cardData?.expiry &&
-                    moment(cardData.expiry).format("MMM YYYY")
+                    cardData?.expiry_date &&
+                    moment(cardData.expiry_date).format("MMM YYYY")
                   }
                 />
               </Box>
@@ -169,6 +309,11 @@ const CardComponent = () => {
               <Box display="inline-flex" alignItems="flex-end">
                 <Box>
                   <TextElement label="Status" value={cardData.status} />
+                  {cardData.discard_reason && (
+                    <span label="" style={{ fontSize: 12, color: "#00000075" }}>
+                      {cardData.discard_reason}
+                    </span>
+                  )}
                 </Box>
                 <Box sx={{ ml: 6 }}>
                   <Button
@@ -258,8 +403,8 @@ const CardComponent = () => {
                 <TextElement
                   label="Created At"
                   value={
-                    cardData?.createdAt &&
-                    moment(cardData.createdA).format("DD-MM-YYYY")
+                    cardData?.created_at &&
+                    moment(cardData.created_at).format("DD-MM-YYYY")
                   }
                 />
               </Box>
@@ -267,8 +412,8 @@ const CardComponent = () => {
                 <TextElement
                   label="Created By"
                   value={
-                    cardData?.createdBy &&
-                    moment(cardData.createdBy).format("DD-MM-YYYY")
+                    cardData?.created_by_uid &&
+                    `UID : ${cardData.created_by_uid}`
                   }
                 />
               </Box>
@@ -280,6 +425,9 @@ const CardComponent = () => {
             sx={{ display: "inline-flex", color: "#ff5722", p: 1, m: 0, mr: 3 }}
             variant="standard"
             startIcon={<FileDownloadIcon />}
+            onClick={() => {
+              handleDownloadCard();
+            }}
           >
             Download
           </Button>
@@ -288,16 +436,51 @@ const CardComponent = () => {
             size="large"
             startIcon={<RepeatOneIcon />}
             sx={{ display: "inline-flex", color: "#ff5722", p: 1, m: 0, mr: 3 }}
+            onClick={() => {
+              setDialogType("renew");
+
+              const issueDate = cardData.issue_date
+                ? new Date(cardData.issue_date)
+                : new Date(cardData.created_at);
+              setRenewCalculation(
+                moment(issueDate).add(2, "years").format("DD-MM-YYYY")
+              );
+
+              setIsDialogOpen(true);
+            }}
           >
             Renew
           </Button>
           <Button
             size="large"
             startIcon={<CancelIcon />}
+            disabled={cardData?.status == "DISCARDED"}
             sx={{ display: "inline-flex", color: "#ff5722", p: 1 }}
+            onClick={() => {
+              if (cardData.status != "DISCARDED") {
+                setDialogType("discard");
+                setIsDialogOpen(true);
+              }
+            }}
           >
             Discard
           </Button>
+          {cardData?.status == "DISCARDED" && (
+            <Button
+              size="large"
+              startIcon={<RestoreIcon />}
+              disabled={cardData?.status != "DISCARDED"}
+              sx={{ display: "inline-flex", color: "#ff5722", p: 1 }}
+              onClick={() => {
+                if (cardData.status == "DISCARDED") {
+                  // setIsDialogOpen(true);
+                  handleStatusChange({ payload: { status: "SUBMITTED" } });
+                }
+              }}
+            >
+              Reset
+            </Button>
+          )}
         </CardActions>
       </CardContent>
     </Card>

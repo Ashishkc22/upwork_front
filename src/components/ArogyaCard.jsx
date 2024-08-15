@@ -1,5 +1,4 @@
 import React, { useRef } from "react";
-import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import "./ArogyaCard.css";
 import domtoimage from "dom-to-image";
@@ -37,9 +36,12 @@ const ArogyamComponent = ({
 }) => {
   const cardRef = useRef();
   //   dom to img
-  var node = document.getElementById("container");
-  const offsetHeight = node?.offsetWidth;
-  const offsetWidth = node?.offsetWidth;
+  // var node = document.getElementById(cardData._id);
+  // const offsetHeight = node?.offsetWidth;
+  // const offsetWidth = node?.offsetWidth;
+
+  // console.log("offsetHeight", offsetHeight);
+  // console.log("node", node);
   // calculate age
   function calculateAge({ row, keymap, birthYear }) {
     const currentYear = new Date().getFullYear(); // Get the current year
@@ -47,31 +49,31 @@ const ArogyamComponent = ({
     return birthYearNumber ? currentYear - birthYearNumber : null; // Calculate and return age, or null if birth year is invalid
   }
 
-  const scale = 2;
-  domtoimage
-    .toPng(node, {
-      height: offsetHeight * scale,
-      style: {
-        transform: `scale(${scale}) translate(${offsetWidth / 2 / scale}px, ${
-          offsetHeight / 2 / scale
-        }px)`,
-      },
-      width: offsetWidth * scale,
-    })
-    .then((dataUrl) => {
-      const doc = new jsPDF("p", "mm", "letter");
-      var width = doc.internal.pageSize.getWidth() * 0.4;
-      var height = doc.internal.pageSize.getHeight() * 0.3;
-      doc.addImage(dataUrl, "PNG", 10, 0, width, height);
-      //   doc.save("pdfDocument.pdf");
-    })
-    .catch((error) => {
-      console.error("oops, something went wrong!", error);
-    });
+  // const scale = 2;
+  // domtoimage
+  // .toPng(node, {
+  // height: offsetHeight * scale,
+  // style: {
+  // transform: `scale(${scale}) translate(${offsetWidth / 2 / scale}px, ${
+  // offsetHeight / 2 / scale
+  // }px)`,
+  // },
+  // width: offsetWidth * scale,
+  // })
+  // .then((dataUrl) => {
+  // const doc = new jsPDF("p", "mm", "letter");
+  // var width = doc.internal.pageSize.getWidth() * 0.4;
+  // var height = doc.internal.pageSize.getHeight() * 0.3;
+  // doc.addImage(dataUrl, "PNG", 10, 0, width, height);
+  // doc.save("pdfDocument.pdf");
+  // })
+  // .catch((error) => {
+  // console.error("oops, something went wrong!", error);
+  // });
 
   return (
     <div
-      id="container"
+      id={cardData._id}
       className={clsx(enableClick && "cursor")}
       style={{
         display: "inline-flex",
@@ -116,7 +118,7 @@ const ArogyamComponent = ({
         }}
       >
         <div className="circle-container">
-          <img src="/cardImages/arlogo.png" alt="arlogo" />
+          <img src="/cardImages/arlogo.png" alt="logo" />
         </div>
         <div
           style={{
@@ -183,7 +185,11 @@ const ArogyamComponent = ({
           }}
         >
           <div style={{ alignContent: "center", marginRight: "5px" }}>
-            <img src="/cardImages/support.png" width="30px" alt="" />
+            <img
+              src="/cardImages/support.png"
+              width="30px"
+              alt="support-icon"
+            />
           </div>
           <div>
             <p
@@ -354,7 +360,7 @@ const ArogyamComponent = ({
                 width="15px"
                 height="16px"
                 src="/cardImages/loc.png"
-                alt=""
+                alt="loc"
                 style={{ marginRight: "3px" }}
               />
               <p

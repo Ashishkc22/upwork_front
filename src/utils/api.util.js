@@ -10,7 +10,10 @@ import cookiesUtil from "./cookies.util";
 
 const { getApiUrl } = envUtil;
 
-function request({ path, method, params, body, options }) {
+function request({ path, method, params, body, options, isFormData = false }) {
+  console.log("headers", !isEmpty(body));
+  console.log("body", body);
+
   const token = tokenUtil.getAuthToken();
   return axios({
     method,
@@ -18,10 +21,12 @@ function request({ path, method, params, body, options }) {
     // url: `https://asia-south1-arogyam-super.cloudfunctions.net/${path}`,
     headers: {
       "Content-Type": "application/json",
+      ...(options?.headers && options.headers),
       ...(token && { Authorization: token }),
     },
     ...(params && { params }),
     ...(!isEmpty(body) && { data: body }),
+    ...(isFormData && { data: body }),
   })
     .then((data) => {
       return data?.data || {};
@@ -52,9 +57,13 @@ function post({ path, body, options }) {
 function _delete({ path, body, options }) {
   return request({ method: "delete", path, body, options });
 }
+function patch({ path, body, params, options, isFormData }) {
+  return request({ method: "patch", path, body, params, options, isFormData });
+}
 
 export default {
   get,
   post,
   delete: _delete,
+  patch,
 };

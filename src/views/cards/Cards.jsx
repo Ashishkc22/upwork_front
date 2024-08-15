@@ -13,6 +13,10 @@ import { isEmpty } from "lodash";
 import PrintIcon from "@mui/icons-material/Print";
 import { useNavigate } from "react-router-dom";
 import ArogyamComponent from "../../components/ArogyaCard";
+import Tooltip from "@mui/material/Tooltip";
+import downloadCards from "../../utils/downloadCards";
+import Fab from "@mui/material/Fab";
+import CheckIcon from "@mui/icons-material/Check";
 
 let typingTimer;
 
@@ -37,25 +41,30 @@ const tableHeaders = [
 ];
 
 const actions = [
-  {
-    label: "Edit",
-    icon: <EditIcon />,
-    smallIcon: <EditIcon sx={{ fontSize: "19px !important" }} />,
-    // handler: (row) => console.log("Edit row:", row),
-  },
+  // {
+  //   label: "Edit",
+  //   icon: <EditIcon />,
+  //   smallIcon: <EditIcon sx={{ fontSize: "19px !important" }} />,
+  //   // handler: (row) => console.log("Edit row:", row),
+  // },
   {
     label: "Download",
     icon: <DownloadIcon />,
     smallIcon: <DownloadIcon sx={{ fontSize: "18px !important" }} />,
-
-    // handler: (row) => console.log("Download row:", row),
+    handler: (row) => {
+      console.log("Download row:", row);
+      downloadCards.downloadSingleCard({
+        Element: <ArogyamComponent showCardTag cardData={row} />,
+        cardData: row,
+      });
+    },
   },
-  {
-    label: "Reprint",
-    icon: <PrintIcon />,
-    smallIcon: <PrintIcon sx={{ fontSize: "18px !important" }} />,
-    // handler: (row) => console.log("Download row:", row),
-  },
+  // {
+  //   label: "Reprint",
+  //   icon: <PrintIcon />,
+  //   smallIcon: <PrintIcon sx={{ fontSize: "18px !important" }} />,
+  //   // handler: (row) => console.log("Download row:", row),
+  // },
   // Add more actions as needed
 ];
 
@@ -68,18 +77,20 @@ const TableWithCheckBox = ({
   actions,
   id,
   checkBoxClicked,
-  allSelectCheckBox = false,
+  isCheckBoxChecked = false,
   isImageMode = false,
 }) => {
   const [checkBox, setCheckBox] = useState(false);
   const navigate = useNavigate();
+  const [isDownloadCompleted, setIsDownloadCompleted] = useState(false);
+
   const handleRowClick = (row) => {
     navigate(`${row._id}`);
   };
 
   useEffect(() => {
-    setCheckBox(allSelectCheckBox);
-  }, [allSelectCheckBox]);
+    setCheckBox(isCheckBoxChecked);
+  }, [isCheckBoxChecked]);
   return (
     <Grid container>
       <Grid item xs={12}>
@@ -136,10 +147,29 @@ const TableWithCheckBox = ({
                 startIcon={<DownloadIcon />}
                 onClick={(e) => {
                   e.stopPropagation();
+                  downloadCards.downloadMultipleCard({
+                    cardData: groupedData,
+                    Element: ArogyamComponent,
+                    handleDownloadCompleted: () => setIsDownloadCompleted(true),
+                  });
                 }}
               >
                 Download
               </Button>
+              {isDownloadCompleted && (
+                <Typography
+                  variant="h6"
+                  sx={{
+                    display: "inline-flex",
+                    paddingBottom: 0,
+                    color: colors.primary[500],
+                    py: 1,
+                  }}
+                >
+                  <CheckIcon />
+                  Mark Printed
+                </Typography>
+              )}
             </Grid>
           </Grid>
         </Button>
@@ -176,13 +206,14 @@ const TableWithExtraElements = ({
   groupName = "",
   groupedData = {},
   isImageMode,
+  handleMultipleCheckBox,
+  isDownloadCompleted = {},
+  setIsDownloadCompleted,
 }) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
-  const [groupedCheckBox, setGroupedCheckBox] = useState(false);
-  const [chiledToParentCheck, setChiledToParentCheck] = useState(false);
-  const [allCheckBox, setAllCheckBox] = useState(false);
-  const [checkBoxSelectionStatus, setCheckBoxSelectionStatus] = useState("");
+  const [districtCheckbox, setDistrictCheckbox] = useState(false);
+  const [tableCheckedBox, setTableCheckedBox] = useState({});
 
   const getGroupDataLenght = () => {
     return Object.keys(groupedData).reduce(
@@ -191,30 +222,103 @@ const TableWithExtraElements = ({
     );
   };
 
+  useEffect(() => {
+    if (isDownloadCompleted) {
+      setDistrictCheckbox(false);
+      if (Object.keys(groupedData)) {
+        const newCheckedBox = {};
+        Object.keys(groupedData).forEach((key) => (newCheckedBox[key] = false));
+        setTableCheckedBox(newCheckedBox);
+      }
+    }
+  }, [isDownloadCompleted]);
+
+  useEffect(() => {
+    if (Object.keys(groupedData)) {
+      const newCheckedBox = {};
+      Object.keys(groupedData).forEach((key) => (newCheckedBox[key] = false));
+      setTableCheckedBox(newCheckedBox);
+    }
+  }, []);
+
   return (
     <Grid container sx={{ mx: 2 }} rowGap={2}>
-      <Grid item xs={12}>
+      <Grid item xs={12} alignItems="cenetr">
         <Button
           sx={{ background: colors.grey[100], px: 1 }}
           startIcon={
             <Checkbox
-              checked={groupedCheckBox && allCheckBox}
-              indeterminate={groupedCheckBox !== allCheckBox}
+              checked={
+                districtCheckbox
+                // Object.entries(tableCheckedBox).some(
+                //   ([key, value]) => value === true
+                // )
+              }
+              indeterminate={
+                Object.entries(tableCheckedBox).every(
+                  ([key, value]) => value === true
+                ) !=
+                Object.entries(tableCheckedBox).some(
+                  ([key, value]) => value === true
+                )
+              }
             />
           }
           onClick={() => {
-            if (groupedCheckBox === true && allCheckBox === false) {
-              setAllCheckBox(!allCheckBox);
-            } else {
-              setGroupedCheckBox(!groupedCheckBox);
-              setAllCheckBox(!allCheckBox);
+            setDistrictCheckbox(!districtCheckbox);
+            if (!districtCheckbox) {
+              handleMultipleCheckBox({
+                type: "all",
+                value: Object.keys(groupedData),
+                groupName,
+              });
             }
+
+            if (!!districtCheckbox) {
+              handleMultipleCheckBox({ type: "all", value: [], groupName });
+            }
+
+            // reset value
+            const newCheckedBox = {};
+            Object.keys(tableCheckedBox).forEach(
+              (key) => (newCheckedBox[key] = !districtCheckbox)
+            );
+            setTableCheckedBox(newCheckedBox);
           }}
         >{`${groupName} (Total: ${getGroupDataLenght()})`}</Button>
-
-        <IconButton aria-label="delete">
-          <DownloadIcon />
-        </IconButton>
+        <Tooltip title="Download full tehsil">
+          <IconButton
+            aria-label="Download full tehsil"
+            sx={{
+              color: colors.primary[500],
+            }}
+            onClick={() => {
+              downloadCards.downloadMultipleCardWithMultipleAgent({
+                Element: ArogyamComponent,
+                cardData: groupedData,
+                handleDownloadCompleted: () => {
+                  setIsDownloadCompleted({ [groupName]: true });
+                },
+              });
+            }}
+          >
+            <DownloadIcon />
+          </IconButton>
+        </Tooltip>
+        {isDownloadCompleted[groupName] && (
+          <Typography
+            variant="h6"
+            sx={{
+              display: "inline-flex",
+              paddingBottom: 0,
+              color: colors.primary[500],
+              py: 1,
+            }}
+          >
+            <CheckIcon />
+            MARK PRINTED
+          </Typography>
+        )}
       </Grid>
 
       {Object.keys(groupedData).map((key, index) => {
@@ -229,15 +333,46 @@ const TableWithExtraElements = ({
             groupedData={groupedData[key]}
             id={key}
             actions={actions}
-            allSelectCheckBox={allCheckBox}
+            isCheckBoxChecked={tableCheckedBox[key]}
             checkBoxClicked={(id, value) => {
-              setGroupedCheckBox(value);
+              handleMultipleCheckBox({
+                type: value ? "add" : "remove",
+                value: key,
+                groupName,
+              });
+              let isEveryValueFalse = true;
+              Object.keys(groupedData).forEach((lockey) => {
+                if (key != lockey) {
+                  isEveryValueFalse = !tableCheckedBox[lockey];
+                } else {
+                  isEveryValueFalse = !value;
+                }
+              });
+              if (isEveryValueFalse) {
+                setDistrictCheckbox(false);
+              }
+
+              let isEveryValueTrue = false;
+              Object.keys(groupedData).forEach((lockey) => {
+                if (key != lockey) {
+                  isEveryValueTrue = tableCheckedBox[lockey];
+                } else {
+                  isEveryValueTrue = value;
+                }
+              });
+              if (isEveryValueTrue) {
+                setDistrictCheckbox(true);
+              }
+              setTableCheckedBox({
+                ...tableCheckedBox,
+                [key]: value,
+              });
             }}
             isImageMode={isImageMode}
+            isDownloadCompleted={isDownloadCompleted || {}}
           />
         );
       })}
-      {/* */}
     </Grid>
   );
 };
@@ -259,9 +394,51 @@ const Cards = () => {
   const [duration, setDuration] = useState("");
   const [status, setStatus] = useState("");
   const [districtOption, setDistrictOption] = useState([]);
+  const [downloadCardMaps, setDownloadCardMaps] = useState({});
+  const [isDownloadCompleted, setIsDownloadCompleted] = useState({});
+  // const [cardsToDownload, setCardsToDownload] = useState({});
+  const theme = useTheme();
+  const colors = tokens(theme.palette.mode);
 
   // view mode state
   const [isImageMode, setIsImageMode] = useState(false);
+  const navigate = useNavigate();
+  const handleRowClick = (row) => {
+    navigate(`${row._id}`);
+  };
+
+  const handleMultipleCheckBox = (data) => {
+    if (data.type == "all") {
+      setDownloadCardMaps({
+        ...downloadCardMaps,
+        [data.groupName]: data.value,
+      });
+    }
+    if (data.type == "add") {
+      const newObject = [].concat(downloadCardMaps?.[data.groupName] || []);
+      newObject.push(data.value);
+      setDownloadCardMaps({
+        ...downloadCardMaps,
+        [data.groupName]: newObject,
+      });
+    }
+    if (data.type == "remove") {
+      const tempObj = { ...downloadCardMaps };
+      let newObject = [].concat(downloadCardMaps?.[data.groupName] || []);
+      newObject = newObject.filter((key) => key != data.value);
+      if (!newObject.length) {
+        delete tempObj[data.groupName];
+        setDownloadCardMaps({
+          ...tempObj,
+        });
+      } else {
+        setDownloadCardMaps({
+          ...downloadCardMaps,
+          [data.groupName]: newObject,
+        });
+      }
+    }
+  };
 
   const getTableData = ({
     search = null,
@@ -385,6 +562,33 @@ const Cards = () => {
     });
   };
 
+  const handleGroupCardsDownload = () => {
+    const cardsToDownload = {};
+    const _isDownloadCompleted = {};
+    // setIsDownloadCompleted
+    console.log("downloadCardMaps", downloadCardMaps);
+    console.log("cardsDataGroupedBy", cardsDataGroupedBy);
+
+    Object.keys(downloadCardMaps).forEach((groupName) => {
+      const selectedCardData = {};
+      _isDownloadCompleted[groupName] = true;
+      Object.keys(cardsDataGroupedBy[groupName]).forEach((key) => {
+        if (downloadCardMaps[groupName].includes(key)) {
+          _isDownloadCompleted[key] = true;
+          selectedCardData[key] = cardsDataGroupedBy[groupName][key];
+        }
+      });
+      cardsToDownload[groupName] = selectedCardData;
+    });
+    downloadCards.downloadMultipleLevelCardData({
+      Element: ArogyamComponent,
+      cardData: cardsToDownload,
+      downloadCompleted: () => {
+        setIsDownloadCompleted(_isDownloadCompleted);
+      },
+    });
+  };
+
   useEffect(() => {
     // call state data
     common.getState().then((states) => {
@@ -397,7 +601,7 @@ const Cards = () => {
   }, [selectedCard]);
 
   return (
-    <Grid component="main" sx={{ width: "93%" }}>
+    <Grid component="main" sx={{ width: "94%" }}>
       <Grid item sx={{ mb: 2 }}>
         <Header
           totalCards={totalCardsAndToBePrinted.totalCards}
@@ -435,6 +639,22 @@ const Cards = () => {
           isImageMode={isImageMode}
           handleViewChange={() => setIsImageMode(!isImageMode)}
         />
+        {Object.keys(downloadCardMaps).length && (
+          <Fab
+            sx={{
+              position: "fixed",
+              bottom: 30,
+              right: 50,
+              background: colors.primary[200],
+              color: colors.primary[500],
+            }}
+            variant="extended"
+            size="large"
+            onClick={handleGroupCardsDownload}
+          >
+            <Typography variant="h6">Download</Typography>
+          </Fab>
+        )}
       </Grid>
 
       {selectedCard === "toBePrinted" ? (
@@ -462,11 +682,27 @@ const Cards = () => {
                   groupName={key}
                   groupedData={cardsDataGroupedBy[key]}
                   isImageMode={isImageMode}
+                  handleMultipleCheckBox={handleMultipleCheckBox}
+                  isDownloadCompleted={isDownloadCompleted}
+                  setIsDownloadCompleted={setIsDownloadCompleted}
                 />
               );
             })}
           </Grid>
         )
+      ) : isImageMode ? (
+        <Box sx={{ width: "100%" }}>
+          {totalCardsData.map((cardData, index) => {
+            return (
+              <ArogyamComponent
+                key={cardData._id + index + "ImageMode"}
+                cardData={cardData}
+                enableClick={true}
+                handleClick={handleRowClick}
+              />
+            );
+          })}
+        </Box>
       ) : (
         <Grid item sx={{ mx: 2 }}>
           <CustomTable

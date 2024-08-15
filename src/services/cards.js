@@ -1,6 +1,7 @@
 import tokenUtil from "../utils/token.util";
 import axiosUtil from "../utils/api.util";
 import { groupBy, isEmpty } from "lodash";
+import moment from "moment";
 
 async function getCardsData({
   _status,
@@ -128,9 +129,68 @@ async function getDistrictData({ stateId }) {
   }
 }
 
+async function renewCard(payload) {
+  const issueDate = payload.issueDate
+    ? new Date(payload.issueDate)
+    : new Date(payload.createdAt);
+  const expiryYears = payload.expiryYears + 2;
+  const expiryDate = new Date(
+    issueDate.getTime() + expiryYears * 365 * 24 * 60 * 60 * 1000
+  );
+
+  const bodyFormData = new FormData();
+  bodyFormData.append("expiry_date", expiryDate.valueOf());
+  bodyFormData.append("expiry_years", expiryYears);
+  bodyFormData.append("expiry", moment(expiryYears).format("MMM YYYY"));
+  console.log("bodyFormData", bodyFormData);
+
+  const {
+    status,
+    data,
+    message,
+    error = "",
+  } = await axiosUtil.patch({
+    path: `cards/${payload.id}?token=${tokenUtil.getAuthToken()}`,
+    body: bodyFormData,
+    isFormData: true,
+    options: { headers: { "Content-Type": "multipart/form-data" } },
+  });
+  if (status === "failed") {
+    return { status, error: error || message };
+  } else if (!isEmpty(data)) {
+    return data;
+  }
+}
+
+async function changeStatus(payload, id) {
+  const bodyFormData = new FormData();
+  Object.entries(payload).forEach(([key, value]) => {
+    bodyFormData.append(key, value);
+  });
+
+  const {
+    status,
+    data,
+    message,
+    error = "",
+  } = await axiosUtil.patch({
+    path: `cards/${id}?token=${tokenUtil.getAuthToken()}`,
+    body: payload,
+    // isFormData: true,
+    // options: { headers: { "Content-Type": "multipart/form-data" } },
+  });
+  if (status === "failed") {
+    return { status, error: error || message };
+  } else if (!isEmpty(data)) {
+    return data;
+  }
+}
+
 export default {
   getCardsData,
   getUsersByIds,
   getDistrictData,
   getCardById,
+  renewCard,
+  changeStatus,
 };
