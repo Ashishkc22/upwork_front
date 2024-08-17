@@ -29,7 +29,7 @@ async function downloadSingleCard({ Element, cardData }) {
       // If any mutations are observed, assume rendering is complete
       observer.disconnect(); // Stop observing once rendering is detected
       // Wait for the component to be rendered
-      await new Promise((resolve) => setTimeout(resolve, 200));
+      await new Promise((resolve) => setTimeout(resolve, 500));
       var node = document.getElementById(cardData._id);
       const offsetHeight = node?.offsetWidth;
       const offsetWidth = node?.offsetWidth;
@@ -85,7 +85,6 @@ function getImageData({ Element, cardData = [], images }) {
       for (let i = 0; i < cardData.length; i++) {
         let container;
         let root;
-        await new Promise((resolve) => setTimeout(resolve, 200));
         container = document.createElement("div");
         container.setAttribute("id", `${cardData[i]._id}-container`);
         container.style.position = "absolute";
@@ -103,7 +102,7 @@ function getImageData({ Element, cardData = [], images }) {
           // If any mutations are observed, assume rendering is complete
           observer.disconnect(); // Stop observing once rendering is detected
           // Wait for the component to be rendered'
-          await new Promise((resolve) => setTimeout(resolve, 300));
+          await new Promise((resolve) => setTimeout(resolve, 500));
 
           var node = document.getElementById(cardData[i]._id);
           const offsetHeight = node?.offsetWidth;

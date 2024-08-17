@@ -380,38 +380,41 @@ const CardComponent = () => {
               </Box>
 
               <Box sx={{ display: "flex", alignItems: "center" }}>
-                <IconButton sx={{ mr: 1 }}>
-                  <img src="/whatsapp.png" alt="" srcset="" />
+                <IconButton
+                  sx={{
+                    mr: 1,
+                    borderRadius: 0,
+                  }}
+                  onClick={() =>
+                    window.open("https://wa.me/7028130067", "_blank")
+                  }
+                >
+                  <div>
+                    <img src="/whatsapp.png" alt="" srcset="" />
+                  </div>
+                  <div style={{ marginLeft: "14px", textAlign: "start" }}>
+                    <TextElement label="Phone" value={cardData.phone} />
+                  </div>
                 </IconButton>
-                <div>
-                  <TextElement label="Phone" value={cardData.phone} />
-                </div>
               </Box>
               <Box sx={{ display: "flex" }}>
-                <Link
-                  underline="none"
-                  href="#"
-                  sx={{ display: "inline-flex" }}
-                  color="none"
+                <IconButton
+                  sx={{
+                    mr: 1,
+                    height: "46px",
+                    ":hover": {
+                      color: "#0000ff91",
+                    },
+                  }}
                 >
-                  <IconButton
-                    sx={{
-                      mr: 1,
-                      height: "46px",
-                      ":hover": {
-                        color: "#0000ff91",
-                      },
-                    }}
-                  >
-                    <PlaceIcon sx={{ fontSize: "30px" }} />
-                  </IconButton>
-                  <div>
-                    <TextElement
-                      label="Address"
-                      value={`${cardData.area} ${cardData.tehsil}  ${cardData.district} ${cardData.state} `}
-                    />
-                  </div>
-                </Link>
+                  <PlaceIcon sx={{ fontSize: "30px" }} />
+                </IconButton>
+                <div>
+                  <TextElement
+                    label="Address"
+                    value={`${cardData.area} ${cardData.tehsil}  ${cardData.district} ${cardData.state} `}
+                  />
+                </div>
               </Box>
             </Grid>
 
