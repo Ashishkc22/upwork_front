@@ -1,16 +1,17 @@
 import axiosUtil from "../utils/api.util";
 import { isEmpty } from "lodash";
 
-async function getState() {
+async function getAddressData({ type = "state", params = {} } = {}) {
   const {
     status,
     data,
     message,
     error = "",
   } = await axiosUtil.get({
-    path: "address/state",
+    path: `address/${type}`,
     params: {
       type: "ADMIN",
+      ...params,
     },
   });
   if (status === "failed") {
@@ -20,5 +21,5 @@ async function getState() {
   }
 }
 export default {
-  getState,
+  getAddressData,
 };

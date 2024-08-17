@@ -13,16 +13,24 @@ import CustomAutocompleteDropDown from "../../components/CustomAutocompleteDropD
 import SearchTextinput from "../../components/SearchTextInput";
 import { useNavigate } from "react-router-dom";
 import { isElement, isEmpty } from "lodash";
+import common from "../../services/common";
 import ViewModuleIcon from "@mui/icons-material/ViewModule";
+import moment from "moment";
+import getCardStack from "../dashboard/ChipStack";
+import CustomDateRangePicker from "../../components/CustomDateRangePicker";
+import CustomDatePicker from "../../components/CustomDatePicker";
 
 const ScoreCard = ({
   value,
+  secondValue,
   text,
   bgcolor,
   isCardSelected,
   emitCardSelect,
   name,
 }) => {
+  console.log("score -----", secondValue);
+
   return (
     <Card
       elevation={0}
@@ -36,7 +44,9 @@ const ScoreCard = ({
       <CardActionArea onClick={() => emitCardSelect(name)}>
         <Box sx={{ p: 1 }} textAlign="center">
           <Typography fontSize={25} fontWeight={600}>
-            {value}
+            {secondValue != value && isCardSelected
+              ? `${secondValue}/${value}`
+              : value}
           </Typography>
           <Typography fontSize={12} fontWeight={500} color="#00000059">
             {text}
@@ -53,8 +63,42 @@ const Header = (headerData) => {
   const [searchTerm, setSearchTerm] = useState();
   const [state, setState] = useState("");
   const [district, setDistrict] = useState("");
+  const [tehsil, setTehsil] = useState("");
+  const [gram, setGram] = useState("");
   const [createdBy, setCreatedBy] = useState("");
   const [duration, setDuration] = useState();
+
+  const [dateType, setDateType] = useState("");
+  const [isDatePickerOpened, setIsDatePickerOpened] = useState(false);
+
+  const [tehsilOption, setTehsilOption] = useState([]);
+  const [gramOption, setGramOption] = useState([]);
+  const [districtOption, setDistrictOption] = useState([]);
+  const [filterDate, seFilterDate] = useState("");
+
+  function handleCloseDialog() {
+    console.log("close date picker");
+
+    setIsDatePickerOpened(false);
+    setDateType("");
+    seFilterDate("");
+  }
+
+  const handleApply = (range) => {
+    console.log("range", range);
+    let data = range;
+    if (Array.isArray(data)) {
+      data = `${moment(data[0].startDate).format("DD/MM/YYYY")}-${moment(
+        data[0].endDate
+      ).format("DD/MM/YYYY")}`;
+    } else {
+      data = moment(data).format("DD/MM/YYYY");
+    }
+    console.log("String Date =====", data);
+
+    seFilterDate(data);
+    headerData.handleDurationChange({ type: dateType, value: range });
+  };
 
   // Update URL function
   function addDataToURL(data) {
@@ -76,6 +120,7 @@ const Header = (headerData) => {
   const emitStateChange = (data) => {
     if (data?.newValue) {
       setState(data.newValue);
+      getAddressData({ type: "district" });
       addDataToURL({ stateId: data.newValue._id, state: data.newValue.name });
     } else {
       setState("");
@@ -84,6 +129,33 @@ const Header = (headerData) => {
   };
 
   const emitDistrictChange = (data) => {
+    addDataToURL(data?.newValue || {});
+    console.log("data?.newValue", data);
+
+    if (data?.newValue) {
+      getAddressData({
+        type: "tehsil",
+        params: { districtId: data?.newValue?._id },
+      });
+    }
+    headerData.handleDistrictChange(data?.newValue || {});
+  };
+
+  const emitTehsilChange = (data) => {
+    addDataToURL(data?.newValue || {});
+    if (data?.newValue) {
+      getAddressData({
+        type: "gram",
+        params: {
+          tehsilId: data.newValue?._id,
+          showHidden: true,
+          display: "Gram",
+        },
+      });
+    }
+    headerData.handleDistrictChange(data?.newValue || {});
+  };
+  const emitGramChange = (data) => {
     addDataToURL(data?.newValue || {});
     headerData.handleDistrictChange(data?.newValue || {});
   };
@@ -99,9 +171,14 @@ const Header = (headerData) => {
   };
 
   const emitDurationChange = (data) => {
-    addDataToURL({ duration: data.target.value });
-    setDuration(data.target.value);
-    headerData.handleDurationChange(data.target.value);
+    if (data.target.value === "CUSTOM" || data.target.value === "CUSTOM DATE") {
+      setDateType(data.target.value);
+      setIsDatePickerOpened(true);
+    } else {
+      addDataToURL({ duration: data.target.value });
+      setDuration(data.target.value);
+      headerData.handleDurationChange(data.target.value);
+    }
   };
 
   const handleSearch = (e) => {
@@ -110,6 +187,20 @@ const Header = (headerData) => {
     addDataToURL({ search: term });
     headerData.handleSearch(term);
   };
+
+  function getAddressData(payload) {
+    console.log("state", state);
+
+    common.getAddressData(payload).then((data) => {
+      if (payload?.type == "tehsil" && !data?.error) {
+        setTehsilOption(data || []);
+      } else if (payload?.type == "district" && !data?.error) {
+        setDistrictOption(data);
+      } else if (payload?.type == "gram" && !data?.error) {
+        setGramOption(data || []);
+      }
+    });
+  }
 
   return (
     <Grid
@@ -123,6 +214,7 @@ const Header = (headerData) => {
         <Grid container alignItems="center">
           <ScoreCard
             value={headerData.totalCards}
+            secondValue={headerData.totalShowing || 0}
             text="Total Cards"
             name="totalCards"
             bgcolor="#ffeee8"
@@ -132,6 +224,7 @@ const Header = (headerData) => {
           <Divider orientation="vertical" flexItem sx={{ my: 3, mx: 2 }} />
           <ScoreCard
             value={headerData.toBePrinted}
+            secondValue={headerData.totalPrintCardsShowing || 0}
             text="To Be Printed"
             bgcolor="#ffeee8"
             isCardSelected={selectedCard === "toBePrinted"}
@@ -178,11 +271,11 @@ const Header = (headerData) => {
             />
           </Box>
 
-          {!isEmpty(headerData?.selectedState) && (
+          {!isEmpty(districtOption) && !isEmpty(state) && (
             <Box sx={{ mx: 1, minWidth: 130 }}>
               <CustomAutocompleteDropDown
                 emitAutoCompleteChange={emitDistrictChange}
-                options={headerData.districtOption.map((option) => {
+                options={districtOption.map((option) => {
                   const { labelKey, codeKey } = headerData?.districtKeyMap;
                   return {
                     ...option,
@@ -191,6 +284,40 @@ const Header = (headerData) => {
                   };
                 })}
                 label="District"
+              />
+            </Box>
+          )}
+
+          {!isEmpty(tehsilOption) && (
+            <Box sx={{ mx: 1, minWidth: 130 }}>
+              <CustomAutocompleteDropDown
+                emitAutoCompleteChange={emitTehsilChange}
+                options={tehsilOption.map((option) => {
+                  const { labelKey, codeKey } = headerData?.districtKeyMap;
+                  return {
+                    ...option,
+                    label: option[labelKey],
+                    ...(codeKey && { code: option[codeKey] }),
+                  };
+                })}
+                label="Tehsil"
+              />
+            </Box>
+          )}
+
+          {!isEmpty(gramOption) && (
+            <Box sx={{ mx: 1, minWidth: 160 }}>
+              <CustomAutocompleteDropDown
+                emitAutoCompleteChange={emitGramChange}
+                options={gramOption.map((option) => {
+                  const { labelKey, codeKey } = headerData?.districtKeyMap;
+                  return {
+                    ...option,
+                    label: option[labelKey],
+                    ...(codeKey && { code: option[codeKey] }),
+                  };
+                })}
+                label="Gram"
               />
             </Box>
           )}
@@ -228,15 +355,29 @@ const Header = (headerData) => {
           </Box>
 
           <Box sx={{ mx: 1, minWidth: 130 }}>
+            <CustomDateRangePicker
+              open={dateType === "CUSTOM" && isDatePickerOpened}
+              onClose={handleCloseDialog}
+              onApply={handleApply}
+            />
+            <CustomDatePicker
+              open={dateType === "CUSTOM DATE" && isDatePickerOpened}
+              onClose={handleCloseDialog}
+              onApply={handleApply}
+            />
+
             <FormControl variant="standard" fullWidth>
               <InputLabel id="duration-select-label">Duration</InputLabel>
               <Select
-                value={duration}
+                value={
+                  !["CUSTOM DATE", "CUSTOM"].includes(dateType)
+                    ? duration
+                    : dateType
+                }
                 labelId="duration-select-label"
                 id="duration-select"
                 onChange={emitDurationChange}
               >
-                <MenuItem value={""}>none</MenuItem>
                 {headerData.durationOptions.map((option, index) => (
                   <MenuItem key={index} value={option}>
                     {option}
@@ -267,6 +408,15 @@ const Header = (headerData) => {
           </Box>
         </Grid>
       </Grid>
+      {filterDate && (
+        <Box sx={{ mt: 2 }}>
+          {getCardStack({
+            filter: dateType,
+            setFilter: setDateType,
+            date: filterDate,
+          })}
+        </Box>
+      )}
     </Grid>
   );
 };

@@ -2,6 +2,8 @@ import domtoimage from "dom-to-image";
 import jsPDF from "jspdf";
 import { createRoot } from "react-dom/client";
 import ReactDOM from "react-dom";
+import moment from "moment";
+import Compressor from "compressorjs";
 
 // images: {
 //   SupportImage: <SupportImage />,
@@ -29,7 +31,6 @@ async function downloadSingleCard({ Element, cardData }) {
       // Wait for the component to be rendered
       await new Promise((resolve) => setTimeout(resolve, 200));
       var node = document.getElementById(cardData._id);
-      const nodeHeight = node.offsetHeight;
       const offsetHeight = node?.offsetWidth;
       const offsetWidth = node?.offsetWidth;
 
@@ -46,14 +47,20 @@ async function downloadSingleCard({ Element, cardData }) {
         width: offsetWidth * scale,
       });
 
-      const doc = new jsPDF("p", "mm", "letter");
+      const doc = new jsPDF("p", "mm", "letter", true);
 
-      var width = doc.internal.pageSize.getWidth() * 0.4;
-      var height = doc.internal.pageSize.getHeight() * 0.3;
+      const width = doc.internal.pageSize.getWidth() * 0.4;
+      const height = doc.internal.pageSize.getHeight() * 0.3;
 
-      doc.addImage(dataUrl, "PNG", 10, 10, width, height); // Adjust position and size as needed
+      doc.addImage(dataUrl, "PNG", 10, 10, width, height, "", "FAST"); // Adjust position and size as needed
 
-      doc.save("pdfDocument.pdf");
+      doc.save(
+        `${
+          cardData?.create_by_name
+            ? cardData.create_by_name
+            : cardData.created_by_uid
+        }#${1}_${moment().format("DD_MMM_YYYY_HH_MM")}.pdf`
+      );
       // Clean up
       ReactDOM?.unmountComponentAtNode(container);
       root.unmount();
@@ -72,12 +79,13 @@ async function downloadSingleCard({ Element, cardData }) {
 }
 
 function getImageData({ Element, cardData = [], images }) {
-  return new Promise((myResolve, myReject) => {
+  return new Promise(async (myResolve, myReject) => {
     try {
       const elementData = [];
       for (let i = 0; i < cardData.length; i++) {
         let container;
         let root;
+        await new Promise((resolve) => setTimeout(resolve, 200));
         container = document.createElement("div");
         container.setAttribute("id", `${cardData[i]._id}-container`);
         container.style.position = "absolute";
@@ -86,13 +94,16 @@ function getImageData({ Element, cardData = [], images }) {
 
         // Render the component into the container
         root = createRoot(container);
-        root.render(<Element cardData={cardData[i]} images={images} />);
+
+        root.render(
+          <Element showCardTag cardData={cardData[i]} images={images} />
+        );
 
         const observer = new MutationObserver(async (mutationsList) => {
           // If any mutations are observed, assume rendering is complete
           observer.disconnect(); // Stop observing once rendering is detected
           // Wait for the component to be rendered'
-          await new Promise((resolve) => setTimeout(resolve, 200));
+          await new Promise((resolve) => setTimeout(resolve, 300));
 
           var node = document.getElementById(cardData[i]._id);
           const offsetHeight = node?.offsetWidth;
@@ -114,8 +125,6 @@ function getImageData({ Element, cardData = [], images }) {
           ReactDOM?.unmountComponentAtNode(container);
           document.body.removeChild(container);
           if (cardData.length === elementData.length) {
-            console.log("elementData", elementData);
-
             return myResolve(elementData);
           }
         });
@@ -134,23 +143,46 @@ async function downloadMultipleCard({
   cardData,
   handleDownloadCompleted,
   images,
+  agentDetails,
 }) {
-  const doc = new jsPDF("p", "mm", "letter");
+  const doc = new jsPDF("p", "mm", "letter", true);
   const width = doc.internal.pageSize.getWidth() * 0.4;
   const height = doc.internal.pageSize.getHeight() * 0.3;
+  console.log("width", width);
+  console.log("height", height);
   let xposition = 10;
   let yposition = 0;
   let count = 0;
+  const cardCount = cardData.length;
+  let pageCount = 1;
   const imageData = (await getImageData({ Element, cardData, images })) || [];
 
   imageData.forEach((dataUrl, index) => {
-    doc.addImage(dataUrl, "PNG", xposition, yposition, width, height);
+    console.log("yposition", cardData[index]);
+
+    doc.addImage(
+      dataUrl,
+      "PNG",
+      xposition,
+      yposition,
+      width,
+      height,
+      "",
+      "FAST"
+    );
     if (count == 0 || count == 1) {
       doc.setFontSize(12);
-      doc.text("agent id", xposition - 3, 50, {
-        angle: 90,
-        rotationDirection: 1,
-      });
+      doc.text(
+        `${
+          agentDetails?.name ? agentDetails.name : agentDetails.id
+        }_${pageCount}/${cardCount}`,
+        xposition - 3,
+        50,
+        {
+          angle: 90,
+          rotationDirection: 1,
+        }
+      );
     }
     count += 1;
     if (xposition == 10 && yposition == 0) {
@@ -163,16 +195,21 @@ async function downloadMultipleCard({
         xposition = 120;
       }
     }
-    if (count == 10) {
+    if (count == 10 && index != cardData.length - 1) {
       xposition = 10;
       yposition = 0;
       doc.addPage();
+      pageCount += 1;
       count = 0;
     }
     console.log("index", index);
 
     if (index == cardData.length - 1) {
-      doc.save("pdfDocument.pdf");
+      doc.save(
+        `${
+          agentDetails?.name ? agentDetails.name : agentDetails.id
+        }#${cardCount}_${moment().format("DD_MMM_YYYY_HH_MM")}.pdf`
+      );
       handleDownloadCompleted();
     }
   });
@@ -183,24 +220,26 @@ async function downloadMultipleCardWithMultipleAgent({
   cardData,
   handleDownloadCompleted = () => {},
   images,
+  districtName,
 }) {
-  const doc = new jsPDF("p", "mm", "letter");
+  const doc = new jsPDF("p", "mm", "letter", true);
   const width = doc.internal.pageSize.getWidth() * 0.4;
   const height = doc.internal.pageSize.getHeight() * 0.3;
   let xposition = 10;
   let yposition = 0;
+  let cardCount = 0;
   let count = 0;
 
   const cardDataKeys = Object.keys(cardData);
+
   const imageData = {};
   for (let i = 0; i < cardDataKeys.length; i++) {
     const key = cardDataKeys[i];
 
     imageData[key] =
       (await getImageData({ Element, cardData: cardData[key], images })) || [];
+    cardCount += imageData[key].length;
   }
-
-  console.log("imageData", imageData);
 
   const imageDataKeys = Object.keys(imageData);
 
@@ -214,7 +253,16 @@ async function downloadMultipleCardWithMultipleAgent({
       doc.addPage();
     }
     for (let j = 0; j < dataUrl.length; j++) {
-      doc.addImage(dataUrl[j], "PNG", xposition, yposition, width, height);
+      doc.addImage(
+        dataUrl[j],
+        "PNG",
+        xposition,
+        yposition,
+        width,
+        height,
+        "",
+        "FAST"
+      );
       // adding text
       if (count == 0 || count == 1) {
         doc.setFontSize(12);
@@ -241,10 +289,11 @@ async function downloadMultipleCardWithMultipleAgent({
         doc.addPage();
         count = 0;
       }
-      console.log("index", j);
     }
   }
-  doc.save("pdfDocument.pdf");
+  doc.save(
+    `${districtName}#${cardCount}_${moment().format("DD_MMM_YYYY_HH_MM")}.pdf`
+  );
   handleDownloadCompleted();
 }
 
@@ -257,11 +306,13 @@ async function downloadMultipleLevelCardData({
   try {
     const groupNamekeys = Object.keys(cardData);
     for (let i = 0; i < groupNamekeys.length; i++) {
-      //   console.log("data", cardData[groupNamekeys[i]]);
+      const splitName = groupNamekeys[i].split("/");
+      const districtName = splitName[splitName.length - 1];
       await downloadMultipleCardWithMultipleAgent({
         Element,
         cardData: cardData[groupNamekeys[i]],
         images: images,
+        districtName,
       });
     }
     downloadCompleted({ downloadCompleted: true });

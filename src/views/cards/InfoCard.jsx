@@ -14,8 +14,9 @@ import {
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ArogyamComponent from "../../components/ArogyaCard";
+import ArogyamComponentV1 from "../../components/ArogyaCard_v1";
 import VerifiedUserOutlinedIcon from "@mui/icons-material/VerifiedUserOutlined";
-import Menu from "@mui/material/Menu";
+import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import MenuItem from "@mui/material/MenuItem";
 import CardActions from "@mui/material/CardActions";
 import FileDownloadIcon from "@mui/icons-material/FileDownload";
@@ -26,7 +27,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import { useParams } from "react-router-dom";
 import cards from "../../services/cards";
 import moment from "moment";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import downloadCards from "../../utils/downloadCards";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
@@ -36,6 +37,48 @@ import DialogTitle from "@mui/material/DialogTitle";
 import cardService from "../../services/cards";
 import { isEmpty } from "lodash";
 import RestoreIcon from "@mui/icons-material/Restore";
+import PlaceIcon from "@mui/icons-material/Place";
+import Link from "@mui/material/Link";
+import storageUtil from "../../utils/storage.util";
+import KeyboardArrowLeftIcon from "@mui/icons-material/KeyboardArrowLeft";
+import EditCardDialog from "./EditCardDialog";
+const images = {
+  LogoImage: <img src="/v1cardImages/cardLogo.png" alt="Card Logo" />,
+  Phone: (
+    <img
+      src="/v1cardImages/phone.png"
+      alt="Phone"
+      style={{ width: "10px", height: "10px", marginRight: "9px" }}
+    />
+  ),
+  Loc: (
+    <img
+      src="/v1cardImages/loc.png"
+      alt="Location"
+      style={{ width: "10px", height: "10px", marginRight: "9px" }}
+    />
+  ),
+  WaterMark: (
+    <img
+      src="/v1cardImages/waterMark.png"
+      alt="Watermark"
+      style={{
+        width: "118px",
+        right: "29px",
+        position: "relative",
+        bottom: "47px",
+        "z-index": 0,
+      }}
+    />
+  ),
+  Support: (
+    <img
+      src="/v1cardImages/support.png"
+      alt="support"
+      style={{ width: "54px", height: "54px" }}
+    />
+  ),
+};
 
 const CardComponent = () => {
   const [isMenuOpened, setIsMenuOpened] = useState(false);
@@ -50,20 +93,59 @@ const CardComponent = () => {
   const [dialogType, setDialogType] = useState(""); //renew and discard
   const [selectReason, setSelectReason] = useState("");
   const [discardMessageReason, setDiscardMessageReason] = useState("");
+  const [idList, setIdList] = useState(storageUtil.getStorageData("cards_ids"));
+  const [isEditDialogOpened, setIsEditDialogOpened] = useState(false);
+
+  const location = useLocation();
+
   const navigate = useNavigate();
 
-  const { id } = useParams();
+  let { id } = useParams();
+  let newId = id;
 
-  const fetchCardData = () => {
-    cards.getCardById({ id }).then((data) => {
-      console.log("data", data);
+  const updateQueryParam = (_newId) => {
+    if (_newId) {
+      const newUrl = `/${location.pathname.split("/")[1]}/${_newId}`;
+      console.log("newUrl", newUrl);
+      navigate(newUrl, { replace: true });
+    }
+  };
+
+  const fetchCardData = ({ paramId = false } = {}) => {
+    cards.getCardById({ id: paramId || id }).then((data) => {
+      console.log("data set", data);
 
       setCardData(data);
     });
   };
 
+  const handleKeyPress = ({ key }) => {
+    if (key === "ArrowLeft" || key === "ArrowRight") {
+      if (idList?.length && newId) {
+        let indexOf = idList.indexOf(newId.trim());
+        console.log("indexOf", indexOf);
+
+        if (indexOf != 0 && key == "ArrowLeft") {
+          indexOf = indexOf - 1;
+        } else if (idList?.length != indexOf) {
+          indexOf = indexOf + 1;
+        }
+        updateQueryParam(idList?.[indexOf]);
+        newId = idList?.[indexOf];
+        fetchCardData({ paramId: idList?.[indexOf] });
+      }
+    }
+  };
+
   useEffect(() => {
     fetchCardData();
+    // let ids = storageUtil.getStorageData("cards_ids");
+    // if (!ids.length) {
+    //   ids = [];
+    // }
+    // console.log("ids", ids);
+    // setIdList(ids);
+    window.addEventListener("keydown", handleKeyPress);
   }, []);
 
   const TextElement = ({ label, value }) => {
@@ -122,214 +204,269 @@ const CardComponent = () => {
     console.log("cardData", cardData);
 
     downloadCards.downloadSingleCard({
-      Element: <ArogyamComponent cardData={cardData} />,
+      Element: <ArogyamComponent cardData={cardData} images={images} />,
       cardData,
     });
   };
 
   return (
-    <Card
-      sx={{
-        minWidth: "470px",
-        margin: "auto",
-        mx: {
-          lg: "auto",
-          sm: 2,
-        },
+    <Box sx={{ display: "inline-flex", width: "100%" }}>
+      {/* Left button */}
+      {Boolean(idList?.length || false) && (
+        <IconButton
+          sx={{
+            // position: "absolute",
+            borderRadius: 0,
+            color: "#ff5722",
+          }}
+          onClick={() => {
+            // Your left button action here
+          }}
+        >
+          <KeyboardArrowLeftIcon />
+        </IconButton>
+      )}
 
-        mt: "2%",
-        borderRadius: 2,
-        boxShadow: 3,
-      }}
-    >
-      <Dialog
-        open={isDialogOpen}
-        onClose={() => setIsDialogOpen(false)}
-        aria-labelledby="alert-dialog-title"
-        aria-describedby="alert-dialog-description"
+      <Card
+        sx={{
+          minWidth: "470px",
+          margin: "auto",
+          mx: { lg: "auto", sm: 2 },
+          mt: "2%",
+          borderRadius: 2,
+          boxShadow: 3,
+        }}
       >
-        <DialogTitle id="alert-dialog-title">
-          {dialogType == "renew" ? "Renew Card" : "Discard Reason?"}
-        </DialogTitle>
-        <DialogContent>
-          {dialogType == "renew" ? (
-            <DialogContentText id="alert-dialog-description">
-              Renew {cardData.name}'s card, extending expiry till{" "}
-              {renewCalculation}
-            </DialogContentText>
-          ) : (
-            <Box alignItems="center">
-              <TextField
-                id="standard-basic"
-                label="Discard Reason"
-                variant="standard"
-                placeholder="Discard Reason"
-                onChange={(e) => setDiscardMessageReason(e.target.value)}
-                sx={{ mt: 1, width: "250px" }}
-              />
-              <FormControl variant="standard" sx={{ m: 1, minWidth: 120 }}>
-                <InputLabel id="demo-simple-select-standard-label">
-                  Select Reason
-                </InputLabel>
-                <Select
-                  labelId="demo-simple-select-standard-label"
-                  id="demo-simple-select-standard"
+        <Dialog
+          open={isDialogOpen}
+          onClose={() => setIsDialogOpen(false)}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+        >
+          <DialogTitle id="alert-dialog-title">
+            {dialogType === "renew" ? "Renew Card" : "Discard Reason?"}
+          </DialogTitle>
+          <DialogContent>
+            {dialogType === "renew" ? (
+              <DialogContentText id="alert-dialog-description">
+                Renew {cardData.name}'s card, extending expiry till{" "}
+                {renewCalculation}
+              </DialogContentText>
+            ) : (
+              <Box alignItems="center">
+                <TextField
+                  id="standard-basic"
+                  label="Discard Reason"
                   variant="standard"
-                  placeholder="Select Reason"
-                  sx={{
-                    width: "150px",
-                    mb: 1,
-                  }}
-                  // value={age}
-                  onChange={(e) => setSelectReason(e.target.value)}
-                  label="Select Reason"
-                >
-                  <MenuItem value="">
-                    <em>None</em>
-                  </MenuItem>
-                  <MenuItem value={"Wrong ID"}>Wrong ID</MenuItem>
-                  <MenuItem value={"Wrong Mobile No."}>
-                    Wrong Mobile No.
-                  </MenuItem>
-                  <MenuItem value={"Wrong Name/TOB"}>Wrong Name/TOB</MenuItem>
-                </Select>
-              </FormControl>
-            </Box>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setIsDialogOpen(false)}>Cancel</Button>
-          <Button
-            onClick={() => {
-              if (dialogType == "renew") {
-                handleRenewCard();
-              } else {
-                handleStatusChange({
-                  status: "DISCARDED",
-                  payload: {
+                  placeholder="Discard Reason"
+                  onChange={(e) => setDiscardMessageReason(e.target.value)}
+                  sx={{ mt: 1, width: "250px" }}
+                />
+                <FormControl variant="standard" sx={{ m: 1, minWidth: 120 }}>
+                  <InputLabel id="demo-simple-select-standard-label">
+                    Select Reason
+                  </InputLabel>
+                  <Select
+                    labelId="demo-simple-select-standard-label"
+                    id="demo-simple-select-standard"
+                    variant="standard"
+                    placeholder="Select Reason"
+                    sx={{ width: "150px", mb: 1 }}
+                    onChange={(e) => setSelectReason(e.target.value)}
+                    label="Select Reason"
+                  >
+                    <MenuItem value="">
+                      <em>None</em>
+                    </MenuItem>
+                    <MenuItem value="Wrong ID">Wrong ID</MenuItem>
+                    <MenuItem value="Wrong Mobile No.">
+                      Wrong Mobile No.
+                    </MenuItem>
+                    <MenuItem value="Wrong Name/TOB">Wrong Name/TOB</MenuItem>
+                  </Select>
+                </FormControl>
+              </Box>
+            )}
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setIsDialogOpen(false)}>Cancel</Button>
+            <Button
+              onClick={() => {
+                if (dialogType === "renew") {
+                  handleRenewCard();
+                } else {
+                  handleStatusChange({
                     status: "DISCARDED",
-                    discard_reason: `${selectReason}: ${discardMessageReason}`,
-                  },
-                });
-              }
-            }}
-            autoFocus
-          >
-            {dialogType == "renew" ? "Renew" : "Save"}
-          </Button>
-        </DialogActions>
-      </Dialog>
-      <CardHeader
-        sx={{ p: 0, mt: 1 }}
-        action={
-          <Button
-            sx={{ display: "inline-flex", color: "#ff5722", p: 1, m: 0, mr: 3 }}
-            variant="standard"
-            startIcon={<EditIcon />}
-          >
-            Edit
-          </Button>
-        }
-      />
-      <CardContent sx={{ px: 5 }}>
-        <Grid container spacing={2}>
-          <Grid item xs={12} md={6}>
-            <Box sx={{ display: "flex", alignItems: "center" }}>
-              <IconButton
-                onClick={() => navigate(-1)}
-                aria-label="back"
-                sx={{ mr: 5 }}
-              >
-                <ArrowBackIcon sx={{ fontSize: 30 }} />
-              </IconButton>
+                    payload: {
+                      status: "DISCARDED",
+                      discard_reason: `${selectReason}: ${discardMessageReason}`,
+                    },
+                  });
+                }
+              }}
+              autoFocus
+            >
+              {dialogType === "renew" ? "Renew" : "Save"}
+            </Button>
+          </DialogActions>
+        </Dialog>
+        <CardHeader
+          sx={{ p: 0, mt: 1 }}
+          action={
+            <Button
+              sx={{
+                display: "inline-flex",
+                color: "#ff5722",
+                p: 1,
+                m: 0,
+                mr: 3,
+              }}
+              variant="standard"
+              startIcon={<EditIcon />}
+              onClick={() => setIsEditDialogOpened(true)}
+            >
+              Edit
+            </Button>
+          }
+        />
+        <CardContent sx={{ px: 5 }}>
+          <Grid container spacing={2}>
+            <Grid item xs={12} md={6}>
+              <Box sx={{ display: "flex", alignItems: "center" }}>
+                <IconButton
+                  onClick={() => navigate(-1)}
+                  aria-label="back"
+                  sx={{ mr: 5 }}
+                >
+                  <ArrowBackIcon sx={{ fontSize: 30 }} />
+                </IconButton>
+                <Box>
+                  <TextElement
+                    label="Unique Number"
+                    value={cardData.unique_number}
+                  />
+                </Box>
+              </Box>
+              <Box>
+                <TextElement label="Name" value={cardData.name} />
+              </Box>
+
+              <Box>
+                <TextElement label="Birth Year" value={cardData.birth_year} />
+              </Box>
+
               <Box>
                 <TextElement
-                  label="Unique Number"
-                  value={cardData.unique_number}
+                  label="Blood Group"
+                  value={cardData.blood_group || ""}
                 />
               </Box>
-            </Box>
-            <Box>
-              <TextElement label="Name" value={cardData.name} />
-            </Box>
-
-            <Box>
-              <TextElement label="Birth Year" value={cardData.birth_year} />
-            </Box>
-
-            <Box>
-              <TextElement
-                label="Blood Group"
-                value={cardData.blood_group || ""}
-              />
-            </Box>
-            <Box>
-              <TextElement label="Gender" value={cardData.gender} />
-            </Box>
-
-            <Box>
-              <TextElement
-                label="Father/Husband Name"
-                value={cardData.father_husband_name}
-              />
-            </Box>
-
-            <Box>
-              <TextElement label="Aadhaar" value={cardData?.id_proof?.value} />
-            </Box>
-
-            <Box>
-              <TextElement label="Phone" value={cardData.phone} />
-            </Box>
-            <Box>
-              <TextElement
-                label="Address"
-                value={`${cardData.area} ${cardData.tehsil}  ${cardData.district} ${cardData.state} `}
-              />
-            </Box>
-          </Grid>
-
-          <Grid item xs={12} md={6} sx={{ ml: 0 }}>
-            <Grid item xs={12}>
               <Box>
-                <ArogyamComponent cardData={cardData} />
+                <TextElement label="Gender" value={cardData.gender} />
+              </Box>
+
+              <Box>
+                <TextElement
+                  label="Father/Husband Name"
+                  value={cardData.father_husband_name}
+                />
+              </Box>
+
+              <Box>
+                <TextElement
+                  label="Aadhaar"
+                  value={cardData?.id_proof?.value}
+                />
+              </Box>
+
+              <Box sx={{ display: "flex", alignItems: "center" }}>
+                <IconButton sx={{ mr: 1 }}>
+                  <img src="/whatsapp.png" alt="" srcset="" />
+                </IconButton>
+                <div>
+                  <TextElement label="Phone" value={cardData.phone} />
+                </div>
+              </Box>
+              <Box sx={{ display: "flex" }}>
+                <Link
+                  underline="none"
+                  href="#"
+                  sx={{ display: "inline-flex" }}
+                  color="none"
+                >
+                  <IconButton
+                    sx={{
+                      mr: 1,
+                      height: "46px",
+                      ":hover": {
+                        color: "#0000ff91",
+                      },
+                    }}
+                  >
+                    <PlaceIcon sx={{ fontSize: "30px" }} />
+                  </IconButton>
+                  <div>
+                    <TextElement
+                      label="Address"
+                      value={`${cardData.area} ${cardData.tehsil}  ${cardData.district} ${cardData.state} `}
+                    />
+                  </div>
+                </Link>
               </Box>
             </Grid>
-            <Grid item xs={12}>
-              <Box>
-                <TextElement
-                  label="Expiry"
-                  value={
-                    cardData?.expiry_date &&
-                    moment(cardData.expiry_date).format("MMM YYYY")
-                  }
-                />
-              </Box>
 
-              <Box display="inline-flex" alignItems="flex-end">
+            <Grid item xs={12} md={6} sm={12} sx={{ ml: 0 }}>
+              <Grid item xs={12}>
                 <Box>
-                  <TextElement label="Status" value={cardData.status} />
-                  {cardData.discard_reason && (
-                    <span label="" style={{ fontSize: 12, color: "#00000075" }}>
-                      {cardData.discard_reason}
-                    </span>
-                  )}
+                  <ArogyamComponentV1
+                    cardData={cardData}
+                    images={images || {}}
+                  />
                 </Box>
-                <Box sx={{ ml: 6 }}>
-                  <Button
-                    onClick={handleClick}
-                    aria-controls={
-                      isMenuOpened ? "demo-positioned-menu" : undefined
+              </Grid>
+              <Grid item xs={12}>
+                <Box>
+                  <TextElement
+                    label="Expiry"
+                    value={
+                      cardData?.expiry_date &&
+                      moment(cardData.expiry_date).format("MMM YYYY")
                     }
-                    aria-haspopup="true"
-                    aria-expanded={isMenuOpened ? "true" : undefined}
-                    sx={{ display: "inline-flex", color: "#ff5722", pb: 0 }}
-                    variant="standard"
-                    startIcon={<VerifiedUserOutlinedIcon />}
-                  >
-                    Status
-                  </Button>
-                  <Menu
+                  />
+                </Box>
+
+                <Box display="inline-flex" alignItems="flex-end">
+                  <Box>
+                    <TextElement label="Status" value={cardData.status} />
+                    {cardData.discard_reason && (
+                      <span
+                        label=""
+                        style={{ fontSize: 12, color: "#00000075" }}
+                      >
+                        {cardData.discard_reason}
+                      </span>
+                    )}
+                  </Box>
+                  <Box sx={{ ml: 6 }}>
+                    <Button
+                      onClick={handleClick}
+                      aria-controls={
+                        isMenuOpened ? "demo-positioned-menu" : undefined
+                      }
+                      aria-haspopup="true"
+                      aria-expanded={isMenuOpened ? "true" : undefined}
+                      sx={{
+                        display: "inline-flex",
+                        color: "#ff5722 !important",
+                        pb: 0,
+                      }}
+                      variant="standard"
+                      startIcon={<VerifiedUserOutlinedIcon />}
+                      disabled
+                    >
+                      Status
+                    </Button>
+                    {/* <Menu
                     id="demo-positioned-menu"
                     aria-labelledby="demo-positioned-button"
                     anchorEl={anchorEl}
@@ -339,22 +476,14 @@ const CardComponent = () => {
                       setIsMenuOpened(false);
                     }}
                     anchorOrigin={{
-                      vertical: "top",
-                      horizontal: "left",
+                      vertical: 'top',
+                      horizontal: 'left',
                     }}
                     transformOrigin={{
-                      vertical: "top",
-                      horizontal: "left",
+                      vertical: 'top',
+                      horizontal: 'left',
                     }}
                   >
-                    <MenuItem
-                      onClick={() => {
-                        setAnchorEl(null);
-                        setIsMenuOpened(false);
-                      }}
-                    >
-                      Submitted
-                    </MenuItem>
                     <MenuItem
                       onClick={() => {
                         setAnchorEl(null);
@@ -395,95 +524,189 @@ const CardComponent = () => {
                     >
                       Reprint
                     </MenuItem>
-                  </Menu>
+                  </Menu> */}
+                  </Box>
                 </Box>
-              </Box>
 
-              <Box>
-                <TextElement
-                  label="Created At"
-                  value={
-                    cardData?.created_at &&
-                    moment(cardData.created_at).format("DD-MM-YYYY")
-                  }
-                />
-              </Box>
-              <Box>
-                <TextElement
-                  label="Created By"
-                  value={
-                    cardData?.created_by_uid &&
-                    `UID : ${cardData.created_by_uid}`
-                  }
-                />
-              </Box>
+                <Box>
+                  <TextElement
+                    label="Created At"
+                    value={
+                      cardData?.created_at &&
+                      moment(cardData.created_at).format("DD-MM-YYYY")
+                    }
+                  />
+                </Box>
+                <Box>
+                  <TextElement
+                    label="Created By"
+                    value={
+                      cardData?.created_by_uid &&
+                      `UID : ${cardData.created_by_uid}`
+                    }
+                  />
+                </Box>
+              </Grid>
             </Grid>
           </Grid>
-        </Grid>
-        <CardActions>
-          <Button
-            sx={{ display: "inline-flex", color: "#ff5722", p: 1, m: 0, mr: 3 }}
-            variant="standard"
-            startIcon={<FileDownloadIcon />}
-            onClick={() => {
-              handleDownloadCard();
-            }}
-          >
-            Download
-          </Button>
 
-          <Button
-            size="large"
-            startIcon={<RepeatOneIcon />}
-            sx={{ display: "inline-flex", color: "#ff5722", p: 1, m: 0, mr: 3 }}
-            onClick={() => {
-              setDialogType("renew");
-
-              const issueDate = cardData.issue_date
-                ? new Date(cardData.issue_date)
-                : new Date(cardData.created_at);
-              setRenewCalculation(
-                moment(issueDate).add(2, "years").format("DD-MM-YYYY")
-              );
-
-              setIsDialogOpen(true);
-            }}
-          >
-            Renew
-          </Button>
-          <Button
-            size="large"
-            startIcon={<CancelIcon />}
-            disabled={cardData?.status == "DISCARDED"}
-            sx={{ display: "inline-flex", color: "#ff5722", p: 1 }}
-            onClick={() => {
-              if (cardData.status != "DISCARDED") {
-                setDialogType("discard");
-                setIsDialogOpen(true);
-              }
-            }}
-          >
-            Discard
-          </Button>
-          {cardData?.status == "DISCARDED" && (
-            <Button
-              size="large"
-              startIcon={<RestoreIcon />}
-              disabled={cardData?.status != "DISCARDED"}
-              sx={{ display: "inline-flex", color: "#ff5722", p: 1 }}
-              onClick={() => {
-                if (cardData.status == "DISCARDED") {
-                  // setIsDialogOpen(true);
-                  handleStatusChange({ payload: { status: "SUBMITTED" } });
-                }
+          <CardActions>
+            <Box
+              sx={{
+                width: "100%",
+                display: "inline-flex",
+                justifyContent: "space-between",
+                alignItems: "end",
               }}
             >
-              Reset
-            </Button>
-          )}
-        </CardActions>
-      </CardContent>
-    </Card>
+              <Box>
+                <Button
+                  sx={{
+                    display: "inline-flex",
+                    color: "#ff5722",
+                    p: 1,
+                    m: 0,
+                    mr: 3,
+                  }}
+                  variant="standard"
+                  startIcon={<FileDownloadIcon />}
+                  onClick={() => {
+                    handleDownloadCard();
+                  }}
+                >
+                  Download
+                </Button>
+
+                <Button
+                  size="large"
+                  startIcon={<RepeatOneIcon />}
+                  sx={{
+                    display: "inline-flex",
+                    color: "#ff5722",
+                    p: 1,
+                    m: 0,
+                    mr: 3,
+                  }}
+                  onClick={() => {
+                    setDialogType("renew");
+
+                    const issueDate = cardData.issue_date
+                      ? new Date(cardData.issue_date)
+                      : new Date(cardData.created_at);
+                    setRenewCalculation(
+                      moment(issueDate).add(2, "years").format("DD-MM-YYYY")
+                    );
+
+                    setIsDialogOpen(true);
+                  }}
+                >
+                  Renew
+                </Button>
+                <Button
+                  size="large"
+                  startIcon={<CancelIcon />}
+                  disabled={cardData?.status === "DISCARDED"}
+                  sx={{ display: "inline-flex", color: "#ff5722", p: 1 }}
+                  onClick={() => {
+                    if (cardData.status !== "DISCARDED") {
+                      setDialogType("discard");
+                      setIsDialogOpen(true);
+                    }
+                  }}
+                >
+                  Discard
+                </Button>
+                {cardData?.status === "DISCARDED" && (
+                  <Button
+                    size="large"
+                    startIcon={<RestoreIcon />}
+                    disabled={cardData?.status !== "DISCARDED"}
+                    sx={{ display: "inline-flex", color: "#ff5722", p: 1 }}
+                    onClick={() => {
+                      if (cardData.status === "DISCARDED") {
+                        // setIsDialogOpen(true);
+                        handleStatusChange({
+                          payload: { status: "SUBMITTED" },
+                        });
+                      }
+                    }}
+                  >
+                    Reset
+                  </Button>
+                )}
+              </Box>
+              <Box sx={{ display: "inline-flex" }}>
+                <Button
+                  sx={{ color: "#ff5722" }}
+                  onClick={() => {
+                    setAnchorEl(null);
+                    setIsMenuOpened(false);
+                  }}
+                >
+                  Submitted
+                </Button>
+                <Button
+                  sx={{ color: "#ff5722" }}
+                  onClick={() => {
+                    setAnchorEl(null);
+                    setIsMenuOpened(false);
+                  }}
+                >
+                  Delivered
+                </Button>
+                <Button
+                  sx={{ color: "#ff5722" }}
+                  onClick={() => {
+                    setAnchorEl(null);
+                    setIsMenuOpened(false);
+                  }}
+                >
+                  Undelivered
+                </Button>
+                <Button
+                  sx={{ color: "#ff5722" }}
+                  onClick={() => {
+                    setAnchorEl(null);
+                    setIsMenuOpened(false);
+                  }}
+                >
+                  RTO
+                </Button>
+                <Button
+                  sx={{ color: "#ff5722" }}
+                  onClick={() => {
+                    setAnchorEl(null);
+                    setIsMenuOpened(false);
+                  }}
+                >
+                  Reprint
+                </Button>
+              </Box>
+            </Box>
+          </CardActions>
+        </CardContent>
+      </Card>
+      {/* Right button */}
+      {Boolean(idList?.length) && (
+        <IconButton
+          sx={{
+            // position: "absolute",
+            borderRadius: 0,
+            color: "#ff5722",
+          }}
+          onClick={() => {
+            // Your right button action here
+          }}
+        >
+          <ChevronRightIcon />
+        </IconButton>
+      )}
+      <EditCardDialog
+        open={isEditDialogOpened}
+        cardData={cardData}
+        onClose={() => setIsEditDialogOpened(false)}
+      />
+    </Box>
   );
 };
 

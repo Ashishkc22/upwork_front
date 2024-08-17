@@ -2,21 +2,61 @@ import React, { useEffect, useState } from "react";
 import Header from "./Header";
 import { Grid, Typography, Button, useTheme, Box } from "@mui/material";
 import DownloadIcon from "@mui/icons-material/Download";
-import EditIcon from "@mui/icons-material/Edit";
 import Checkbox from "@mui/material/Checkbox";
 import CustomTable from "../../components/CustomTable";
 import { tokens } from "../../theme";
 import IconButton from "@mui/material/IconButton";
 import cards from "../../services/cards";
 import common from "../../services/common";
-import { isEmpty } from "lodash";
-import PrintIcon from "@mui/icons-material/Print";
+import { isEmpty, sortBy } from "lodash";
+import Badge from "@mui/material/Badge";
+import Stack from "@mui/material/Stack";
 import { useNavigate } from "react-router-dom";
-import ArogyamComponent from "../../components/ArogyaCard";
+import ArogyamComponent from "../../components/ArogyaCard_v1";
 import Tooltip from "@mui/material/Tooltip";
 import downloadCards from "../../utils/downloadCards";
 import Fab from "@mui/material/Fab";
 import CheckIcon from "@mui/icons-material/Check";
+import storageUtil from "../../utils/storage.util";
+import moment from "moment";
+
+const images = {
+  LogoImage: <img src="/v1cardImages/cardLogo.png" alt="Card Logo" />,
+  Phone: (
+    <img
+      src="/v1cardImages/phone.png"
+      alt="Phone"
+      style={{ width: "10px", height: "10px", marginRight: "9px" }}
+    />
+  ),
+  Loc: (
+    <img
+      src="/v1cardImages/loc.png"
+      alt="Location"
+      style={{ width: "10px", height: "10px", marginRight: "9px" }}
+    />
+  ),
+  WaterMark: (
+    <img
+      src="/v1cardImages/waterMark.png"
+      alt="Watermark"
+      style={{
+        width: "118px",
+        right: "29px",
+        position: "relative",
+        bottom: "47px",
+        "z-index": 0,
+      }}
+    />
+  ),
+  Support: (
+    <img
+      src="/v1cardImages/support.png"
+      alt="support"
+      style={{ width: "54px", height: "54px" }}
+    />
+  ),
+};
 
 let typingTimer;
 
@@ -65,16 +105,10 @@ const actions = [
     smallIcon: <DownloadIcon sx={{ fontSize: "18px !important" }} />,
     handler: (row) => {
       console.log("Download row:", row);
+
       downloadCards.downloadSingleCard({
         Element: (
-          <ArogyamComponent
-            showCardTag
-            cardData={row}
-            images={{
-              SupportImage: <SupportImage />,
-              LogoImage: <LogoImage />,
-            }}
-          />
+          <ArogyamComponent showCardTag cardData={row} images={images} />
         ),
         cardData: row,
       });
@@ -97,29 +131,53 @@ const TableWithCheckBox = ({
   groupedData,
   actions,
   id,
+  agentName,
   checkBoxClicked,
   isCheckBoxChecked = false,
   isImageMode = false,
+  increaseDownloadCardCount,
 }) => {
   const [checkBox, setCheckBox] = useState(false);
   const navigate = useNavigate();
   const [isDownloadCompleted, setIsDownloadCompleted] = useState(false);
+  const [pageCount, setPageCount] = useState(1);
 
   const handleRowClick = (row) => {
     navigate(`${row._id}`);
   };
 
+  const getPageCount = (total) => {
+    let a = parseInt(total / 10);
+    let rvalue = total - a * 10;
+    if (rvalue === 0) {
+      return a;
+    } else {
+      return a + 1;
+    }
+  };
+
   useEffect(() => {
     setCheckBox(isCheckBoxChecked);
+    setPageCount(getPageCount(groupedData.length));
   }, [isCheckBoxChecked]);
   return (
     <Grid container>
       <Grid item xs={12}>
-        <Button sx={{ width: "100%", justifyContent: "start" }}>
+        <Button
+          sx={{
+            width: "100%",
+            justifyContent: "start",
+          }}
+        >
           <Grid
             container
             justifyContent="space-between"
             onClick={() => {
+              if (!checkBox) {
+                increaseDownloadCardCount(dataLength);
+              } else {
+                increaseDownloadCardCount(-dataLength);
+              }
               setCheckBox(!checkBox);
               checkBoxClicked(id, !checkBox);
             }}
@@ -156,12 +214,13 @@ const TableWithCheckBox = ({
                   mr: {
                     lg: 2,
                     md: 2,
+                    mr: 1,
                     textTransform: "none",
                     color: "Black",
                   },
                 }}
               >
-                (Page)
+                (Page {pageCount})
               </Typography>
               <Button
                 sx={{ color: colors.primary[500] }}
@@ -172,10 +231,8 @@ const TableWithCheckBox = ({
                     cardData: groupedData,
                     Element: ArogyamComponent,
                     handleDownloadCompleted: () => setIsDownloadCompleted(true),
-                    images: {
-                      SupportImage: <SupportImage />,
-                      LogoImage: <LogoImage />,
-                    },
+                    images: images,
+                    agentDetails: { name: agentName, id },
                   });
                 }}
               >
@@ -200,19 +257,18 @@ const TableWithCheckBox = ({
         </Button>
       </Grid>
       {isImageMode ? (
-        <Box sx={{ width: "100%" }}>
+        <Box sx={{ display: "inline-flex", flexWrap: "wrap" }}>
           {groupedData.map((cardData, index) => {
             return (
-              <ArogyamComponent
-                key={cardData._id + index + "ImageMode"}
-                cardData={cardData}
-                enableClick={true}
-                handleClick={handleRowClick}
-                images={{
-                  SupportImage: <SupportImage />,
-                  LogoImage: <LogoImage />,
-                }}
-              />
+              <div style={{ marginRight: 2 }}>
+                <ArogyamComponent
+                  key={cardData._id + index + "ImageMode"}
+                  cardData={cardData}
+                  enableClick={true}
+                  handleClick={handleRowClick}
+                  images={images}
+                />
+              </div>
             );
           })}
         </Box>
@@ -238,6 +294,7 @@ const TableWithExtraElements = ({
   handleMultipleCheckBox,
   isDownloadCompleted = {},
   setIsDownloadCompleted,
+  increaseDownloadCardCount,
 }) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
@@ -301,10 +358,28 @@ const TableWithExtraElements = ({
                 value: Object.keys(groupedData),
                 groupName,
               });
+
+              increaseDownloadCardCount(
+                Object.keys(groupedData).reduce((total, key) => {
+                  if (tableCheckedBox[key]) {
+                    return total;
+                  }
+                  return total + groupedData[key].length;
+                }, 0)
+              );
+              console.log("tableCheckedBox", tableCheckedBox);
             }
 
             if (!!districtCheckbox) {
               handleMultipleCheckBox({ type: "all", value: [], groupName });
+              increaseDownloadCardCount(
+                -Object.keys(groupedData).reduce((total, key) => {
+                  if (!tableCheckedBox[key]) {
+                    return total;
+                  }
+                  return total + groupedData[key].length;
+                }, 0)
+              );
             }
 
             // reset value
@@ -328,10 +403,7 @@ const TableWithExtraElements = ({
                 handleDownloadCompleted: () => {
                   setIsDownloadCompleted({ [groupName]: true });
                 },
-                images: {
-                  SupportImage: <SupportImage />,
-                  LogoImage: <LogoImage />,
-                },
+                images: images,
               });
             }}
           >
@@ -401,8 +473,10 @@ const TableWithExtraElements = ({
                 [key]: value,
               });
             }}
+            agentName={firtsData?.created_by_name || ""}
             isImageMode={isImageMode}
             isDownloadCompleted={isDownloadCompleted || {}}
+            increaseDownloadCardCount={increaseDownloadCardCount}
           />
         );
       })}
@@ -429,6 +503,7 @@ const Cards = () => {
   const [districtOption, setDistrictOption] = useState([]);
   const [downloadCardMaps, setDownloadCardMaps] = useState({});
   const [isDownloadCompleted, setIsDownloadCompleted] = useState({});
+  const [downloadCardCount, setDownloadCardCount] = useState(0);
   // const [cardsToDownload, setCardsToDownload] = useState({});
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
@@ -437,6 +512,8 @@ const Cards = () => {
   const [isImageMode, setIsImageMode] = useState(false);
   const navigate = useNavigate();
   const handleRowClick = (row) => {
+    console.log("row", row);
+
     navigate(`${row._id}`);
   };
 
@@ -473,12 +550,18 @@ const Cards = () => {
     }
   };
 
+  const increaseDownloadCardCount = (value) => {
+    const newCount = downloadCardCount + value;
+    setDownloadCardCount(newCount);
+  };
+
   const getTableData = ({
     search = null,
     state = null,
     district = null,
     duration,
     created_by,
+    till_duration,
     _status,
   } = {}) => {
     // fetch cards data
@@ -491,16 +574,23 @@ const Cards = () => {
         ...(district && { district }),
         ...(duration && { duration }),
         ...(created_by && { created_by }),
+        ...(till_duration && { till_duration }),
         selectedCard,
       })
       .then((data) => {
         if (!isEmpty(data)) {
+          // setIds
+          if (data.idList) {
+            storageUtil.setStorageData(data.idList, "cards_ids");
+          }
           // debugger;
           if (selectedCard === "toBePrinted") {
             setCardsDataGroupBy(data.groupedData);
             setTotalCardsAndToBePrinted({
               totalCards: data.totalCards,
               toBePrinted: data.totalPrintedCards,
+              totalPrintCardsShowing: data.totalPrintCardsShowing,
+              totalShowing: data.totalShowing,
             });
             const ids = new Set();
             Object.keys(data.groupedData).forEach((key) => {
@@ -516,6 +606,8 @@ const Cards = () => {
           setTotalCardsAndToBePrinted({
             totalCards: data.totalCards,
             toBePrinted: data.totalPrintedCards,
+            totalPrintCardsShowing: data.totalPrintCardsShowing,
+            totalShowing: data.totalShowing,
           });
         } else {
           setCardsDataGroupBy([]);
@@ -563,6 +655,24 @@ const Cards = () => {
     });
   };
   const handleDurationChange = (data) => {
+    let payloadDate;
+    if (typeof data === "object") {
+      if (data.type === "CUSTOM DATE") {
+        payloadDate = {
+          duration: moment(data.value).valueOf(),
+          till_duration: moment().valueOf(),
+        };
+      }
+      if (data.type === "CUSTOM") {
+        const [date] = data.value;
+        payloadDate = {
+          duration: moment(date.endDate).valueOf(),
+          till_duration: moment(date.startDate).valueOf(),
+        };
+      }
+    }
+    console.log("payloadDate", payloadDate);
+
     setDuration(data || "");
     getTableData({
       created_by: createdBy._id,
@@ -570,6 +680,7 @@ const Cards = () => {
       q: search,
       state: state.name,
       district: district?.name || "",
+      ...(payloadDate && payloadDate),
     });
   };
 
@@ -599,8 +710,6 @@ const Cards = () => {
     const cardsToDownload = {};
     const _isDownloadCompleted = {};
     // setIsDownloadCompleted
-    console.log("downloadCardMaps", downloadCardMaps);
-    console.log("cardsDataGroupedBy", cardsDataGroupedBy);
 
     Object.keys(downloadCardMaps).forEach((groupName) => {
       const selectedCardData = {};
@@ -619,16 +728,13 @@ const Cards = () => {
       downloadCompleted: () => {
         setIsDownloadCompleted(_isDownloadCompleted);
       },
-      images: {
-        SupportImage: <SupportImage />,
-        LogoImage: <LogoImage />,
-      },
+      images: images,
     });
   };
 
   useEffect(() => {
     // call state data
-    common.getState().then((states) => {
+    common.getAddressData().then((states) => {
       setStateDropdownOptions(states);
     });
   }, []);
@@ -643,6 +749,10 @@ const Cards = () => {
         <Header
           totalCards={totalCardsAndToBePrinted.totalCards}
           toBePrinted={totalCardsAndToBePrinted.toBePrinted}
+          totalPrintCardsShowing={
+            totalCardsAndToBePrinted.totalPrintCardsShowing
+          }
+          totalShowing={totalCardsAndToBePrinted.totalShowing}
           createdByOptions={userDropdownOptions || []}
           createdByKeyMap={{ labelKey: "name", codeKey: "uid" }}
           stateDropdownOptions={stateDropdownOptions || []}
@@ -653,6 +763,7 @@ const Cards = () => {
             "THIS MONTH",
             "ALL",
             "CUSTOM",
+            "CUSTOM DATE",
           ]}
           selectedCard={selectedCard}
           selectedState={state}
@@ -677,20 +788,38 @@ const Cards = () => {
           handleViewChange={() => setIsImageMode(!isImageMode)}
         />
         {Boolean(Object.keys(downloadCardMaps).length) && (
-          <Fab
+          <Stack
+            spacing={2}
+            direction="row"
             sx={{
               position: "fixed",
               bottom: 30,
               right: 50,
-              background: colors.primary[200],
-              color: colors.primary[500],
+              alignItems: "center",
+              zIndex: 2,
             }}
-            variant="extended"
-            size="large"
-            onClick={handleGroupCardsDownload}
           >
-            <Typography variant="h6">Download</Typography>
-          </Fab>
+            <Badge
+              badgeContent={downloadCardCount}
+              color="success"
+              anchorOrigin={{
+                vertical: "top",
+                horizontal: "left",
+              }}
+            >
+              <Fab
+                sx={{
+                  background: colors.primary[200],
+                  color: colors.primary[500],
+                }}
+                variant="extended"
+                size="large"
+                onClick={handleGroupCardsDownload}
+              >
+                <Typography variant="h6">Download</Typography>
+              </Fab>
+            </Badge>
+          </Stack>
         )}
       </Grid>
 
@@ -722,25 +851,25 @@ const Cards = () => {
                   handleMultipleCheckBox={handleMultipleCheckBox}
                   isDownloadCompleted={isDownloadCompleted}
                   setIsDownloadCompleted={setIsDownloadCompleted}
+                  increaseDownloadCardCount={increaseDownloadCardCount}
                 />
               );
             })}
           </Grid>
         )
       ) : isImageMode ? (
-        <Box sx={{ width: "100%" }}>
+        <Box sx={{ display: "flex", flexWrap: "wrap" }}>
           {totalCardsData.map((cardData, index) => {
             return (
-              <ArogyamComponent
-                key={cardData._id + index + "ImageMode"}
-                cardData={cardData}
-                enableClick={true}
-                handleClick={handleRowClick}
-                images={{
-                  SupportImage: <SupportImage />,
-                  LogoImage: <LogoImage />,
-                }}
-              />
+              <div style={{ marginRight: 2 }}>
+                <ArogyamComponent
+                  key={cardData._id + index + "ImageMode"}
+                  cardData={cardData}
+                  enableClick={true}
+                  handleClick={handleRowClick}
+                  images={images}
+                />
+              </div>
             );
           })}
         </Box>
@@ -750,6 +879,7 @@ const Cards = () => {
             headers={tableHeaders}
             rows={totalCardsData}
             actions={actions}
+            rowClick={handleRowClick}
           />
         </Grid>
       )}

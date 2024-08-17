@@ -10,14 +10,19 @@ import cookiesUtil from "./cookies.util";
 
 const { getApiUrl } = envUtil;
 
-function request({ path, method, params, body, options, isFormData = false }) {
-  console.log("headers", !isEmpty(body));
-  console.log("body", body);
-
+function request({
+  path,
+  method,
+  params,
+  body,
+  options,
+  isFormData = false,
+  url,
+}) {
   const token = tokenUtil.getAuthToken();
   return axios({
     method,
-    url: getApiUrl({ path }),
+    url: url || getApiUrl({ path }),
     // url: `https://asia-south1-arogyam-super.cloudfunctions.net/${path}`,
     headers: {
       "Content-Type": "application/json",
@@ -61,9 +66,23 @@ function patch({ path, body, params, options, isFormData }) {
   return request({ method: "patch", path, body, params, options, isFormData });
 }
 
+function upload({ isFormData, url, headers }) {
+  return request({
+    method: "post",
+    isFormData,
+    url,
+    options: { headers },
+  });
+}
+
+// file
+// https://asia-south1-arogyam-super.cloudfunctions.net/files
+// POST
+
 export default {
   get,
   post,
   delete: _delete,
   patch,
+  upload,
 };

@@ -14,6 +14,9 @@ async function getCardsData({
   duration,
   created_by,
   selectedCard,
+  tehsil,
+  gram_p,
+  till_duration,
 } = {}) {
   const _payload = {
     token: tokenUtil.getAuthToken(),
@@ -27,6 +30,10 @@ async function getCardsData({
     ...(district && { district }),
     ...(duration && { duration }),
     ...(created_by && { created_by }),
+    ...(tehsil && { tehsil }),
+    ...(gram_p && { gram_p }),
+    ...(till_duration && { till_duration }),
+
     // duration: THIS WEEK
   };
   const {
@@ -36,6 +43,8 @@ async function getCardsData({
     error = "",
     total_print_card = 0,
     total = 0,
+    total_showing = 0,
+    total_print_card_showing = 0,
   } = await axiosUtil.get({
     path: "cards",
     params: _payload,
@@ -43,11 +52,15 @@ async function getCardsData({
   if (status === "failed") {
     return { status, error: error || message };
   } else if (!isEmpty(data)) {
+    const idList = data.map((data) => data._id);
     if (!_status || selectedCard === "totalCards") {
       return {
         groupedData: data,
         totalPrintedCards: total_print_card,
         totalCards: total,
+        totalPrintCardsShowing: total_print_card_showing,
+        totalShowing: total_showing,
+        idList,
       };
     }
     const groupedData = groupBy(
@@ -59,10 +72,59 @@ async function getCardsData({
       const groupByCreatedById = groupBy(groupedData[key], "created_by_uid");
       newGroupedData[key] = groupByCreatedById;
     });
+
+    const unsortedKeys = Object.keys(newGroupedData);
+    const countMap = {};
+    const sortedObject = new Map();
+
+    unsortedKeys.map((key) => {
+      Object.keys(newGroupedData[key]).forEach((innerKey) => {
+        if ((countMap[key] || 0) < newGroupedData[key][innerKey].length) {
+          countMap[key] = newGroupedData[key][innerKey].length;
+        }
+      });
+    });
+
+    for (let i = 0; i < Object.keys(countMap).length - 1; i++) {
+      const maxValue = Object.keys(countMap).reduce(
+        (maxObject, key) => {
+          if (maxObject.maxValue < countMap[key]) {
+            return { key: key, maxValue: countMap[key] };
+          }
+          return maxObject;
+        },
+        { key: "", maxValue: 0 }
+      );
+
+      sortedObject.set(maxValue.key, newGroupedData[maxValue.key]);
+      delete countMap[maxValue.key];
+    }
+
+    const newSortedMapObject = new Map();
+
+    for (let [key, value] of sortedObject) {
+      const newObject = {};
+      const countMap = {};
+      for (let i = 0; i < Object.keys(value).length; i++) {
+        const _key = Object.keys(value)[i];
+        countMap[_key] = sortedObject.get(key)[_key].length;
+      }
+
+      Object.keys(countMap)
+        .sort((a, b) => countMap[b] - countMap[a])
+        .forEach((_key) => {
+          newObject[_key] = sortedObject.get(key)[_key];
+        });
+      newSortedMapObject.set(key, newObject);
+    }
+
     return {
-      groupedData: newGroupedData,
+      groupedData: Object.fromEntries(newSortedMapObject),
       totalPrintedCards: total_print_card,
+      totalPrintCardsShowing: total_print_card_showing,
+      totalShowing: total_showing,
       totalCards: total,
+      cards: idList,
     };
   } else {
     return {
@@ -186,6 +248,45 @@ async function changeStatus(payload, id) {
   }
 }
 
+async function updateCard(payload, id, updateImage, formData) {
+  if (updateImage) {
+    const {
+      status,
+      path,
+      message,
+      error = "",
+    } = await axiosUtil.upload({
+      url: "https://asia-south1-arogyam-super.cloudfunctions.net/files",
+      body: formData,
+      headers: {
+        "Content-Type": "multipart/form-data",
+        "sec-ch-ua-mobile": "?0",
+        "sec-ch-ua-platform": '"Windows"',
+        "sec-fetch-dest": "empty",
+        "sec-fetch-mode": "cors",
+        "sec-fetch-site": "cross-site",
+      },
+    });
+    if (status === "success") {
+      payload.image = path;
+    }
+  }
+  const {
+    status,
+    data,
+    message,
+    error = "",
+  } = await axiosUtil.patch({
+    path: `cards/${id}?token=${tokenUtil.getAuthToken()}`,
+    body: payload,
+  });
+  if (status === "failed") {
+    return { status, error: error || message };
+  } else if (!isEmpty(data)) {
+    return data;
+  }
+}
+
 export default {
   getCardsData,
   getUsersByIds,
@@ -193,4 +294,5 @@ export default {
   getCardById,
   renewCard,
   changeStatus,
+  updateCard,
 };

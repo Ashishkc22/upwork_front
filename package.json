@@ -17,6 +17,7 @@
     "@testing-library/user-event": "^13.5.0",
     "axios": "^1.7.3",
     "clsx": "^2.1.1",
+    "compressorjs": "^1.2.1",
     "dayjs": "^1.11.12",
     "dom-to-image": "^2.6.0",
     "dom-to-image-more": "^3.3.1",
