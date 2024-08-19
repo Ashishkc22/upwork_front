@@ -93,19 +93,11 @@ const tableHeaders = [
 ];
 
 const actions = [
-  // {
-  //   label: "Edit",
-  //   icon: <EditIcon />,
-  //   smallIcon: <EditIcon sx={{ fontSize: "19px !important" }} />,
-  //   // handler: (row) => console.log("Edit row:", row),
-  // },
   {
     label: "Download",
     icon: <DownloadIcon />,
-    smallIcon: <DownloadIcon sx={{ fontSize: "18px !important" }} />,
+    smallIcon: <DownloadIcon sx={{ fontSize: "18px !important", p: 0 }} />,
     handler: (row) => {
-      console.log("Download row:", row);
-
       downloadCards.downloadSingleCard({
         Element: (
           <ArogyamComponent showCardTag cardData={row} images={images} />
@@ -367,7 +359,6 @@ const TableWithExtraElements = ({
                   return total + groupedData[key].length;
                 }, 0)
               );
-              console.log("tableCheckedBox", tableCheckedBox);
             }
 
             if (!!districtCheckbox) {
@@ -512,8 +503,6 @@ const Cards = () => {
   const [isImageMode, setIsImageMode] = useState(false);
   const navigate = useNavigate();
   const handleRowClick = (row) => {
-    console.log("row", row);
-
     navigate(`${row._id}`);
   };
 
@@ -671,7 +660,6 @@ const Cards = () => {
         };
       }
     }
-    console.log("payloadDate", payloadDate);
 
     setDuration(data || "");
     getTableData({

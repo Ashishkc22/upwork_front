@@ -12,8 +12,6 @@ const CardView = ({ cardId }) => {
         const response = await axios.get(
           `http://localhost:6060/cards/${cardId}`
         );
-        console.log("response", response);
-
         setCard(response.data.data);
       } catch (err) {
         setError("Card not exists");

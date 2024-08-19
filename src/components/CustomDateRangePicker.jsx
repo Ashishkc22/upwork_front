@@ -25,8 +25,6 @@ const DateRangeDialog = ({ open, onClose, onApply, isSingleSelect }) => {
   };
 
   const handleApply = () => {
-    console.log("range", range);
-
     onApply(range);
     handleCloseDialog();
   };

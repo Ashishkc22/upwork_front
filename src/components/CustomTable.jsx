@@ -16,13 +16,21 @@ import {
   AccordionDetails,
   AccordionSummary,
   Grid,
+  Divider,
   Button,
 } from "@mui/material";
 import moment from "moment";
-
+import { isEmpty } from "lodash";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
-const DynamicTable = ({ headers, rows, actions, rowClick }) => {
+const DynamicTable = ({
+  headers = [],
+  rows = [],
+  actions = [],
+  rowClick = () => {},
+  tbCellStyle = {},
+  dataForSmallScreen,
+}) => {
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
   const isWideScreen = useMediaQuery("(min-width:1200px)");
@@ -33,13 +41,20 @@ const DynamicTable = ({ headers, rows, actions, rowClick }) => {
     return birthYearNumber ? currentYear - birthYearNumber : null; // Calculate and return age, or null if birth year is invalid
   }
 
-  const getCellValue = ({ keymap = "", row = {} }) => {
+  const getCellValue = ({ keymap = "", row = {}, rowIndex }) => {
     if (keymap.key === "created_at" || keymap.key === "expiry_date") {
       return (
         <Typography variant="body2">
           {moment(row?.[keymap.key]).format(
             keymap.key === "expiry_date" ? "MMM YYYY" : "DD-MM-YYYY"
           )}
+        </Typography>
+      );
+    }
+    if (keymap.key === "index") {
+      return (
+        <Typography variant="body2" noWrap>
+          {rowIndex}
         </Typography>
       );
     }
@@ -130,9 +145,10 @@ const DynamicTable = ({ headers, rows, actions, rowClick }) => {
                         md: "2px",
                         sm: 0,
                       },
+                      ...(!isEmpty(tbCellStyle) && tbCellStyle),
                     }}
                   >
-                    {getCellValue({ keymap, row })}
+                    {getCellValue({ keymap, row, rowIndex })}
                   </TableCell>
                 ))}
               </TableRow>
@@ -154,8 +170,36 @@ const DynamicTable = ({ headers, rows, actions, rowClick }) => {
                   sx={{ width: "100%" }}
                 >
                   <Typography variant="h6">
-                    {`${row?.name} - ${row.unique_number} - ${row.father_husband_name} - ${row.status}` ||
-                      "Unknown Name"}
+                    {!dataForSmallScreen?.use ? (
+                      `${row?.name} - ${row.unique_number} - ${row.father_husband_name} - ${row.status}` ||
+                      "Unknown Name"
+                    ) : (
+                      <Box display="inline-flex" sx={{ width: "100%" }}>
+                        {dataForSmallScreen.title.keys.map((key, index) => {
+                          return (
+                            <div>
+                              {row[key] && (
+                                <div style={{ display: "inline-flex" }}>
+                                  {/* <Typography
+                                    variant="body"
+                                    sx={{ fontWeight: 600 }}
+                                  >
+                                    {key.replaceAll("_", " ")}
+                                  </Typography> */}
+                                  <Typography
+                                    variant="h6"
+                                    sx={{ mx: 1, fontWeight: 500 }}
+                                  >
+                                    {row[key]}
+                                  </Typography>
+                                  {" - "}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </Box>
+                    )}
                   </Typography>
                   <div>
                     <Button variant="text" onClick={() => rowClick(row)}>
@@ -192,23 +236,23 @@ const DynamicTable = ({ headers, rows, actions, rowClick }) => {
                   {headers?.map(
                     (keymap, index) =>
                       keymap.key && (
-                        <Grid
+                        <Box
                           key={keymap.label + index + "headers"}
-                          item
-                          xs={12}
-                          sm={4}
-                          md={2}
-                          sx={{ mr: 1 }}
-                          display="inline-flex"
+                          // item
+                          // xs={12}
+                          // sm={4}
+                          // md={3}
+                          // sx={{ mr: 1 }}
+                          // display="inline-flex"
                         >
                           <Typography
                             variant="body2"
                             fontWeight="bold"
-                            sx={{ mr: 1 }} // Margin to create space between label and value
+                            sx={{ m: 1 }} // Margin to create space between label and value
                           >
                             {keymap.label}:
                           </Typography>
-                          <Typography variant="body2">
+                          <Typography variant="body2" sx={{ m: 1 }}>
                             {keymap.key === "created_at" ||
                             keymap.key === "expiry_date"
                               ? moment(row?.[keymap.key]).format(
@@ -216,7 +260,7 @@ const DynamicTable = ({ headers, rows, actions, rowClick }) => {
                                 )
                               : row?.[keymap.key] || "N/A"}
                           </Typography>
-                        </Grid>
+                        </Box>
                       )
                     //  : (
                     //   <Box key={key} sx={{ mb: 1 }}>

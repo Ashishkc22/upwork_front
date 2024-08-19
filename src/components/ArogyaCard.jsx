@@ -41,9 +41,6 @@ const ArogyamComponent = ({
   // var node = document.getElementById(cardData._id);
   // const offsetHeight = node?.offsetWidth;
   // const offsetWidth = node?.offsetWidth;
-
-  // console.log("offsetHeight", offsetHeight);
-  // console.log("node", node);
   // calculate age
   function calculateAge({ row, keymap, birthYear }) {
     const currentYear = new Date().getFullYear(); // Get the current year

@@ -20,6 +20,25 @@ async function getAddressData({ type = "state", params = {} } = {}) {
     return data;
   }
 }
+
+async function fileUpload(formData) {
+  const {
+    status,
+    path,
+    message,
+    error = "",
+  } = await axiosUtil.upload({
+    url: "https://asia-south1-arogyam-super.cloudfunctions.net/files",
+    body: formData,
+    isFormData: true,
+  });
+  if (status === "success") {
+    return path;
+  } else {
+    return { error: "Failed to upload.", status: "failed" };
+  }
+}
 export default {
   getAddressData,
+  fileUpload,
 };

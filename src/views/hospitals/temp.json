@@ -1,0 +1,67 @@
+
+/hospitals/64331ad46f58907d435144d3?token=212fGnBBsMKm8tNMrev3wL
+Request Method:
+PATCH
+
+query - token: 212fGnBBsMKm8tNMrev3wL
+{
+    "state": "MP",
+    "district": "Bhopal",
+    "category": "Hospital",
+    "entity_name": "Aadhaar Multi Speciality Hospital ",
+    "reg_no": "NH/7507/July-2012",
+    "established_in": "2018",
+    "doctors": [
+        {
+          "name": "new doctor",
+          "specialization": "Gastroenterologist",
+          "experience": "5",
+          "type": "Stay"
+        }
+      ],
+    "basic_facilities": [
+        "Wheel chair",
+        "Ambulance",
+        "Parking 🅿 ",
+        "Waiting Room",
+        "Canteen",
+        "RO Water"
+    ],
+    "advance_facilities": [],
+    "timings": [
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+        "Sunday"
+    ],
+    "address": "Plot No. 32, Radha Krishna Colony Near Karond Chouraha Bhopal ",
+    "pincode": "462038",
+    "map_link": "https://maps.app.goo.gl/1yeVQrY7GNtzBJaK9",
+    "city": "Bhopal",
+    "tel_no": "9174884455",
+    "mobile_no": "9174884411",
+    "email": "aadhaarhospital@gmail.com",
+    "website": "",
+    "discount_ipd": "20.00",
+    "discount_opd": "10.00",
+    "discount_medicine": "10.00",
+    "discount_diagnostic": "0.00",
+    "acknowledge": "",
+    "images": [
+        "https://storage.googleapis.com/download/storage/v1/b/arogyam-super.appspot.com/o/Screenshot_20230410_013609.jpg?generation=1681070803512477&alt=media"
+    ],
+    "date_of_agreement": "10-04-2023",
+    "start_time": "00:00",
+    "close_time": "00:00"
+}
+
+
+
+FILE UPLOAD
+
+https://asia-south1-arogyam-super.cloudfunctions.net/files
+Request Method:
+POST

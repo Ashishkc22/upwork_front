@@ -3,16 +3,21 @@ import TextField from "@mui/material/TextField";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import { Grid } from "@mui/material";
+import { isEmpty } from "lodash";
 
 const CustomAutocompleteDropDown = ({
   options,
   label,
   emitAutoCompleteChange,
+  defaultValue,
+  value,
+  getOptionSelected,
 }) => {
   return (
     <Autocomplete
-      id="combo-box-demo"
       options={options}
+      defaultValue={defaultValue}
+      {...(!isEmpty(value) ? { value } : {})}
       onChange={(e, newValue, value) => {
         emitAutoCompleteChange({ e, newValue });
       }}

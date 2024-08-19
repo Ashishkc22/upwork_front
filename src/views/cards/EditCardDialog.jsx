@@ -59,7 +59,6 @@ const EditDialog = ({ open, onClose, cardData }) => {
 
   function getAddressData(payload) {
     commonService.getAddressData(payload).then((data) => {
-      console.log("data", data);
       if (payload?.type == "tehsil") {
         setTehsilOption(data || []);
       } else if (payload?.type == "district") {
@@ -177,8 +176,6 @@ const EditDialog = ({ open, onClose, cardData }) => {
     };
 
     const imageBlob = await captureRotatedImage(`${formData._id}-profile`);
-
-    console.log("imageBlob", imageBlob);
 
     // Create FormData and append the image blob
     const newformData = new FormData();

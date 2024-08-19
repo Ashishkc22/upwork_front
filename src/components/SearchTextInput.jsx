@@ -30,7 +30,6 @@ const SearchInput = ({ emitSearchChange, onLoadFocus = false }) => {
       fullWidth
       inputRef={onLoadFocus ? (input) => input && input.focus() : null}
       onChange={(e) => {
-        console.log("hello");
         emitSearchChange(e);
       }}
       InputProps={{

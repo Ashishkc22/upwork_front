@@ -10,9 +10,6 @@ import { isEmpty } from "lodash";
 const ChipStack = ({ chipData = [] }) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
-  useEffect(() => {
-    console.log("chipData ===========", chipData);
-  }, [chipData]);
   return (
     <Stack direction="row" spacing={1}>
       {!isEmpty(chipData) &&

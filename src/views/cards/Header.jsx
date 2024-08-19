@@ -29,8 +29,6 @@ const ScoreCard = ({
   emitCardSelect,
   name,
 }) => {
-  console.log("score -----", secondValue);
-
   return (
     <Card
       elevation={0}
@@ -57,6 +55,41 @@ const ScoreCard = ({
   );
 };
 
+/* INPUTES
+ totalCards={totalCardsAndToBePrinted.totalCards}
+          toBePrinted={totalCardsAndToBePrinted.toBePrinted}
+          totalPrintCardsShowing={
+            totalCardsAndToBePrinted.totalPrintCardsShowing
+          }
+          totalShowing={totalCardsAndToBePrinted.totalShowing}
+          createdByOptions={userDropdownOptions || []}
+          createdByKeyMap={{ labelKey: "name", codeKey: "uid" }}
+          stateDropdownOptions={stateDropdownOptions || []}
+          stateKeyMap={{ labelKey: "name" }}
+          durationOptions={[
+            "TODAY",
+            "THIS WEEK",
+            "THIS MONTH",
+            "ALL",
+            "CUSTOM",
+            "CUSTOM DATE",
+          ]}
+          selectedCard={selectedCard}
+          selectedState={state}
+          districtOption={districtOption}
+          districtKeyMap={{ labelKey: "name" }}
+          handleSelectCard={(n) => setSelectedCard(n)}
+          handleSearch={handleSearch}
+          handleState={handleState}
+          handleDistrictChange={handleDistrictChange}
+          handleCreatedBYChange={handleCreatedBYChange}
+          handleDurationChange={handleDurationChange}
+          handleRefresh={handleRefresh}
+          statusOption={}
+          handleStatusChange={handleStatusChange}
+          isImageMode={isImageMode}
+          handleViewChange={() => setIsImageMode(!isImageMode)}
+*/
 const Header = (headerData) => {
   const navigate = useNavigate();
   const [selectedCard, setSelectedCard] = useState("toBePrinted");
@@ -77,15 +110,12 @@ const Header = (headerData) => {
   const [filterDate, seFilterDate] = useState("");
 
   function handleCloseDialog() {
-    console.log("close date picker");
-
     setIsDatePickerOpened(false);
     setDateType("");
     seFilterDate("");
   }
 
   const handleApply = (range) => {
-    console.log("range", range);
     let data = range;
     if (Array.isArray(data)) {
       data = `${moment(data[0].startDate).format("DD/MM/YYYY")}-${moment(
@@ -94,8 +124,6 @@ const Header = (headerData) => {
     } else {
       data = moment(data).format("DD/MM/YYYY");
     }
-    console.log("String Date =====", data);
-
     seFilterDate(data);
     headerData.handleDurationChange({ type: dateType, value: range });
   };
@@ -120,7 +148,10 @@ const Header = (headerData) => {
   const emitStateChange = (data) => {
     if (data?.newValue) {
       setState(data.newValue);
-      getAddressData({ type: "district" });
+      getAddressData({
+        type: "district",
+        params: { stateId: data.newValue._id },
+      });
       addDataToURL({ stateId: data.newValue._id, state: data.newValue.name });
     } else {
       setState("");
@@ -130,7 +161,6 @@ const Header = (headerData) => {
 
   const emitDistrictChange = (data) => {
     addDataToURL(data?.newValue || {});
-    console.log("data?.newValue", data);
 
     if (data?.newValue) {
       getAddressData({
@@ -189,8 +219,6 @@ const Header = (headerData) => {
   };
 
   function getAddressData(payload) {
-    console.log("state", state);
-
     common.getAddressData(payload).then((data) => {
       if (payload?.type == "tehsil" && !data?.error) {
         setTehsilOption(data || []);

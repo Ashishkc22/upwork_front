@@ -9,6 +9,16 @@ import cookiesUtil from "./cookies.util";
 // const BODY = ["post"];
 
 const { getApiUrl } = envUtil;
+const _getAuthToken = (isFormData) => {
+  const token = tokenUtil.getAuthToken();
+  if (isFormData && token) {
+    return {};
+  }
+  if (token) {
+    return { Authorization: token };
+  }
+  return {};
+};
 
 function request({
   path,
@@ -19,15 +29,16 @@ function request({
   isFormData = false,
   url,
 }) {
-  const token = tokenUtil.getAuthToken();
+  console.log("method =====", method);
+
   return axios({
     method,
     url: url || getApiUrl({ path }),
     // url: `https://asia-south1-arogyam-super.cloudfunctions.net/${path}`,
     headers: {
-      "Content-Type": "application/json",
+      "Content-Type": isFormData ? "multipart/form-data" : "application/json",
       ...(options?.headers && options.headers),
-      ...(token && { Authorization: token }),
+      ..._getAuthToken(isFormData),
     },
     ...(params && { params }),
     ...(!isEmpty(body) && { data: body }),
@@ -66,11 +77,15 @@ function patch({ path, body, params, options, isFormData }) {
   return request({ method: "patch", path, body, params, options, isFormData });
 }
 
-function upload({ isFormData, url, headers }) {
+function upload({ isFormData, url, headers, body }) {
+  // debugger;
+  console.log("isFormData", isFormData);
+
   return request({
     method: "post",
     isFormData,
     url,
+    body,
     options: { headers },
   });
 }

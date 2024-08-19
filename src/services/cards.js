@@ -204,8 +204,6 @@ async function renewCard(payload) {
   bodyFormData.append("expiry_date", expiryDate.valueOf());
   bodyFormData.append("expiry_years", expiryYears);
   bodyFormData.append("expiry", moment(expiryYears).format("MMM YYYY"));
-  console.log("bodyFormData", bodyFormData);
-
   const {
     status,
     data,

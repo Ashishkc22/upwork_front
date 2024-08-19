@@ -106,15 +106,12 @@ const CardComponent = () => {
   const updateQueryParam = (_newId) => {
     if (_newId) {
       const newUrl = `/${location.pathname.split("/")[1]}/${_newId}`;
-      console.log("newUrl", newUrl);
       navigate(newUrl, { replace: true });
     }
   };
 
   const fetchCardData = ({ paramId = false } = {}) => {
     cards.getCardById({ id: paramId || id }).then((data) => {
-      console.log("data set", data);
-
       setCardData(data);
     });
   };
@@ -123,7 +120,6 @@ const CardComponent = () => {
     if (key === "ArrowLeft" || key === "ArrowRight") {
       if (idList?.length && newId) {
         let indexOf = idList.indexOf(newId.trim());
-        console.log("indexOf", indexOf);
 
         if (indexOf != 0 && key == "ArrowLeft") {
           indexOf = indexOf - 1;
@@ -142,8 +138,7 @@ const CardComponent = () => {
     // let ids = storageUtil.getStorageData("cards_ids");
     // if (!ids.length) {
     //   ids = [];
-    // }
-    // console.log("ids", ids);
+    // };
     // setIdList(ids);
     window.addEventListener("keydown", handleKeyPress);
   }, []);
@@ -201,8 +196,6 @@ const CardComponent = () => {
   };
 
   const handleDownloadCard = () => {
-    console.log("cardData", cardData);
-
     downloadCards.downloadSingleCard({
       Element: <ArogyamComponent cardData={cardData} images={images} />,
       cardData,

@@ -99,7 +99,6 @@ const CardComponent = () => {
 
   const fetchCardData = () => {
     cards.getCardById({ id }).then((data) => {
-      console.log("data", data);
       setIdList(storageUtil.getStorageData("card_ids") || []);
       setCardData(data);
     });
@@ -162,8 +161,6 @@ const CardComponent = () => {
   };
 
   const handleDownloadCard = () => {
-    console.log("cardData", cardData);
-
     downloadCards.downloadSingleCard({
       Element: <ArogyamComponent cardData={cardData} images={images} />,
       cardData,

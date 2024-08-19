@@ -13,7 +13,6 @@ function setCookie({ name = envUtil.getApiUrl({}), value, days }) {
 function getCookie({ name = envUtil.getApiUrl({}) }) {
   var nameEQ = name + "=";
   var ca = document.cookie.split(";");
-  console.log("ca", ca);
   for (var i = 0; i < ca.length; i++) {
     var c = ca[i];
     while (c.charAt(0) == " ") c = c.substring(1, c.length);

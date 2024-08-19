@@ -131,7 +131,6 @@ function getImageData({ Element, cardData = [], images }) {
         observer.observe(container, { childList: true, subtree: true });
       }
     } catch (error) {
-      console.log("error", error);
       myReject(error);
     }
   });
@@ -147,8 +146,6 @@ async function downloadMultipleCard({
   const doc = new jsPDF("p", "mm", "letter", true);
   const width = doc.internal.pageSize.getWidth() * 0.4;
   const height = doc.internal.pageSize.getHeight() * 0.3;
-  console.log("width", width);
-  console.log("height", height);
   let xposition = 10;
   let yposition = 0;
   let count = 0;
@@ -157,8 +154,6 @@ async function downloadMultipleCard({
   const imageData = (await getImageData({ Element, cardData, images })) || [];
 
   imageData.forEach((dataUrl, index) => {
-    console.log("yposition", cardData[index]);
-
     doc.addImage(
       dataUrl,
       "PNG",
@@ -201,7 +196,6 @@ async function downloadMultipleCard({
       pageCount += 1;
       count = 0;
     }
-    console.log("index", index);
 
     if (index == cardData.length - 1) {
       doc.save(

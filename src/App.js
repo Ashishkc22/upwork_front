@@ -10,6 +10,8 @@ import Dashboard from "./views/dashboard/Dashboard";
 import Cards from "./views/cards/Cards";
 import InfoCard from "./views/cards/InfoCard";
 import PageNotFound from "./components/PageNotFound";
+import HospitalPage from "./views/hospitals/Hospitals";
+import InfoHospital from "./views/hospitals/InfoHospital";
 
 function App() {
   const [theme, colorMode] = useMode();
@@ -28,6 +30,8 @@ function App() {
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/cards" element={<Cards />} />
               <Route path="/cards/:id" element={<InfoCard />} />
+              <Route path="/hospitals" element={<HospitalPage />} />
+              <Route path="/hospitals/:id" element={<InfoHospital />} />
             </Route>
           </Route>
           <Route path="*" element={<PageNotFound />} />
