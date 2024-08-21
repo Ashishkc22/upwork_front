@@ -18,24 +18,30 @@ import {
   FormLabel,
   InputLabel,
   MenuItem,
-  FormHelperText,
   Select,
+  Avatar,
+  Autocomplete,
 } from "@mui/material";
 import { tokens } from "../../theme";
 import RotateLeftIcon from "@mui/icons-material/RotateLeft";
 import RotateRightIcon from "@mui/icons-material/RotateRight";
 import cardsService from "../../services/cards";
 import commonService from "../../services/common";
+import ImageCropDialog from "../hospitals/ImageCropDialog";
+import { isEmpty } from "lodash";
 
 import moment from "moment";
 
 const EditDialog = ({ open, onClose, cardData }) => {
+  const [profilePic, setProfilePic] = useState(null);
   const [formData, setFormData] = useState({});
   const [stateOption, setStateOption] = useState([]);
   const [districtOption, setDistrictOption] = useState([]);
   const [tehsilOption, setTehsilOption] = useState([]);
   const [gramOption, setGramOption] = useState([]);
-  const [tmepImage, settmepImage] = useState("");
+  const [isCropDialogOpened, setIsCropDialogOpened] = useState(false);
+  const [selectedImage, setSelectedImage] = useState("");
+  const [isImageUpdated, setIsImageUpdated] = useState(false);
 
   const [rotation, setRotation] = useState(0);
 
@@ -125,155 +131,96 @@ const EditDialog = ({ open, onClose, cardData }) => {
   const handleRotateRight = () => setRotation((prev) => prev + 90);
 
   const handleSave = async () => {
-    // Save logic here
-
-    const captureRotatedImage = async (imageId) => {
-      try {
-        // Get the image element
-        const img = document.getElementById(imageId);
-        if (!img) throw new Error("Image element not found");
-
-        if (img.src.startsWith("http")) {
-          img.crossOrigin = "anonymous"; // This allows for cross-origin requests
-        }
-
-        // Create a canvas element
-        const canvas = document.createElement("canvas");
-        const ctx = canvas.getContext("2d");
-
-        // Set canvas dimensions to match image dimensions
-        canvas.width = img.width;
-        canvas.height = img.height;
-
-        // Apply rotation
-        const rotation =
-          parseFloat(
-            img.style.transform.replace("rotate(", "").replace("deg)", "")
-          ) || 0;
-        const radians = rotation * (Math.PI / 180);
-
-        // Center the canvas context
-        ctx.translate(canvas.width / 2, canvas.height / 2);
-        ctx.rotate(radians);
-        ctx.drawImage(
-          img,
-          -img.width / 2,
-          -img.height / 2,
-          img.width,
-          img.height
-        );
-
-        // Convert canvas to Blob
-        const imageBlob = await new Promise((resolve) =>
-          canvas.toBlob(resolve, "image/png")
-        );
-
-        return imageBlob;
-      } catch (error) {
-        console.error("Error capturing rotated image:", error);
-        return null;
-      }
-    };
-
-    const imageBlob = await captureRotatedImage(`${formData._id}-profile`);
-
-    // Create FormData and append the image blob
-    const newformData = new FormData();
-    newformData.append("file", imageBlob, "profile.png");
-
     // // Send the image to another API
-    cardsService.updateCard(formData, formData._id);
+    let image;
+    if (isImageUpdated) {
+      image = profilePic;
+    }
+    cardsService.updateCard(formData, formData._id, image);
 
-    // onClose(); // Close the dialog after saving
+    onClose(); // Close the dialog after saving
   };
 
   useEffect(() => {
     setFormData(cardData);
+    setProfilePic(cardData?.image);
   }, [cardData]);
 
+  // HandleCropped Images
+  function handleImageUpdate({ croppedImage }) {
+    setProfilePic(croppedImage);
+    setIsCropDialogOpened(false);
+    setIsImageUpdated(true);
+  }
+
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="md">
-      <DialogTitle>Edit Details</DialogTitle>
-      <DialogContent>
-        <Grid container spacing={2}>
-          <Grid item xs={12}>
-            <Box
-              sx={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-              }}
-            >
+    <Box>
+      <ImageCropDialog
+        open={isCropDialogOpened}
+        onClose={() => {
+          setIsCropDialogOpened(false);
+        }}
+        image={selectedImage}
+        onCropComplete={handleImageUpdate}
+        selectedImageIndex={0}
+        mode="Edit"
+      />
+      <Dialog open={open} onClose={onClose} maxWidth="md">
+        <DialogTitle>Edit Details</DialogTitle>
+        <DialogContent>
+          <Grid container spacing={2}>
+            <Grid item xs={12}>
               <Box
                 sx={{
-                  position: "relative",
-                  width: 150,
-                  height: 150,
-                  overflow: "hidden",
-                  borderRadius: "50%",
-                  border: "1px solid #ddd",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
                 }}
               >
-                <img
-                  id={`${formData._id}-profile`}
-                  src={formData?.image}
-                  alt="Profile"
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    objectFit: "cover",
-                    transform: `rotate(${rotation}deg)`,
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    marginBottom: "16px",
+                    justifyContent: "center",
                   }}
-                />
-              </Box>
-
-              <Box
-                sx={
-                  {
-                    // position: "absolute",
-                    // top: "60%",
-                    // left: "60%",
-                    // transform: "translate(-50%, -50%)",
-                    // display: "flex",
-                    // gap: 1,
-                  }
-                }
-              >
-                <IconButton
-                  onClick={handleRotateLeft}
-                  disabled={!formData?.image}
                 >
-                  <RotateLeftIcon />
-                </IconButton>
-                <IconButton
-                  onClick={handleRotateRight}
-                  disabled={!formData?.image}
-                >
-                  <RotateRightIcon />
-                </IconButton>
+                  <Avatar
+                    src={profilePic}
+                    alt="Profile Pic"
+                    sx={{
+                      width: 200,
+                      height: 200,
+                      borderRadius: 2,
+                    }}
+                    onClick={() => {
+                      setSelectedImage(profilePic);
+                      setIsCropDialogOpened(true);
+                    }}
+                  />
+                </Box>
               </Box>
-            </Box>
-          </Grid>
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              label="Name"
-              name="name"
-              defaultValue={formData?.name}
-              onChange={handleChange}
-            />
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <TextField
-              fullWidth
-              label="Birth Year"
-              name="expiry_years"
-              value={formData?.expiry_years}
-              onChange={handleChange}
-            />
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            {/* <TextField
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="Name"
+                name="name"
+                defaultValue={formData?.name}
+                onChange={handleChange}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Birth Year"
+                name="expiry_years"
+                value={formData?.expiry_years}
+                onChange={handleChange}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              {/* <TextField
               fullWidth
               label="Gender"
               name="gender"
@@ -281,82 +228,84 @@ const EditDialog = ({ open, onClose, cardData }) => {
               onChange={handleChange}
             />
              */}
-            <FormControl>
-              <FormLabel id="demo-radio-buttons-group-label">Gender</FormLabel>
-              <RadioGroup
-                row
-                aria-labelledby="demo-radio-buttons-group-label"
-                defaultValue={formData?.gender}
-                name="gender"
-                value={formData?.gender}
-                onChange={handleChange}
-              >
-                <FormControlLabel
-                  value="Female"
-                  control={<Radio />}
-                  label="Female"
-                />
-                <FormControlLabel
-                  value="Male"
-                  control={<Radio />}
-                  label="Male"
-                />
-              </RadioGroup>
-            </FormControl>
-          </Grid>
-          <Grid item>
-            {Boolean(Object.keys(formData?.id_proof || {}).length) && (
-              <FormControl sx={{ minWidth: 120 }}>
-                <InputLabel id="demo-simple-select-helper-label">
-                  Id Proof
-                </InputLabel>
-                <Select
-                  labelId="demo-simple-select-helper-label"
-                  id="demo-simple-select-helper"
-                  label="Id Proof"
-                  defaultValue={formData?.id_proof?.type}
-                  // onChange={handleChange}
+              <FormControl>
+                <FormLabel id="demo-radio-buttons-group-label">
+                  Gender
+                </FormLabel>
+                <RadioGroup
+                  row
+                  aria-labelledby="demo-radio-buttons-group-label"
+                  defaultValue={formData?.gender}
+                  name="gender"
+                  value={formData?.gender}
+                  onChange={handleChange}
                 >
-                  {/* {Object.keys(formData?.id_proof).map((key) => {
+                  <FormControlLabel
+                    value="Female"
+                    control={<Radio />}
+                    label="Female"
+                  />
+                  <FormControlLabel
+                    value="Male"
+                    control={<Radio />}
+                    label="Male"
+                  />
+                </RadioGroup>
+              </FormControl>
+            </Grid>
+            <Grid item>
+              {Boolean(Object.keys(formData?.id_proof || {}).length) && (
+                <FormControl sx={{ minWidth: 120 }}>
+                  <InputLabel id="demo-simple-select-helper-label">
+                    Id Proof
+                  </InputLabel>
+                  <Select
+                    labelId="demo-simple-select-helper-label"
+                    id="demo-simple-select-helper"
+                    label="Id Proof"
+                    defaultValue={formData?.id_proof?.type}
+                    // onChange={handleChange}
+                  >
+                    {/* {Object.keys(formData?.id_proof).map((key) => {
                     return <MenuItem value={key}>{key}</MenuItem>;
                   })} */}
-                  <MenuItem value={formData?.id_proof?.type}>
-                    {formData?.id_proof?.type}
-                  </MenuItem>
-                </Select>
-              </FormControl>
-            )}
-          </Grid>
-          <Grid item xs={9} alignContent="center">
-            <TextField
-              fullWidth
-              label="ID Proof"
-              name="idProof"
-              value={formData?.id_proof?.value}
-              onChange={handleChange}
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              label="Father/Husband's Name"
-              name="father_husband_name"
-              value={formData?.father_husband_name}
-              onChange={handleChange}
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              label="Blood Group"
-              name="blood_group"
-              value={formData?.blood_group}
-              onChange={handleChange}
-            />
-          </Grid>
-          {Boolean(stateOption?.length) && (
-            <Grid item xs={12} sm={6}>
-              {/* <TextField
+                    <MenuItem value={formData?.id_proof?.type}>
+                      {formData?.id_proof?.type}
+                    </MenuItem>
+                  </Select>
+                </FormControl>
+              )}
+            </Grid>
+            <Grid item xs={9} alignContent="center">
+              <TextField
+                fullWidth
+                label="ID Proof"
+                name="idProof"
+                value={formData?.id_proof?.value}
+                onChange={handleChange}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="Father/Husband's Name"
+                name="father_husband_name"
+                value={formData?.father_husband_name}
+                onChange={handleChange}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="Blood Group"
+                name="blood_group"
+                value={formData?.blood_group}
+                onChange={handleChange}
+              />
+            </Grid>
+            {Boolean(stateOption?.length) && (
+              <Grid item xs={12} sm={6}>
+                {/* <TextField
               fullWidth
               label="State"
               name="state"
@@ -364,153 +313,205 @@ const EditDialog = ({ open, onClose, cardData }) => {
               onChange={handleChange}
             /> */}
 
-              <FormControl fullWidth>
-                <InputLabel id="demo-simple-select-helper-label">
-                  State
-                </InputLabel>
-                <Select
-                  labelId="demo-simple-select-helper-label"
-                  id="demo-simple-select-helper"
-                  label="state"
-                  name="State"
-                  defaultValue={formData?.state}
-                  onChange={handleChange}
-                >
-                  {stateOption.map((stateData) => {
-                    return (
-                      <MenuItem value={stateData.name}>
-                        {stateData.name}
-                      </MenuItem>
-                    );
-                  })}
-                </Select>
-              </FormControl>
-            </Grid>
-          )}
-          {Boolean(districtOption?.length) && (
-            <Grid item xs={12} sm={6}>
-              {/* <TextField
+                <FormControl fullWidth>
+                  <InputLabel id="demo-simple-select-helper-label">
+                    State
+                  </InputLabel>
+                  <Select
+                    labelId="demo-simple-select-helper-label"
+                    id="demo-simple-select-helper"
+                    label="state"
+                    name="State"
+                    defaultValue={formData?.state}
+                    onChange={handleChange}
+                  >
+                    {stateOption.map((stateData) => {
+                      return (
+                        <MenuItem value={stateData.name}>
+                          {stateData.name}
+                        </MenuItem>
+                      );
+                    })}
+                  </Select>
+                </FormControl>
+              </Grid>
+            )}
+            {Boolean(districtOption?.length) && (
+              <Grid item xs={12} sm={6}>
+                {/* <TextField
               fullWidth
               label="District"
               name="district"
               value={formData?.district}
               onChange={handleChange}
             /> */}
-              <FormControl fullWidth>
-                <InputLabel id="demo-simple-select-helper-label">
-                  District
-                </InputLabel>
-                <Select
-                  labelId="demo-simple-select-helper-label"
-                  id="demo-simple-select-helper"
-                  label="District"
-                  name="district"
+                {/* <FormControl fullWidth> */}
+                {/* <InputLabel id="demo-simple-select-helper-label">
+                    District
+                  </InputLabel> */}
+                <Autocomplete
+                  options={districtOption}
                   defaultValue={formData?.district}
-                  onChange={handleChange}
-                >
-                  {districtOption.map((districtData) => {
+                  {...(!isEmpty(formData?.district)
+                    ? { value: formData?.district }
+                    : { value: "" })}
+                  onChange={(e, newValue, value) => {
+                    if (newValue) {
+                      setFormData((prev) => ({
+                        ...prev,
+                        district: newValue.name,
+                      }));
+                    } else {
+                      setFormData((prev) => ({
+                        ...prev,
+                        district: "",
+                      }));
+                    }
+
+                    // handleChange({ e, newValue });
+                  }}
+                  renderOption={(props, option) => {
+                    const { key, ...optionProps } = props;
                     return (
-                      <MenuItem value={districtData.name}>
-                        {districtData.name}
-                      </MenuItem>
+                      <Box
+                        key={key}
+                        sx={{ p: "3px", display: "block" }}
+                        {...optionProps}
+                      >
+                        <Grid container>
+                          <Typography fontSize={12} fontWeight={500}>
+                            {option.name}
+                          </Typography>
+                        </Grid>
+                      </Box>
                     );
-                  })}
-                </Select>
-              </FormControl>
-            </Grid>
-          )}
-          {Boolean(tehsilOption?.length) && (
-            <Grid item xs={12} sm={6}>
-              {/* <TextField
+                  }}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="District"
+                      variant="outlined"
+                    />
+                  )}
+                />
+                {/* </FormControl> */}
+              </Grid>
+            )}
+            {Boolean(tehsilOption?.length) && (
+              <Grid item xs={12} sm={6}>
+                {/* <TextField
               fullWidth
               label="Tehsil"
               name="tehsil"
               value={formData?.tehsil}
               onChange={handleChange}
             /> */}
-              <FormControl fullWidth>
-                <InputLabel id="demo-simple-select-helper-label">
-                  Tehsil
-                </InputLabel>
-                <Select
-                  labelId="demo-simple-select-helper-label"
-                  id="demo-simple-select-helper"
-                  label="Tehsil"
-                  name="tehsil"
-                  defaultValue={formData?.tehsil}
-                  onChange={handleChange}
-                >
-                  {tehsilOption.map((tehsilData) => {
-                    return (
-                      <MenuItem value={tehsilData.name}>
-                        {tehsilData.name}
-                      </MenuItem>
-                    );
-                  })}
-                </Select>
-              </FormControl>
+                <FormControl fullWidth>
+                  <InputLabel id="demo-simple-select-helper-label">
+                    Tehsil
+                  </InputLabel>
+                  <Select
+                    labelId="demo-simple-select-helper-label"
+                    id="demo-simple-select-helper"
+                    label="Tehsil"
+                    name="tehsil"
+                    defaultValue={formData?.tehsil}
+                    onChange={handleChange}
+                  >
+                    {tehsilOption.map((tehsilData) => {
+                      return (
+                        <MenuItem value={tehsilData.name}>
+                          {tehsilData.name}
+                        </MenuItem>
+                      );
+                    })}
+                  </Select>
+                </FormControl>
+              </Grid>
+            )}
+            {Boolean(gramOption?.length) && (
+              <Grid item xs={12} sm={6}>
+                <FormControl fullWidth>
+                  <Autocomplete
+                    options={gramOption}
+                    defaultValue={formData?.gram}
+                    {...(!isEmpty(formData?.gram)
+                      ? { value: formData?.gram }
+                      : { value: "" })}
+                    onChange={(e, newValue, value) => {
+                      if (newValue) {
+                        setFormData((prev) => ({
+                          ...prev,
+                          gram: newValue.name,
+                        }));
+                      } else {
+                        setFormData((prev) => ({
+                          ...prev,
+                          gram: "",
+                        }));
+                      }
+                    }}
+                    renderOption={(props, option) => {
+                      const { key, ...optionProps } = props;
+                      return (
+                        <Box
+                          key={key}
+                          sx={{ p: "3px", display: "block" }}
+                          {...optionProps}
+                        >
+                          <Grid container>
+                            <Typography fontSize={12} fontWeight={500}>
+                              {option.name}
+                            </Typography>
+                          </Grid>
+                        </Box>
+                      );
+                    }}
+                    renderInput={(params) => (
+                      <TextField {...params} label="Gram" variant="outlined" />
+                    )}
+                  />
+                </FormControl>
+              </Grid>
+            )}
+            <Grid item xs={6} sm={6}>
+              <TextField
+                fullWidth
+                label="Phone"
+                name="phone"
+                value={formData?.phone}
+                onChange={handleChange}
+              />
             </Grid>
-          )}
-          {Boolean(gramOption?.length) && (
-            <Grid item xs={12} sm={6}>
-              <FormControl fullWidth>
-                <InputLabel id="demo-simple-select-helper-label">
-                  Gram
-                </InputLabel>
-                <Select
-                  labelId="demo-simple-select-helper-label"
-                  id="demo-simple-select-helper"
-                  label="Gram"
-                  name="gram"
-                  defaultValue={formData?.gram}
-                  onChange={handleChange}
-                >
-                  {gramOption.map((gramData) => {
-                    return (
-                      <MenuItem value={gramData.name}>{gramData.name}</MenuItem>
-                    );
-                  })}
-                </Select>
-              </FormControl>
+            <Grid item xs={6}>
+              <TextField
+                fullWidth
+                label="Emergency Contact"
+                name="emergency_contact"
+                value={formData?.emergency_contact}
+                onChange={handleChange}
+              />
             </Grid>
-          )}
-          <Grid item xs={6} sm={6}>
-            <TextField
-              fullWidth
-              label="Phone"
-              name="phone"
-              value={formData?.phone}
-              onChange={handleChange}
-            />
           </Grid>
-          <Grid item xs={6}>
-            <TextField
-              fullWidth
-              label="Emergency Contact"
-              name="emergency_contact"
-              value={formData?.emergency_contact}
-              onChange={handleChange}
-            />
-          </Grid>
-        </Grid>
-      </DialogContent>
-      <DialogActions>
-        <Box sx={{ p: 2, width: "100%" }}>
-          <Typography variant="body2" color="textSecondary">
-            ID: {formData?._id} | Created At:{" "}
-            {moment(formData?.created_at).format("DD-MM-YYYY HH:MM")}
-          </Typography>
-        </Box>
-        <Button onClick={onClose}>Cancel</Button>
-        <Button
-          onClick={handleSave}
-          variant="contained"
-          sx={{ color: colors.primary[100], background: colors.primary[500] }}
-        >
-          Save
-        </Button>
-      </DialogActions>
-    </Dialog>
+        </DialogContent>
+        <DialogActions>
+          <Box sx={{ p: 2, width: "100%" }}>
+            <Typography variant="body2" color="textSecondary">
+              ID: {formData?._id} | Created At:{" "}
+              {moment(formData?.created_at).format("DD-MM-YYYY HH:MM")}
+            </Typography>
+          </Box>
+          <Button onClick={onClose}>Cancel</Button>
+          <Button
+            onClick={handleSave}
+            variant="contained"
+            sx={{ color: colors.primary[100], background: colors.primary[500] }}
+          >
+            Save
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Box>
   );
 };
 

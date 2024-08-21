@@ -132,9 +132,48 @@ async function saveFormData({ id, formData }) {
     return data;
   }
 }
+
+async function addHospital({ formData }) {
+  const imageData = formData.images;
+  const uploadedImageUrls = [];
+  for (let i = 0; i < imageData.length; i++) {
+    if (imageData[i] && !imageData[i].includes("https")) {
+      const newformData = new FormData();
+      const imageBlobData = dataUrlToBlob(imageData[i]);
+      newformData.append(
+        "file",
+        imageBlobData,
+        `${generateRandom5DigitNumber()}`
+      );
+      const url = await common.fileUpload(newformData);
+      if (url.error) {
+        continue;
+      }
+      uploadedImageUrls.push(url);
+    } else {
+      uploadedImageUrls.push(imageData[i]);
+    }
+  }
+  formData.images = uploadedImageUrls;
+  const {
+    status,
+    data,
+    message,
+    error = "",
+  } = await axiosUtil.post({
+    path: `hospitals?token=${tokenUtil.getAuthToken()}`,
+    body: formData,
+  });
+  if (status === "failed") {
+    return { message, status, error: error || message };
+  } else if (!isEmpty(data)) {
+    return data;
+  }
+}
 export default {
   getHospitals,
   getHospitalCategory,
   getHospitalById,
   saveFormData,
+  addHospital,
 };

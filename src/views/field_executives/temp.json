@@ -1,0 +1,17 @@
+{
+    "name": "Dileep Kushwaha ",
+    "phone": "9302144112",
+    "email": "dileepkushwsha386@gmail.com",
+    "password": "pravin@123",
+    "address": "gram sanwali rajpura gairatganj raisen mp.",
+    "state": "MP",
+    "district": "Raisen",
+    "team_leader_id": "TL40995",
+    "emergency_contact": "7804981373",
+    "image": "https://storage.googleapis.com/download/storage/v1/b/arogyam-super.appspot.com/o/1719804319904.png?generation=1719804322061584&alt=media",
+    "id_proof": {
+        "type": "Aadhaar",
+        "front": "https://storage.googleapis.com/download/storage/v1/b/arogyam-super.appspot.com/o/1719804314954.png?generation=1719804318790380&alt=media",
+        "back": "https://storage.googleapis.com/download/storage/v1/b/arogyam-super.appspot.com/o/1719804317670.png?generation=1719804321259793&alt=media"
+    }
+}

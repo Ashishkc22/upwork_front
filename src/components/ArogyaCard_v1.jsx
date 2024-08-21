@@ -16,6 +16,18 @@ const ArogyamComponent = ({
     const birthYearNumber = parseInt(birthYear, 10); // Convert birth year to a number
     return birthYearNumber ? currentYear - birthYearNumber : null; // Calculate and return age, or null if birth year is invalid
   }
+  console.log("date", cardData.issue_date);
+
+  function formatNumberWithSpaces(number = 0) {
+    // Convert the number to a string
+    const numberStr = number.toString();
+
+    // Use a regular expression to insert spaces
+    // This pattern matches groups of digits from the end and adds a space
+    const formattedStr = numberStr.replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1 ");
+
+    return formattedStr;
+  }
 
   return (
     // <div>
@@ -97,7 +109,8 @@ const ArogyamComponent = ({
       <div className="user-details-container">
         <div style={{ display: "flex" }}>
           <div className="vertical-text">
-            Issued on : {moment(cardData.issue_date).format("MMM / YYYY")}
+            Issued on :{" "}
+            {moment(cardData.issue_date, "DD/MM/YYYY").format("MMM/YYYY")}
           </div>
           <img
             src={cardData.image}
@@ -107,7 +120,7 @@ const ArogyamComponent = ({
               height: "125px",
               position: "relative",
               right: "184px",
-              top: "19px",
+              top: "6px",
             }}
           />
           <div className="text-container">
@@ -167,7 +180,9 @@ const ArogyamComponent = ({
             >
               <div className="text-group">
                 <div style={{ color: "#666666", fontSize: "9px" }}>Gender</div>
-                <div style={{ fontSize: "9px" }}>{`${cardData.gender || ""}/${
+                <div style={{ fontSize: "11px", color: "Black" }}>{`${
+                  cardData.gender || ""
+                }/${
                   cardData?.birth_year &&
                   calculateAge({ birthYear: cardData?.birth_year }) + "Yrs"
                 }`}</div>
@@ -189,16 +204,24 @@ const ArogyamComponent = ({
             <div
               style={{
                 position: "absolute",
-                right: "43px",
-                bottom: "10px",
+                right: "10px",
+                top: "102px",
                 textAlign: "center",
               }}
             >
-              <div style={{ fontSize: "8px", fontWeight: "600" }}>
-                {cardData.unique_number}
+              <div
+                style={{
+                  fontSize: "11px",
+                  fontWeight: "600",
+                  position: "relative",
+                  top: "9px",
+                }}
+              >
+                {formatNumberWithSpaces(cardData.unique_number)}
               </div>
               <div>
                 <span className="barcode">{cardData.unique_number}</span>
+                <div className="opp_vertical-text">{cardData.s_no}</div>
               </div>
             </div>
           </div>

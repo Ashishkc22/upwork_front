@@ -52,7 +52,7 @@ async function downloadSingleCard({ Element, cardData }) {
       const width = doc.internal.pageSize.getWidth() * 0.4;
       const height = doc.internal.pageSize.getHeight() * 0.3;
 
-      doc.addImage(dataUrl, "PNG", 10, 10, width, height, "", "FAST"); // Adjust position and size as needed
+      doc.addImage(dataUrl, "PNG", 10, 10, width, height, "", "MEDIUM"); // Adjust position and size as needed
 
       doc.save(
         `${
@@ -162,7 +162,7 @@ async function downloadMultipleCard({
       width,
       height,
       "",
-      "FAST"
+      "MEDIUM"
     );
     if (count == 0 || count == 1) {
       doc.setFontSize(12);
@@ -254,7 +254,7 @@ async function downloadMultipleCardWithMultipleAgent({
         width,
         height,
         "",
-        "FAST"
+        "MEDIUM"
       );
       // adding text
       if (count == 0 || count == 1) {

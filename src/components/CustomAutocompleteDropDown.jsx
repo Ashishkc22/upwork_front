@@ -31,7 +31,7 @@ const CustomAutocompleteDropDown = ({
               </Typography>
               {option.code && (
                 <Typography fontSize={12} fontWeight={500} color="#000000b0">
-                  ({option.code})
+                  ({`#${option.code}`})
                 </Typography>
               )}
             </Grid>

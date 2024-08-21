@@ -29,57 +29,38 @@ const VisuallyHiddenInput = styled("input")({
 });
 
 const ImageListCard = ({ initialImages = [], onImagesChange }) => {
-  const [images, setImages] = useState(initialImages);
   const [selectedImage, setSelectImages] = useState("");
   const [isCroppingDialogOpen, setIsCroppingDialogOpen] = useState(false);
 
-  const handleAddImage = () => {
-    console.log("Image updated......");
-    onImagesChange(images);
-  };
-
-  useEffect(() => {
-    handleAddImage();
-    console.log("images", images);
-  }, [images]);
-
   const handleRemoveImage = (index) => {
-    const updatedImages = images.filter((_, i) => i !== index);
-    setImages(updatedImages);
+    const updatedImages = initialImages?.filter((_, i) => i !== index);
     onImagesChange(updatedImages);
   };
 
   const handleCropComplete = ({ croppedImage, selectedImageIndex }) => {
-    let _imageList = [...images];
+    let _imageList = [...initialImages];
     _imageList.splice(selectedImageIndex, 1);
     _imageList.push(croppedImage);
-    setImages(_imageList);
+    onImagesChange(_imageList);
     setIsCroppingDialogOpen(false);
-    console.log("_imageList", _imageList);
   };
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
     if (file) {
       const reader = new FileReader();
-      reader.addEventListener("load", () =>
-        setImages((pre) => {
-          const a = [...pre];
-          a.push(reader.result?.toString() || "");
-          return a;
-        })
-      );
+      reader.addEventListener("load", () => {
+        const a = [...initialImages];
+        a.push(reader.result?.toString() || "");
+        onImagesChange(a);
+      });
       reader.readAsDataURL(file);
-      //   setFileName(file.name);
-      //   if (onFileSelect) {
-      //     onFileSelect(file);
-      //   }
     }
   };
 
   return (
     <Box sx={{ display: "flex" }}>
-      {images.map((image, index) => {
+      {initialImages?.map((image, index) => {
         return (
           <Card sx={{ maxWidth: 345, m: 1 }}>
             <ImageCropDialog

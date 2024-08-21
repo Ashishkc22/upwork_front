@@ -12,6 +12,9 @@ import InfoCard from "./views/cards/InfoCard";
 import PageNotFound from "./components/PageNotFound";
 import HospitalPage from "./views/hospitals/Hospitals";
 import InfoHospital from "./views/hospitals/InfoHospital";
+import FieldExecutives from "./views/field_executives/FieldExecutives";
+import UserInfo from "./views/field_executives/UserInfo";
+import Settings from "./views/settings/Settings";
 
 function App() {
   const [theme, colorMode] = useMode();
@@ -32,6 +35,9 @@ function App() {
               <Route path="/cards/:id" element={<InfoCard />} />
               <Route path="/hospitals" element={<HospitalPage />} />
               <Route path="/hospitals/:id" element={<InfoHospital />} />
+              <Route path="/field-executives" element={<FieldExecutives />} />
+              <Route path="/field-executives/:id" element={<UserInfo />} />
+              <Route path="/settings" element={<Settings />} />
             </Route>
           </Route>
           <Route path="*" element={<PageNotFound />} />

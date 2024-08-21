@@ -37,6 +37,7 @@ import { DemoItem } from "@mui/x-date-pickers/internals/demo";
 import dayjs from "dayjs";
 import { isEmpty } from "lodash";
 import ImageListCard from "./ImageList.";
+import common from "../../services/common";
 
 const facilities = [
   "Wheel chair",
@@ -63,7 +64,7 @@ const advanceFacilities = [
   "Ayushman Card Accepted",
 ];
 
-const EditCardDialog = ({ open, onClose, data }) => {
+const EditCardDialog = ({ open, onClose, data, mode = "Edit" }) => {
   const [categoryOption, setCategoryOption] = useState([]);
   const [specializtionOptions, setSpecializtionOptions] = useState([]);
   const [formData, setFormData] = useState({
@@ -88,10 +89,12 @@ const EditCardDialog = ({ open, onClose, data }) => {
     discount_medicine: "",
     discount_diagnostic: "",
     acknowledge: "",
-    images: "",
+    images: [],
     date_of_agreement: "",
     start_time: "",
     close_time: "",
+    state: "",
+    district: "",
   });
   const [doctorDetails, setDoctorDetails] = useState({
     name: "",
@@ -102,10 +105,13 @@ const EditCardDialog = ({ open, onClose, data }) => {
   const [isImageLoadingInFormData, setIsImageLoadingInFormData] =
     useState(false);
 
+  const [stateOptions, setStateOption] = useState([]);
+  // District states
+  const [districtOption, setDistrictOption] = useState([]);
+
   useEffect(() => {
-    if (!isEmpty(data)) {
+    if (!isEmpty(data) && mode === "Edit") {
       setFormData(data);
-      console.log("Date   ", data);
     }
   }, [data]);
 
@@ -114,6 +120,7 @@ const EditCardDialog = ({ open, onClose, data }) => {
       setCategoryOption(data.hospital_category);
       setSpecializtionOptions(data.doctor_specialization);
     });
+    getAddressData({ type: "state" });
   }, []);
 
   const handleChange = (event) => {
@@ -133,7 +140,11 @@ const EditCardDialog = ({ open, onClose, data }) => {
     }
   };
 
-  const handleFormChanges = ({ name, value }) => {
+  const handleFormChanges = (event) => {
+    const { name, value, type, checked } = event.target;
+    console.log("name", name);
+    console.log("value", value);
+
     const newFormData = {
       ...formData,
       [name]: value,
@@ -160,18 +171,22 @@ const EditCardDialog = ({ open, onClose, data }) => {
   };
 
   const handleFormSubmit = () => {
-    setIsImageLoadingInFormData(true);
-    hospitals.saveFormData({ id: data._id, formData }).then((data) => {
-      if (!data.error) {
-        onClose(true);
-      }
-    });
-    setIsImageLoadingInFormData(false);
+    if (mode === "Edit") {
+      hospitals.saveFormData({ id: data._id, formData }).then((data) => {
+        if (!data.error) {
+          onClose(true);
+        }
+      });
+    } else {
+      hospitals.addHospital({ formData }).then((data) => {
+        if (!data.error) {
+          onClose(true);
+        }
+      });
+    }
   };
 
   const handleImagesChange = (newImages) => {
-    console.log("newImages", newImages);
-
     setFormData((pre) => {
       return {
         ...pre,
@@ -179,6 +194,18 @@ const EditCardDialog = ({ open, onClose, data }) => {
       };
     });
   };
+
+  function getAddressData(payload) {
+    common.getAddressData(payload).then((data) => {
+      if (payload?.type == "district" && !data?.error) {
+        setDistrictOption(data);
+      } else {
+        if (!data?.error) {
+          setStateOption(data);
+        }
+      }
+    });
+  }
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
@@ -192,6 +219,7 @@ const EditCardDialog = ({ open, onClose, data }) => {
                 labelId="Category-label"
                 id="Category-select"
                 value={formData.category}
+                name="category"
                 onChange={handleFormChanges}
                 label="Category"
                 variant="standard"
@@ -210,6 +238,7 @@ const EditCardDialog = ({ open, onClose, data }) => {
             <TextField
               id="standard-basic"
               label="Entity name"
+              name="entity_name"
               value={formData.entity_name}
               onChange={handleFormChanges}
               variant="standard"
@@ -221,6 +250,7 @@ const EditCardDialog = ({ open, onClose, data }) => {
               id="standard-basic"
               label="Registration Number"
               value={formData.reg_no}
+              name="reg_no"
               onChange={handleFormChanges}
               variant="standard"
               sx={{ width: "260px" }}
@@ -231,6 +261,7 @@ const EditCardDialog = ({ open, onClose, data }) => {
               id="standard-basic"
               label="Estisblished in (YYYY)"
               value={formData.established_in}
+              name="established_in"
               onChange={handleFormChanges}
               variant="standard"
               sx={{ width: "260px" }}
@@ -607,6 +638,85 @@ const EditCardDialog = ({ open, onClose, data }) => {
             />
           </Grid>
 
+          {/* State */}
+          {Boolean(stateOptions) && (
+            <Grid item xs={6}>
+              <FormControl fullWidth>
+                <InputLabel id="state-label">State</InputLabel>
+                <Select
+                  labelId="state-label"
+                  id="state-select"
+                  defaultValue={formData.state}
+                  value={formData.state}
+                  name="state"
+                  label="State"
+                  variant="standard"
+                >
+                  {stateOptions.map((data, index) => {
+                    return (
+                      <MenuItem
+                        value={data.name}
+                        key={data._id + index}
+                        onClick={(e) => {
+                          console.log(e.target.value);
+                          e.preventDefault();
+                          getAddressData({
+                            type: "district",
+                            params: { stateId: data._id },
+                          });
+                          setFormData((pre) => {
+                            return {
+                              ...pre,
+                              state: data.name,
+                            };
+                          });
+                        }}
+                      >
+                        {data.name}
+                      </MenuItem>
+                    );
+                  })}
+                </Select>
+              </FormControl>
+            </Grid>
+          )}
+          {/* district */}
+
+          <Grid item xs={6}>
+            <FormControl fullWidth>
+              <InputLabel id="District-label">District</InputLabel>
+              <Select
+                labelId="District-label"
+                id="District-select"
+                defaultValue={formData.district}
+                value={formData.district}
+                label="district"
+                variant="standard"
+                disabled={!Boolean(districtOption.length)}
+              >
+                {districtOption.map((data, index) => {
+                  return (
+                    <MenuItem
+                      value={data.name}
+                      key={data.name + index}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setFormData((pre) => {
+                          return {
+                            ...pre,
+                            district: data.name,
+                          };
+                        });
+                      }}
+                    >
+                      {data.name}
+                    </MenuItem>
+                  );
+                })}
+              </Select>
+            </FormControl>
+          </Grid>
+
           <Grid item xs={6}>
             <TextField
               label="Telephone Number"
@@ -779,12 +889,10 @@ const EditCardDialog = ({ open, onClose, data }) => {
             </LocalizationProvider>
           </Grid>
           <Grid item xs={12}>
-            {formData?.images && (
-              <ImageListCard
-                initialImages={formData.images}
-                onImagesChange={handleImagesChange}
-              />
-            )}
+            <ImageListCard
+              initialImages={formData?.images || []}
+              onImagesChange={handleImagesChange}
+            />
           </Grid>
         </Grid>
       </DialogContent>

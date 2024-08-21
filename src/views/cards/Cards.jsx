@@ -19,6 +19,7 @@ import Fab from "@mui/material/Fab";
 import CheckIcon from "@mui/icons-material/Check";
 import storageUtil from "../../utils/storage.util";
 import moment from "moment";
+import cardService from "../../services/cards";
 
 const images = {
   LogoImage: <img src="/v1cardImages/cardLogo.png" alt="Card Logo" />,
@@ -128,6 +129,7 @@ const TableWithCheckBox = ({
   isCheckBoxChecked = false,
   isImageMode = false,
   increaseDownloadCardCount,
+  handleMenuSelect,
 }) => {
   const [checkBox, setCheckBox] = useState(false);
   const navigate = useNavigate();
@@ -271,6 +273,7 @@ const TableWithCheckBox = ({
             rows={groupedData}
             actions={actions}
             rowClick={handleRowClick}
+            handleMenuSelect={handleMenuSelect}
           />
         </Grid>
       )}
@@ -287,6 +290,7 @@ const TableWithExtraElements = ({
   isDownloadCompleted = {},
   setIsDownloadCompleted,
   increaseDownloadCardCount,
+  handleMenuSelect,
 }) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
@@ -464,6 +468,7 @@ const TableWithExtraElements = ({
                 [key]: value,
               });
             }}
+            handleMenuSelect={handleMenuSelect}
             agentName={firtsData?.created_by_name || ""}
             isImageMode={isImageMode}
             isDownloadCompleted={isDownloadCompleted || {}}
@@ -495,7 +500,7 @@ const Cards = () => {
   const [downloadCardMaps, setDownloadCardMaps] = useState({});
   const [isDownloadCompleted, setIsDownloadCompleted] = useState({});
   const [downloadCardCount, setDownloadCardCount] = useState(0);
-  // const [cardsToDownload, setCardsToDownload] = useState({});
+  const [tehsilCounts, setTehsilCounts] = useState({});
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
 
@@ -568,7 +573,7 @@ const Cards = () => {
       })
       .then((data) => {
         if (!isEmpty(data)) {
-          // setIds
+          setTehsilCounts(data.tehsilCounts || {});
           if (data.idList) {
             storageUtil.setStorageData(data.idList, "cards_ids");
           }
@@ -602,6 +607,29 @@ const Cards = () => {
           setCardsDataGroupBy([]);
         }
       });
+  };
+
+  // const handleStatusChange = async ({ payload }) => {
+  //   try {
+  //     const updatedCardData = await cardService.changeStatus(
+  //       payload,
+  //       cardData._id
+  //     );
+  //     if (!isEmpty(updatedCardData)) {
+  //       setCardData(updatedCardData);
+  //     }
+  //     setIsDialogOpen(false);
+  //   } catch (error) {
+  //     console.log("error", error);
+  //   }
+  // };
+
+  const handleMenuSelect = async (item, selectedCard) => {
+    const updatedCardData = await cardService.changeStatus(
+      { status: item },
+      selectedCard._id
+    );
+    getTableData();
   };
 
   const getDistrictData = ({ stateId }) => {
@@ -744,6 +772,7 @@ const Cards = () => {
           createdByOptions={userDropdownOptions || []}
           createdByKeyMap={{ labelKey: "name", codeKey: "uid" }}
           stateDropdownOptions={stateDropdownOptions || []}
+          tehsilCounts={tehsilCounts}
           stateKeyMap={{ labelKey: "name" }}
           durationOptions={[
             "TODAY",
@@ -840,6 +869,7 @@ const Cards = () => {
                   isDownloadCompleted={isDownloadCompleted}
                   setIsDownloadCompleted={setIsDownloadCompleted}
                   increaseDownloadCardCount={increaseDownloadCardCount}
+                  handleMenuSelect={handleMenuSelect}
                 />
               );
             })}
@@ -868,6 +898,7 @@ const Cards = () => {
             rows={totalCardsData}
             actions={actions}
             rowClick={handleRowClick}
+            handleMenuSelect={handleMenuSelect}
           />
         </Grid>
       )}

@@ -322,9 +322,12 @@ const Header = (headerData) => {
                 emitAutoCompleteChange={emitTehsilChange}
                 options={tehsilOption.map((option) => {
                   const { labelKey, codeKey } = headerData?.districtKeyMap;
+                  const obKey = headerData.tehsilCounts || {};
                   return {
                     ...option,
-                    label: option[labelKey],
+                    label: `${option[labelKey]}(${
+                      obKey?.[option?.[labelKey]] || 0
+                    })`,
                     ...(codeKey && { code: option[codeKey] }),
                   };
                 })}

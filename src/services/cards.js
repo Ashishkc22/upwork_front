@@ -2,6 +2,7 @@ import tokenUtil from "../utils/token.util";
 import axiosUtil from "../utils/api.util";
 import { groupBy, isEmpty } from "lodash";
 import moment from "moment";
+import common from "./common";
 
 async function getCardsData({
   _status,
@@ -52,7 +53,18 @@ async function getCardsData({
   if (status === "failed") {
     return { status, error: error || message };
   } else if (!isEmpty(data)) {
-    const idList = data.map((data) => data._id);
+    const tehsilCounts = {};
+    console.log("data", data);
+
+    const idList = data.map((data) => {
+      if (tehsilCounts[data.tehsil]) {
+        tehsilCounts[data.tehsil] = tehsilCounts[data.tehsil] + 1;
+      } else {
+        tehsilCounts[data.tehsil] = 1;
+      }
+      return data._id;
+    });
+
     if (!_status || selectedCard === "totalCards") {
       return {
         groupedData: data,
@@ -61,6 +73,7 @@ async function getCardsData({
         totalPrintCardsShowing: total_print_card_showing,
         totalShowing: total_showing,
         idList,
+        tehsilCounts,
       };
     }
     const groupedData = groupBy(
@@ -72,6 +85,7 @@ async function getCardsData({
       const groupByCreatedById = groupBy(groupedData[key], "created_by_uid");
       newGroupedData[key] = groupByCreatedById;
     });
+    console.log("newGroupedData", newGroupedData);
 
     const unsortedKeys = Object.keys(newGroupedData);
     const countMap = {};
@@ -79,13 +93,16 @@ async function getCardsData({
 
     unsortedKeys.map((key) => {
       Object.keys(newGroupedData[key]).forEach((innerKey) => {
+        debugger;
         if ((countMap[key] || 0) < newGroupedData[key][innerKey].length) {
           countMap[key] = newGroupedData[key][innerKey].length;
         }
       });
     });
 
-    for (let i = 0; i < Object.keys(countMap).length - 1; i++) {
+    console.log("sortedObject", sortedObject);
+
+    for (let i = 0; i < Object.keys(countMap).length; i++) {
       const maxValue = Object.keys(countMap).reduce(
         (maxObject, key) => {
           if (maxObject.maxValue < countMap[key]) {
@@ -124,13 +141,15 @@ async function getCardsData({
       totalPrintCardsShowing: total_print_card_showing,
       totalShowing: total_showing,
       totalCards: total,
-      cards: idList,
+      idList,
+      tehsilCounts,
     };
   } else {
     return {
       groupedData: [],
       totalPrintedCards: total_print_card,
       totalCards: total,
+      tehsilCounts: {},
     };
   }
 }
@@ -223,6 +242,8 @@ async function renewCard(payload) {
 }
 
 async function changeStatus(payload, id) {
+  console.log("payload", payload);
+
   const bodyFormData = new FormData();
   Object.entries(payload).forEach(([key, value]) => {
     bodyFormData.append(key, value);
@@ -246,28 +267,47 @@ async function changeStatus(payload, id) {
   }
 }
 
-async function updateCard(payload, id, updateImage, formData) {
-  if (updateImage) {
-    const {
-      status,
-      path,
-      message,
-      error = "",
-    } = await axiosUtil.upload({
-      url: "https://asia-south1-arogyam-super.cloudfunctions.net/files",
-      body: formData,
-      headers: {
-        "Content-Type": "multipart/form-data",
-        "sec-ch-ua-mobile": "?0",
-        "sec-ch-ua-platform": '"Windows"',
-        "sec-fetch-dest": "empty",
-        "sec-fetch-mode": "cors",
-        "sec-fetch-site": "cross-site",
-      },
-    });
-    if (status === "success") {
-      payload.image = path;
-    }
+function base64ToBlob(base64, mimeType) {
+  // Decode the base64 string
+  const binaryString = atob(base64);
+
+  // Convert binary string to Uint8Array
+  const len = binaryString.length;
+  const bytes = new Uint8Array(len);
+  for (let i = 0; i < len; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+
+  // Create and return a Blob from the Uint8Array
+  return new Blob([bytes], { type: mimeType });
+}
+
+function dataUrlToBlob(dataUrl) {
+  const [header, base64Data] = dataUrl.split(",");
+  const mimeType = header.match(/:(.*?);/)[1];
+  return base64ToBlob(base64Data, mimeType);
+}
+
+function generateRandom5DigitNumber() {
+  return Math.floor(10000 + Math.random() * 90000);
+}
+
+async function uploadImage(image) {
+  const newformData = new FormData();
+  const imageBlobData = dataUrlToBlob(image);
+  newformData.append("file", imageBlobData, `${generateRandom5DigitNumber()}`);
+  const url = await common.fileUpload(newformData);
+  return url;
+}
+
+async function updateCard(payload, id, image) {
+  debugger;
+  let imgUrl;
+  if (image) {
+    imgUrl = await uploadImage(image);
+  }
+  if (imgUrl) {
+    payload.image = imgUrl;
   }
   const {
     status,
@@ -285,6 +325,23 @@ async function updateCard(payload, id, updateImage, formData) {
   }
 }
 
+async function deleteCard(id) {
+  const {
+    status,
+    data,
+    message,
+    error = "",
+  } = await axiosUtil.delete({
+    path: "cards",
+    params: { token: tokenUtil.getAuthToken(), id },
+  });
+  if (status === "failed") {
+    return { status, error: error || message };
+  } else if (!isEmpty(data)) {
+    return data;
+  }
+}
+
 export default {
   getCardsData,
   getUsersByIds,
@@ -293,4 +350,5 @@ export default {
   renewCard,
   changeStatus,
   updateCard,
+  deleteCard,
 };

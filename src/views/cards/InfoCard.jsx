@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   Card,
   CardContent,
@@ -42,6 +42,10 @@ import Link from "@mui/material/Link";
 import storageUtil from "../../utils/storage.util";
 import KeyboardArrowLeftIcon from "@mui/icons-material/KeyboardArrowLeft";
 import EditCardDialog from "./EditCardDialog";
+import TimeLineDialog from "./TimeLineDialog";
+import DeleteIcon from "@mui/icons-material/Delete";
+import fieldExecutives from "../../services/field_executives";
+
 const images = {
   LogoImage: <img src="/v1cardImages/cardLogo.png" alt="Card Logo" />,
   Phone: (
@@ -80,21 +84,27 @@ const images = {
   ),
 };
 
+const idList = storageUtil.getStorageData("cards_ids");
+
 const CardComponent = () => {
   const [isMenuOpened, setIsMenuOpened] = useState(false);
   const [anchorEl, setAnchorEl] = React.useState(null);
+  const [isTimeLineOpened, setIsTimeLineOpened] = useState(false);
+  const [isTimeLineData, setIsTimeLineData] = useState([]);
   const [cardData, setCardData] = useState({});
   const [renewCalculation, setRenewCalculation] = useState("");
-  const handleClick = (event) => {
-    setAnchorEl(event.currentTarget);
-    setIsMenuOpened(true);
-  };
+  const [shouldFocus, setShouldFocus] = useState(false); // State to control the focus condition
+  const textFieldRef = useRef(null);
+  // const handleClick = (event) => {
+  //   setAnchorEl(event.currentTarget);
+  //   setIsMenuOpened(true);
+  // };
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [dialogType, setDialogType] = useState(""); //renew and discard
   const [selectReason, setSelectReason] = useState("");
   const [discardMessageReason, setDiscardMessageReason] = useState("");
-  const [idList, setIdList] = useState(storageUtil.getStorageData("cards_ids"));
   const [isEditDialogOpened, setIsEditDialogOpened] = useState(false);
+  const [TLDetails, setTLDetails] = useState({});
 
   const location = useLocation();
 
@@ -110,16 +120,36 @@ const CardComponent = () => {
     }
   };
 
+  useEffect(() => {
+    if (shouldFocus && textFieldRef.current) {
+      // Access the input element within the TextField and call focus
+      textFieldRef.current.querySelector("input").focus();
+    }
+  }, [shouldFocus]);
+
   const fetchCardData = ({ paramId = false } = {}) => {
     cards.getCardById({ id: paramId || id }).then((data) => {
       setCardData(data);
+      if (data?.status_history?.length) {
+        setIsTimeLineData(data.status_history.reverse());
+      }
+      fetchUserById({ uid: data.created_by_uid }).then((data) => {
+        setTLDetails(data);
+      });
     });
+  };
+
+  const fetchUserById = ({ uid }) => {
+    console.log("uid", uid);
+
+    return fieldExecutives.getUserById({ uid });
   };
 
   const handleKeyPress = ({ key }) => {
     if (key === "ArrowLeft" || key === "ArrowRight") {
       if (idList?.length && newId) {
         let indexOf = idList.indexOf(newId.trim());
+        console.log("indexOf", indexOf);
 
         if (indexOf != 0 && key == "ArrowLeft") {
           indexOf = indexOf - 1;
@@ -195,6 +225,17 @@ const CardComponent = () => {
     }
   };
 
+  const handleCardDelete = async () => {
+    try {
+      const deletedData = await cardService.deleteCard(cardData._id);
+      if (!isEmpty(deletedData)) {
+        navigate(-1);
+      }
+    } catch (error) {
+      console.log("error", error);
+    }
+  };
+
   const handleDownloadCard = () => {
     downloadCards.downloadSingleCard({
       Element: <ArogyamComponent cardData={cardData} images={images} />,
@@ -248,6 +289,7 @@ const CardComponent = () => {
             ) : (
               <Box alignItems="center">
                 <TextField
+                  inputRef={textFieldRef}
                   id="standard-basic"
                   label="Discard Reason"
                   variant="standard"
@@ -306,25 +348,41 @@ const CardComponent = () => {
         <CardHeader
           sx={{ p: 0, mt: 1 }}
           action={
-            <Button
-              sx={{
-                display: "inline-flex",
-                color: "#ff5722",
-                p: 1,
-                m: 0,
-                mr: 3,
-              }}
-              variant="standard"
-              startIcon={<EditIcon />}
-              onClick={() => setIsEditDialogOpened(true)}
-            >
-              Edit
-            </Button>
+            <Box>
+              <Button
+                sx={{
+                  display: "inline-flex",
+                  color: "#ff5722",
+                  p: 1,
+                  m: 0,
+                  mr: 3,
+                }}
+                variant="standard"
+                startIcon={<DeleteIcon />}
+                onClick={() => handleCardDelete()}
+              >
+                Delete
+              </Button>
+              <Button
+                sx={{
+                  display: "inline-flex",
+                  color: "#ff5722",
+                  p: 1,
+                  m: 0,
+                  mr: 3,
+                }}
+                variant="standard"
+                startIcon={<EditIcon />}
+                onClick={() => setIsEditDialogOpened(true)}
+              >
+                Edit
+              </Button>
+            </Box>
           }
         />
         <CardContent sx={{ px: 5 }}>
-          <Grid container spacing={2}>
-            <Grid item xs={12} md={6}>
+          <Grid container spacing={0}>
+            <Grid item xs={12} md={5}>
               <Box sx={{ display: "flex", alignItems: "center" }}>
                 <IconButton
                   onClick={() => navigate(-1)}
@@ -345,31 +403,16 @@ const CardComponent = () => {
               </Box>
 
               <Box>
-                <TextElement label="Birth Year" value={cardData.birth_year} />
-              </Box>
-
-              <Box>
-                <TextElement
-                  label="Blood Group"
-                  value={cardData.blood_group || ""}
-                />
-              </Box>
-              <Box>
-                <TextElement label="Gender" value={cardData.gender} />
-              </Box>
-
-              <Box>
                 <TextElement
                   label="Father/Husband Name"
                   value={cardData.father_husband_name}
                 />
               </Box>
-
               <Box>
-                <TextElement
-                  label="Aadhaar"
-                  value={cardData?.id_proof?.value}
-                />
+                <TextElement label="Gender" value={cardData.gender} />
+              </Box>
+              <Box>
+                <TextElement label="Birth Year" value={cardData.birth_year} />
               </Box>
 
               <Box sx={{ display: "flex", alignItems: "center" }}>
@@ -378,9 +421,7 @@ const CardComponent = () => {
                     mr: 1,
                     borderRadius: 0,
                   }}
-                  onClick={() =>
-                    window.open("https://wa.me/7028130067", "_blank")
-                  }
+                  onClick={() => window.open(`https://wa.me/${cardData.phone}`)}
                 >
                   <div>
                     <img src="/whatsapp.png" alt="" srcset="" />
@@ -390,6 +431,7 @@ const CardComponent = () => {
                   </div>
                 </IconButton>
               </Box>
+
               <Box sx={{ display: "flex" }}>
                 <IconButton
                   sx={{
@@ -409,60 +451,83 @@ const CardComponent = () => {
                   />
                 </div>
               </Box>
-            </Grid>
-
-            <Grid item xs={12} md={6} sm={12} sx={{ ml: 0 }}>
-              <Grid item xs={12}>
-                <Box>
-                  <ArogyamComponentV1
-                    cardData={cardData}
-                    images={images || {}}
-                  />
-                </Box>
-              </Grid>
-              <Grid item xs={12}>
-                <Box>
+              <Box>
+                <TextElement
+                  label="Blood Group"
+                  value={cardData.blood_group || ""}
+                />
+              </Box>
+              <Box>
+                {/* TLDetails */}
+                <Link
+                  onClick={() =>
+                    navigate(`/field-executives/${cardData.created_by_uid}`)
+                  }
+                >
                   <TextElement
-                    label="Expiry"
+                    label="Created By"
                     value={
-                      cardData?.expiry_date &&
-                      moment(cardData.expiry_date).format("MMM YYYY")
+                      cardData?.created_by_uid &&
+                      `UID : ${cardData.created_by_uid}`
                     }
                   />
-                </Box>
-
-                <Box display="inline-flex" alignItems="flex-end">
-                  <Box>
-                    <TextElement label="Status" value={cardData.status} />
-                    {cardData.discard_reason && (
-                      <span
-                        label=""
-                        style={{ fontSize: 12, color: "#00000075" }}
-                      >
-                        {cardData.discard_reason}
-                      </span>
-                    )}
-                  </Box>
-                  <Box sx={{ ml: 6 }}>
-                    <Button
-                      onClick={handleClick}
-                      aria-controls={
-                        isMenuOpened ? "demo-positioned-menu" : undefined
-                      }
-                      aria-haspopup="true"
-                      aria-expanded={isMenuOpened ? "true" : undefined}
+                </Link>
+                {!isEmpty(TLDetails) && (
+                  <>
+                    <TextElement label="TL Name" value={TLDetails?.name} />
+                    <IconButton
                       sx={{
-                        display: "inline-flex",
-                        color: "#ff5722 !important",
-                        pb: 0,
+                        mr: 1,
+                        borderRadius: 0,
                       }}
-                      variant="standard"
-                      startIcon={<VerifiedUserOutlinedIcon />}
-                      disabled
+                      onClick={() =>
+                        window.open(`https://wa.me/${TLDetails.phone}`)
+                      }
                     >
-                      Status
-                    </Button>
-                    {/* <Menu
+                      <div>
+                        <img
+                          src="/whatsapp.png"
+                          alt=""
+                          srcset=""
+                          width="19px"
+                        />
+                      </div>
+                      <div style={{ marginLeft: "14px", textAlign: "start" }}>
+                        <TextElement label="Phone" value={TLDetails.phone} />
+                      </div>
+                    </IconButton>
+                  </>
+                )}
+              </Box>
+              <Box display="inline-flex" alignItems="flex-end">
+                <Box>
+                  <TextElement label="Status" value={cardData.status} />
+                  {cardData.discard_reason && (
+                    <span label="" style={{ fontSize: 12, color: "#00000075" }}>
+                      {cardData.discard_reason}
+                    </span>
+                  )}
+                </Box>
+                <Box sx={{ ml: 6 }}>
+                  <Button
+                    // onClick={handleClick}
+                    aria-controls={
+                      isMenuOpened ? "demo-positioned-menu" : undefined
+                    }
+                    onClick={() => setIsTimeLineOpened(true)}
+                    aria-haspopup="true"
+                    aria-expanded={isMenuOpened ? "true" : undefined}
+                    sx={{
+                      display: "inline-flex",
+                      color: "#ff5722 !important",
+                      pb: 0,
+                    }}
+                    variant="standard"
+                    startIcon={<VerifiedUserOutlinedIcon />}
+                  >
+                    Status timeline
+                  </Button>
+                  {/* <Menu
                     id="demo-positioned-menu"
                     aria-labelledby="demo-positioned-button"
                     anchorEl={anchorEl}
@@ -521,8 +586,68 @@ const CardComponent = () => {
                       Reprint
                     </MenuItem>
                   </Menu> */}
-                  </Box>
                 </Box>
+              </Box>
+
+              {/* <Box>
+                <TextElement
+                  label="Aadhaar"
+                  value={cardData?.id_proof?.value}
+                />
+              </Box> */}
+            </Grid>
+
+            <Grid item xs={12} md={7} sm={12} sx={{ ml: 0 }}>
+              <Grid item xs={12}>
+                <Box>
+                  <ArogyamComponentV1
+                    cardData={cardData}
+                    images={images || {}}
+                  />
+                </Box>
+              </Grid>
+              <Grid item xs={12}>
+                <Box>
+                  <TextElement label="ID#" value={cardData._id} />
+                </Box>
+                <Box>
+                  <TextElement
+                    label="Expiry"
+                    value={
+                      cardData?.expiry_date &&
+                      moment(cardData.expiry_date)
+                        .subtract(1, "day")
+                        .add(2, "years")
+                        .format("MMM YYYY")
+                    }
+                  />
+                </Box>
+
+                {cardData?.emergency_contact && (
+                  <Box sx={{ display: "flex", alignItems: "center" }}>
+                    <IconButton
+                      sx={{
+                        mr: 1,
+                        borderRadius: 0,
+                      }}
+                      onClick={() =>
+                        window.open(
+                          `https://wa.me/${cardData.emergency_contact}`
+                        )
+                      }
+                    >
+                      <div>
+                        <img src="/whatsapp.png" alt="" srcset="" />
+                      </div>
+                      <div style={{ marginLeft: "14px", textAlign: "start" }}>
+                        <TextElement
+                          label="Emergency Contact"
+                          value={cardData.emergency_contact}
+                        />
+                      </div>
+                    </IconButton>
+                  </Box>
+                )}
 
                 <Box>
                   <TextElement
@@ -530,15 +655,6 @@ const CardComponent = () => {
                     value={
                       cardData?.created_at &&
                       moment(cardData.created_at).format("DD-MM-YYYY")
-                    }
-                  />
-                </Box>
-                <Box>
-                  <TextElement
-                    label="Created By"
-                    value={
-                      cardData?.created_by_uid &&
-                      `UID : ${cardData.created_by_uid}`
                     }
                   />
                 </Box>
@@ -607,6 +723,7 @@ const CardComponent = () => {
                     if (cardData.status !== "DISCARDED") {
                       setDialogType("discard");
                       setIsDialogOpen(true);
+                      setShouldFocus(true);
                     }
                   }}
                 >
@@ -627,7 +744,7 @@ const CardComponent = () => {
                       }
                     }}
                   >
-                    Reset
+                    Undiscard
                   </Button>
                 )}
               </Box>
@@ -637,6 +754,7 @@ const CardComponent = () => {
                   onClick={() => {
                     setAnchorEl(null);
                     setIsMenuOpened(false);
+                    handleStatusChange({ payload: { status: "SUBMITTED" } });
                   }}
                 >
                   Submitted
@@ -646,6 +764,7 @@ const CardComponent = () => {
                   onClick={() => {
                     setAnchorEl(null);
                     setIsMenuOpened(false);
+                    handleStatusChange({ payload: { status: "DELIVERED" } });
                   }}
                 >
                   Delivered
@@ -655,6 +774,7 @@ const CardComponent = () => {
                   onClick={() => {
                     setAnchorEl(null);
                     setIsMenuOpened(false);
+                    handleStatusChange({ payload: { status: "UNDELIVERED" } });
                   }}
                 >
                   Undelivered
@@ -664,6 +784,7 @@ const CardComponent = () => {
                   onClick={() => {
                     setAnchorEl(null);
                     setIsMenuOpened(false);
+                    handleStatusChange({ payload: { status: "RTO" } });
                   }}
                 >
                   RTO
@@ -673,6 +794,7 @@ const CardComponent = () => {
                   onClick={() => {
                     setAnchorEl(null);
                     setIsMenuOpened(false);
+                    handleStatusChange({ payload: { status: "REPRINT" } });
                   }}
                 >
                   Reprint
@@ -702,6 +824,13 @@ const CardComponent = () => {
         cardData={cardData}
         onClose={() => setIsEditDialogOpened(false)}
       />
+      {Boolean(isTimeLineData.length) && (
+        <TimeLineDialog
+          open={isTimeLineOpened}
+          onClose={() => setIsTimeLineOpened(false)}
+          data={isTimeLineData}
+        />
+      )}
     </Box>
   );
 };

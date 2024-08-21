@@ -70,8 +70,8 @@ function post({ path, body, options }) {
   return request({ method: "post", path, body, options });
 }
 
-function _delete({ path, body, options }) {
-  return request({ method: "delete", path, body, options });
+function _delete({ path, body, options, params }) {
+  return request({ method: "delete", path, body, options, params });
 }
 function patch({ path, body, params, options, isFormData }) {
   return request({ method: "patch", path, body, params, options, isFormData });

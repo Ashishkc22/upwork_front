@@ -22,6 +22,7 @@ import {
 import moment from "moment";
 import { isEmpty } from "lodash";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ThreeDotsDynamicMenu from "./DynamicMenu";
 
 const DynamicTable = ({
   headers = [],
@@ -30,6 +31,7 @@ const DynamicTable = ({
   rowClick = () => {},
   tbCellStyle = {},
   dataForSmallScreen,
+  handleMenuSelect,
 }) => {
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
@@ -75,20 +77,25 @@ const DynamicTable = ({
         return row[keymap.key];
       }
     } else {
-      return actions?.map((action, actionIndex) => (
-        <IconButton
-          key={action.label + actionIndex}
-          onClick={(e) => {
-            e.stopPropagation();
-            action.handler(row);
-          }}
-          aria-label={action.label}
-          color="primary"
-          sx={{ padding: isSmallScreen ? "4px" : "8px" }}
-        >
-          {action.icon}
-        </IconButton>
-      ));
+      return (
+        <Box display="flex">
+          {actions?.map((action, actionIndex) => (
+            <IconButton
+              key={action.label + actionIndex}
+              onClick={(e) => {
+                e.stopPropagation();
+                action.handler(row);
+              }}
+              aria-label={action.label}
+              color="primary"
+              sx={{ padding: isSmallScreen ? "4px" : "8px" }}
+            >
+              {action.icon}
+            </IconButton>
+          ))}
+          <ThreeDotsDynamicMenu row={row} handleMenuSelect={handleMenuSelect} />
+        </Box>
+      );
     }
   };
 
@@ -132,7 +139,10 @@ const DynamicTable = ({
               <TableRow
                 key={row._id + rowIndex}
                 onClick={() => rowClick && rowClick(row)}
-                sx={{ ":hover": { background: "#f3f3f3a1" } }}
+                sx={{
+                  ":hover": { background: "#f3f3f3a1" },
+                  ...(row?.isPrintedPreviously && { background: "#d1efd1" }),
+                }}
               >
                 {headers.map((keymap, cellIndex) => (
                   <TableCell
@@ -158,7 +168,13 @@ const DynamicTable = ({
       ) : (
         <Box>
           {rows.map((row, rowIndex) => (
-            <Accordion key={row._id + rowIndex} sx={{ mb: 1 }}>
+            <Accordion
+              key={row._id + rowIndex}
+              sx={{
+                mb: 1,
+                ...(row?.isPrintedPreviously && { background: "#d1efd1" }),
+              }}
+            >
               <AccordionSummary
                 expandIcon={<ExpandMoreIcon />}
                 aria-controls={`panel${rowIndex}-content`}
@@ -167,7 +183,7 @@ const DynamicTable = ({
                 <Box
                   display="inline-flex"
                   justifyContent="space-between"
-                  sx={{ width: "100%" }}
+                  sx={{ width: "100%", mr: 3 }}
                 >
                   <Typography variant="h6">
                     {!dataForSmallScreen?.use ? (
@@ -201,7 +217,7 @@ const DynamicTable = ({
                       </Box>
                     )}
                   </Typography>
-                  <div>
+                  <Box display="flex">
                     <Button variant="text" onClick={() => rowClick(row)}>
                       Details
                     </Button>
@@ -221,7 +237,11 @@ const DynamicTable = ({
                         {action.smallIcon}
                       </IconButton>
                     ))}
-                  </div>
+                    <ThreeDotsDynamicMenu
+                      row={row}
+                      handleMenuSelect={handleMenuSelect}
+                    />
+                  </Box>
                 </Box>
               </AccordionSummary>
               <AccordionDetails>

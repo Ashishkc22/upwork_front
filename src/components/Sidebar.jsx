@@ -126,7 +126,7 @@ const navList = [
   {
     title: "Field Executives",
     icon: <SupervisedUserCircleOutlinedIcon />,
-    path: "field_executives",
+    path: "field-executives",
   },
   { title: "Settings", icon: <SettingsOutlinedIcon />, path: "settings" },
   { title: "Logout", icon: <LogoutOutlinedIcon />, path: "/" },
