@@ -130,13 +130,19 @@ const EditDialog = ({ open, onClose, cardData }) => {
   const handleRotateLeft = () => setRotation((prev) => prev - 90);
   const handleRotateRight = () => setRotation((prev) => prev + 90);
 
-  const handleSave = async () => {
+  const handleSave = async (status) => {
     // // Send the image to another API
     let image;
     if (isImageUpdated) {
       image = profilePic;
     }
-    cardsService.updateCard(formData, formData._id, image);
+    let newFormData = {
+      ...formData,
+    };
+    if (status) {
+      newFormData.status = status;
+    }
+    cardsService.updateCard(newFormData, formData._id, image);
 
     onClose(); // Close the dialog after saving
   };
@@ -501,6 +507,13 @@ const EditDialog = ({ open, onClose, cardData }) => {
               {moment(formData?.created_at).format("DD-MM-YYYY HH:MM")}
             </Typography>
           </Box>
+          <Button
+            onClick={() => handleSave("REPRINT")}
+            variant="contained"
+            sx={{ color: colors.primary[100], background: colors.primary[500] }}
+          >
+            Reprint
+          </Button>
           <Button onClick={onClose}>Cancel</Button>
           <Button
             onClick={handleSave}
