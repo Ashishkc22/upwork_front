@@ -29,6 +29,7 @@ import cardsService from "../../services/cards";
 import commonService from "../../services/common";
 import ImageCropDialog from "../hospitals/ImageCropDialog";
 import { isEmpty } from "lodash";
+import { createFilterOptions } from "@mui/material/Autocomplete";
 
 import moment from "moment";
 
@@ -70,6 +71,8 @@ const EditDialog = ({ open, onClose, cardData }) => {
       } else if (payload?.type == "district") {
         setDistrictOption(data || []);
       } else if (payload?.type == "gram") {
+        console.log("data >>>>", data);
+
         setGramOption(data || []);
       } else {
         setStateOption(data || []);
@@ -142,9 +145,9 @@ const EditDialog = ({ open, onClose, cardData }) => {
     if (status) {
       newFormData.status = status;
     }
-    cardsService.updateCard(newFormData, formData._id, image);
-
-    onClose(); // Close the dialog after saving
+    cardsService.updateCard(newFormData, formData._id, image).finally(() => {
+      onClose(true); // Close the dialog after saving
+    });
   };
 
   useEffect(() => {
@@ -163,7 +166,8 @@ const EditDialog = ({ open, onClose, cardData }) => {
     <Box>
       <ImageCropDialog
         open={isCropDialogOpened}
-        onClose={() => {
+        onClose={(e) => {
+          e.stopPropagation();
           setIsCropDialogOpened(false);
         }}
         image={selectedImage}
@@ -199,7 +203,8 @@ const EditDialog = ({ open, onClose, cardData }) => {
                       height: 200,
                       borderRadius: 2,
                     }}
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.stopPropagation();
                       setSelectedImage(profilePic);
                       setIsCropDialogOpened(true);
                     }}
@@ -220,8 +225,8 @@ const EditDialog = ({ open, onClose, cardData }) => {
               <TextField
                 fullWidth
                 label="Birth Year"
-                name="expiry_years"
-                value={formData?.expiry_years}
+                name="birth_year"
+                value={formData?.birth_year}
                 onChange={handleChange}
               />
             </Grid>
@@ -357,6 +362,10 @@ const EditDialog = ({ open, onClose, cardData }) => {
                   </InputLabel> */}
                 <Autocomplete
                   options={districtOption}
+                  filterOptions={createFilterOptions({
+                    matchFrom: "start", // Options are filtered from the start of the string
+                    stringify: (option) => option.name, // Specifies which part of the option to match against
+                  })}
                   defaultValue={formData?.district}
                   {...(!isEmpty(formData?.district)
                     ? { value: formData?.district }
@@ -435,14 +444,24 @@ const EditDialog = ({ open, onClose, cardData }) => {
                 </FormControl>
               </Grid>
             )}
+
             {Boolean(gramOption?.length) && (
               <Grid item xs={12} sm={6}>
                 <FormControl fullWidth>
                   <Autocomplete
-                    options={gramOption}
-                    defaultValue={formData?.gram}
-                    {...(!isEmpty(formData?.gram)
-                      ? { value: formData?.gram }
+                    options={gramOption.map((gram) => {
+                      return {
+                        ...gram,
+                        label: `${gram.name}, ${gram.grampanchayat_name}`,
+                      };
+                    })}
+                    filterOptions={createFilterOptions({
+                      matchFrom: "start", // Options are filtered from the start of the string
+                      stringify: (option) => option.label, // Specifies which part of the option to match against
+                    })}
+                    defaultValue={formData?.area}
+                    {...(!isEmpty(formData?.area)
+                      ? { value: formData?.area }
                       : { value: "" })}
                     onChange={(e, newValue, value) => {
                       if (newValue) {
@@ -467,7 +486,7 @@ const EditDialog = ({ open, onClose, cardData }) => {
                         >
                           <Grid container>
                             <Typography fontSize={12} fontWeight={500}>
-                              {option.name}
+                              {option.label}
                             </Typography>
                           </Grid>
                         </Box>
@@ -508,15 +527,28 @@ const EditDialog = ({ open, onClose, cardData }) => {
             </Typography>
           </Box>
           <Button
-            onClick={() => handleSave("REPRINT")}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleSave("REPRINT");
+            }}
             variant="contained"
             sx={{ color: colors.primary[100], background: colors.primary[500] }}
           >
             Reprint
           </Button>
-          <Button onClick={onClose}>Cancel</Button>
           <Button
-            onClick={handleSave}
+            onClick={(e) => {
+              e.stopPropagation();
+              onClose();
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleSave();
+            }}
             variant="contained"
             sx={{ color: colors.primary[100], background: colors.primary[500] }}
           >

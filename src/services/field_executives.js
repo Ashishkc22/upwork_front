@@ -49,6 +49,27 @@ async function getUserById({ uid }) {
   }
 }
 
+async function getTLById({ tl_id, showExtra }) {
+  const {
+    status,
+    message,
+    error = "",
+    ...data
+  } = await axiosUtil.get({
+    path: `auth/teamLeaderId`,
+    params: {
+      // token: tokenUtil.getAuthToken(),
+      tlId: tl_id,
+      showExtra,
+    },
+  });
+  if (status === "failed") {
+    return { message, status, error: error || message };
+  } else if (!isEmpty(data)) {
+    return data;
+  }
+}
+
 async function getTeamLeaderDetailsById({ tlId }) {
   const data = await axiosUtil.get({
     path: `auth/teamLeaderId`,
@@ -70,7 +91,7 @@ async function updateUserRole({ formData, id }) {
       token: tokenUtil.getAuthToken(),
     },
     body: formData,
-    isFormData: true,
+    // isFormData: true,
   });
   if (data.status === "failed") {
     return {};
@@ -122,7 +143,7 @@ async function saveFieldExecutiveForm(formData, mode = "EDIT", id) {
       formData.id_proof.front = await uploadImage(images.aadhaarFront);
     }
     if (images.profilePic) {
-      formData.id_proof.image = await uploadImage(images.aadhaarFront);
+      formData.image = await uploadImage(images.profilePic);
     }
 
     delete formData.images;
@@ -156,4 +177,5 @@ export default {
   getTeamLeaderDetailsById,
   updateUserRole,
   saveFieldExecutiveForm,
+  getTLById,
 };

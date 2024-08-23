@@ -292,8 +292,8 @@ const CroppingDialog = ({
                 crossOrigin="anonymous"
                 style={{
                   transform: `scale(${scale}) rotate(${rotate}deg)`,
-                  width: "700Px",
-                  // width: "390Px",
+                  // width: "700Px",
+                  width: "366.4px",
                 }}
               />
             </ReactCrop>

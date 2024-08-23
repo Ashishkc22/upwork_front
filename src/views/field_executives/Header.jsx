@@ -11,7 +11,7 @@ import RefreshIcon from "@mui/icons-material/Refresh";
 import { Card, CardActionArea, Grid, Select } from "@mui/material";
 import CustomAutocompleteDropDown from "../../components/CustomAutocompleteDropDown";
 import SearchTextinput from "../../components/SearchTextInput";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { isElement, isEmpty } from "lodash";
 import common from "../../services/common";
 import ViewModuleIcon from "@mui/icons-material/ViewModule";
@@ -19,6 +19,10 @@ import moment from "moment";
 import GetCardStack from "../dashboard/ChipStack";
 import CustomDateRangePicker from "../../components/CustomDateRangePicker";
 import CustomDatePicker from "../../components/CustomDatePicker";
+import Autocomplete from "@mui/material/Autocomplete";
+
+import TextField from "@mui/material/TextField";
+
 import hospitals from "../../services/hospitals";
 
 const ScoreCard = ({ value, secondValue, text, bgcolor, name }) => {
@@ -82,12 +86,13 @@ const Header = ({
   const [gramOption, setGramOption] = useState([]);
   const [gram, setGram] = useState({});
 
-  const [status, setStatus] = useState({});
+  const [status, setStatus] = useState(null);
   // const [categoryOption, setCategoryOption] = useState([]);
   // const [category, setCategory] = useState({});
 
-  const [duration, setDuration] = useState();
+  const [duration, setDuration] = useState("");
   const [date, setDate] = useState();
+  let [urlDateType, setUrlDateType] = useSearchParams();
 
   const [isDatePickerOpened, setIsDatePickerOpened] = useState(false);
 
@@ -122,7 +127,11 @@ const Header = ({
     const searchParams = new URLSearchParams(window.location.search);
     // Iterate over the data object and append each key-value pair to the URL
     Object.keys(data).forEach((key) => {
-      searchParams.set(key, data[key]);
+      if (!data[key]) {
+        searchParams.delete(key);
+      } else {
+        searchParams.set(key, data[key]);
+      }
     });
     // Update the URL with the new query string
     navigate(`?${searchParams.toString()}`, { replace: true });
@@ -138,6 +147,7 @@ const Header = ({
       ...(status?.label && { status: status?.label }),
       // ...(category?.name && { category: category?.name }),
     };
+
     if (name) {
       addDataToURL({ [name]: data });
     }
@@ -164,6 +174,11 @@ const Header = ({
       ...(_duration && { duration: _duration }),
       ...(till_duration && { till_duration }),
     };
+
+    if (inputName) {
+      addDataToURL({ [inputName]: data?.newValue?.label });
+    }
+
     if (inputName === "state" && data) {
       if (!data?.newValue) {
         // setState({});
@@ -224,9 +239,11 @@ const Header = ({
       if (data.newValue) {
         payload["status"] = data.newValue.label;
         setStatus(data.newValue);
+        // payload.status = { status: data.newValue?.label };
+        // callBacks.getDataOnFilterChange(payload);
       } else {
         delete payload.status;
-        setStatus({});
+        setStatus(null);
         delete payload["status"];
       }
     } else if (inputName == "duration" && data) {
@@ -268,6 +285,11 @@ const Header = ({
 
   useEffect(() => {
     getAddressData({ type: "district" });
+    const status = urlDateType.get("status");
+
+    if (status) {
+      setStatus({ label: status });
+    }
   }, []);
 
   return (
@@ -310,7 +332,10 @@ const Header = ({
               onLoadFocus={true}
               emitSearchChange={(e) => {
                 // setSearchInputValue(e.target.value);
-                handleInputChange({ name: "search", data: e.target.value });
+                handleInputChange({
+                  name: "search",
+                  data: e?.target?.value || "",
+                });
               }}
             />
           </Box>
@@ -403,7 +428,53 @@ const Header = ({
           </Box> */}
 
           <Box sx={{ mx: 1, minWidth: 140 }}>
-            <CustomAutocompleteDropDown
+            <Autocomplete
+              options={statusOptions.map((option) => {
+                return {
+                  ...option,
+                  label: option["label"],
+                };
+              })}
+              value={status}
+              // {...(!isEmpty(status) && { value: status })}
+              getOptionLabel={(option) => option.label}
+              onChange={(e, newValue, value) => {
+                handleFilterChange({
+                  inputName: "status",
+                  data: { newValue },
+                });
+              }}
+              renderOption={(props, option) => {
+                const { key, ...optionProps } = props;
+                return (
+                  <Box
+                    key={key}
+                    sx={{ p: "3px", display: "block" }}
+                    {...optionProps}
+                  >
+                    <Grid container>
+                      <Typography fontSize={12} fontWeight={500}>
+                        {option.label}
+                      </Typography>
+                      {option.code && (
+                        <Typography
+                          fontSize={12}
+                          fontWeight={500}
+                          color="#000000b0"
+                        >
+                          ({`#${option.code}`})
+                        </Typography>
+                      )}
+                    </Grid>
+                  </Box>
+                );
+              }}
+              renderInput={(params) => (
+                <TextField {...params} label="status" variant="standard" />
+              )}
+            />
+
+            {/* <CustomAutocompleteDropDown
               emitAutoCompleteChange={(data) =>
                 handleFilterChange({ inputName: "status", data })
               }
@@ -414,7 +485,7 @@ const Header = ({
                 };
               })}
               label="Status"
-            />
+            /> */}
           </Box>
           {/*
 
@@ -434,7 +505,6 @@ const Header = ({
             />
           </Box>
           */}
-
           <Box sx={{ mx: 1, minWidth: 130 }}>
             <CustomDateRangePicker
               open={duration === "CUSTOM" && isDatePickerOpened}
@@ -459,7 +529,7 @@ const Header = ({
                   })
                 }
               >
-                {durationOptions.map((option, index) => (
+                {durationOptions?.map((option, index) => (
                   <MenuItem key={index} value={option}>
                     {option}
                   </MenuItem>

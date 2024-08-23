@@ -26,7 +26,7 @@ import fieldExecutives from "../../services/field_executives";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import EditIcon from "@mui/icons-material/Edit";
 import moment from "moment";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { isEmpty } from "lodash";
 import CroppingDialog from "./ImageCropDialog"; // Adjust path as necessary
 import EditCardDialog from "./EditCardDialog";
@@ -41,6 +41,8 @@ const UserInfoCard = () => {
   const [userData, setUserData] = useState({
     // Initial state as before
   });
+  let [urlDateType, setUrlDateType] = useSearchParams();
+
   const [teamLeaderDetails, setTeamLeaderDetails] = useState({});
   const [imageListDialog, setImageListDialog] = useState(false);
   const [isEditDialogOpened, setIsEditDialogOpened] = useState(false);
@@ -49,18 +51,36 @@ const UserInfoCard = () => {
   const [isSuspensionDialogOpened, setIsSuspensionDialogOpened] =
     useState(false);
 
-  const fetchCardData = () => {
-    fieldExecutives.getUserById({ uid: id }).then((data) => {
-      setUserData(data);
-      setRole(data.role);
-      console.log("data", data);
+  const statupMap = {
+    Verified: "suspend",
+    "Verification Pending": "Verify",
+  };
 
+  const fetchCardData = () => {
+    const isTL = urlDateType.get("isTL");
+    console.log("isTL", cancelIdleCallback);
+    if (Boolean(isTL)) {
       fieldExecutives
-        .getTeamLeaderDetailsById({ tlId: data.team_leader_id })
-        .then((data) => {
-          setTeamLeaderDetails(data);
+        .getTLById({ tl_id: id, showExtra: true })
+        .then((tlDetails) => {
+          setTeamLeaderDetails(tlDetails);
+          setUserData(tlDetails);
+          setRole(tlDetails.role);
         });
-    });
+    } else {
+      fieldExecutives.getUserById({ uid: id }).then((data) => {
+        setUserData(data);
+        setRole(data.role);
+        console.log("data", data);
+        fieldExecutives
+          .getTeamLeaderDetailsById({ tlId: data.team_leader_id })
+          .then((data) => {
+            console.log("_____data", data);
+
+            setTeamLeaderDetails(data);
+          });
+      });
+    }
   };
 
   useEffect(() => {
@@ -91,14 +111,17 @@ const UserInfoCard = () => {
     const formData = new FormData();
     formData.append("role", role);
     setRole(role);
-    fieldExecutives.updateUserRole({ formData, id: userData._id });
+    fieldExecutives.updateUserRole({ formData: { role }, id: userData._id });
   };
 
   const handleUserSuspension = async () => {
     const _formData = {
       status: userData.status === "Verified" ? "Suspended" : "Verified",
-      suspension_reason: suspensionReason,
+      // suspension_reason: suspensionReason,
     };
+    if (userData.status === "Verification Pending") {
+      _formData.status = "Verified";
+    }
     await fieldExecutives.saveFieldExecutiveForm(
       _formData,
       "STATSUPDATE",
@@ -144,7 +167,13 @@ const UserInfoCard = () => {
       <EditCardDialog
         open={isEditDialogOpened}
         data={userData}
-        onClose={() => setIsEditDialogOpened(false)}
+        teamLeaderDetails={teamLeaderDetails}
+        onClose={(callApi) => {
+          if (callApi) {
+            fetchCardData();
+          }
+          setIsEditDialogOpened(false);
+        }}
       />
       {(userData?.id_proof?.front || userData?.id_proof?.back) && (
         <ImageDialog
@@ -225,7 +254,7 @@ const UserInfoCard = () => {
                         }}
                         aria-label="Platform"
                       >
-                        <ToggleButton value="Admin">Admin</ToggleButton>
+                        <ToggleButton value="ADMIN">Admin</ToggleButton>
                         <ToggleButton value="FE">FE</ToggleButton>
                         <ToggleButton value="TL">TL</ToggleButton>
                       </ToggleButtonGroup>
@@ -295,6 +324,7 @@ const UserInfoCard = () => {
                   <TextGroup
                     title="Team Leader ID"
                     value={teamLeaderDetails.tl_id}
+                    subText={teamLeaderDetails.name}
                   />
                 </Grid>
 
@@ -322,7 +352,9 @@ const UserInfoCard = () => {
                     <Link
                       onClick={() => {
                         window.open(
-                          `https://www.google.com/maps?q=${userData.lat},${userData.lon}`
+                          `https://www.google.com/maps?q=${
+                            userData?.lat || 0
+                          },${userData?.lon || 0}`
                         );
                       }}
                     >
@@ -332,7 +364,7 @@ const UserInfoCard = () => {
                         fontWeight={600}
                         gutterBottom
                       >
-                        {`${userData.lat},${userData.lon}`}
+                        {`${userData?.lat || 0},${userData?.lon || 0}`}
                       </Typography>
                     </Link>
                   </Box>
@@ -369,19 +401,21 @@ const UserInfoCard = () => {
               <Button
                 onClick={() => {
                   window.open(
-                    `https://wa.me/${userData.phone}?text=Hi ${userData.name}, your password is ${userData.password}`
+                    `https://wa.me/+91${userData.phone}?text=Hi ${userData.name}, your password is ${userData.password}`
                   );
                 }}
               >
                 send password
               </Button>
               <Button
-                onClick={() =>
-                  // handleUserSuspension
-                  setIsSuspensionDialogOpened(true)
+                onClick={
+                  () => handleUserSuspension()
+                  // setIsSuspensionDialogOpened(true)
                 }
               >
-                {userData.status === "Verified" ? "suspend" : "unsuspend"}
+                {statupMap[userData?.status]
+                  ? statupMap[userData?.status]
+                  : "unsuspend"}
               </Button>
             </Grid>
           </Grid>

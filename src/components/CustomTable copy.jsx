@@ -63,7 +63,6 @@ const DynamicTable = ({
 
   const getCellValue = ({ keymap = "", row = {}, rowIndex }) => {
     function handleOptionsClick(e) {
-      debugger;
       e.stopPropagation();
       console.log("e", e.target.value);
       console.log("row-------", row);

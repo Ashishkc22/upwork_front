@@ -13,7 +13,7 @@ import cookiesUtil from "../utils/cookies.util";
 import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemIcon from "@mui/material/ListItemIcon";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import { tokens } from "../theme";
 import { useNavigate } from "react-router-dom";
 import LocalHospitalIcon from "@mui/icons-material/LocalHospital";
@@ -76,14 +76,13 @@ const Item = ({
   title,
   to,
   icon,
-  selected,
+  isSelected,
   setSelected,
   nav,
   isDrawerOpen,
 }) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
-  const isSelected = selected === title;
   return (
     <ListItemButton
       active={isSelected}
@@ -140,6 +139,9 @@ export default function MiniDrawer() {
   const [selected, setSelected] = useState("Dashboard");
   const [open, setOpen] = React.useState(false);
 
+  const location = useLocation();
+  const currentPath = location.pathname;
+
   const handleDrawerOpen = () => {
     setOpen(!open);
   };
@@ -176,7 +178,7 @@ export default function MiniDrawer() {
                 title={data.title}
                 to={data.path}
                 icon={data.icon}
-                selected={selected}
+                isSelected={Boolean(currentPath.startsWith(`/${data.path}`))}
                 setSelected={setSelected}
                 nav={nav}
                 isDrawerOpen={open}

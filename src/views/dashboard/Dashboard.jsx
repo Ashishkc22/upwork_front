@@ -17,6 +17,7 @@ import moment from "moment";
 import { isEmpty } from "lodash";
 import DashboardCard from "./StatsCard";
 import getCardStack from "./ChipStack";
+import { useNavigate } from "react-router-dom";
 import ImageComponent from "../../components/ImageComponent";
 import CardViewer from "../../components/cardViewer";
 
@@ -45,6 +46,7 @@ const Dashboard = () => {
   const [openDialog, setOpenDialog] = useState(false);
   const [dashboardData, setDashboardData] = useState({});
   const [cardPercentage, setCardPercentage] = useState(defaultPercentages);
+  const nav = useNavigate();
 
   const handleFilterChange = (event) => {
     setFilter(event.target.value);
@@ -297,6 +299,7 @@ const Dashboard = () => {
                 }
                 height="120px" // Greater height for the first card
                 bgcolor="#ff5722"
+                handleCardClick={() => nav("/field-executives")}
               />
             </Grid>
             <Grid item xs={12} sm={4} md={3} lg={2}>
@@ -305,6 +308,9 @@ const Dashboard = () => {
                 title="To Be Verified"
                 percentageChange={cardPercentage.unverifiedUsersPercentage}
                 bgcolor="#ffc107"
+                handleCardClick={() =>
+                  nav("/field-executives?status=Unverified")
+                }
               />
             </Grid>
             <Grid item xs={12} sm={4} md={3} lg={2}>
@@ -313,6 +319,7 @@ const Dashboard = () => {
                 title="Active"
                 percentageChange={cardPercentage.activeUsersPercentage}
                 bgcolor="#4caf50"
+                handleCardClick={() => nav("/field-executives?status=Active")}
               />
             </Grid>
             <Grid item xs={12} sm={4} md={3} lg={2}>
@@ -321,6 +328,7 @@ const Dashboard = () => {
                 title="Inactive Users"
                 percentageChange={cardPercentage.inactiveUsersPercentage}
                 bgcolor="#9e9e9e"
+                handleCardClick={() => nav("/field-executives?status=Inactive")}
               />
             </Grid>
             <Grid item xs={12} sm={4} md={3} lg={2}>
@@ -329,6 +337,9 @@ const Dashboard = () => {
                 title="Suspended"
                 percentageChange={cardPercentage.suspendedUsersPercentage}
                 bgcolor="#f44336"
+                handleCardClick={() =>
+                  nav("/field-executives?status=Suspended")
+                }
               />
             </Grid>
             <Grid item xs={12} sm={4} md={3} lg={2}>
@@ -337,6 +348,7 @@ const Dashboard = () => {
                 title="Rejected"
                 percentageChange={cardPercentage.suspendedUsersPercentage}
                 bgcolor="#f44336"
+                handleCardClick={() => nav("/field-executives?status=Rejected")}
               />
             </Grid>
 
@@ -347,6 +359,7 @@ const Dashboard = () => {
                 percentageChange={cardPercentage.totalCardsPercentage}
                 height="120px" // Greater height for the first card
                 bgcolor="#ff5722"
+                handleCardClick={() => nav("/cards?tab=totalCards")}
               />
             </Grid>
             <Grid item xs={12} sm={4} md={3} lg={2}>
@@ -355,6 +368,7 @@ const Dashboard = () => {
                 title="Available to print"
                 percentageChange={cardPercentage.availableToPrintPercentage}
                 bgcolor="#ffc107"
+                handleCardClick={() => nav("/cards?page=Cards&tab=toBePrinted")}
               />
             </Grid>
             <Grid item xs={12} sm={4} md={3} lg={2}>
@@ -363,6 +377,9 @@ const Dashboard = () => {
                 title="Printed"
                 percentageChange={cardPercentage.printedPercentage}
                 bgcolor="linear-gradient(79deg, #ffc107, white, #4caf50)"
+                handleCardClick={() =>
+                  nav("/cards?tab=totalCards&status=PRINTED")
+                }
               />
             </Grid>
             <Grid item xs={12} sm={4} md={3} lg={2}>
@@ -371,6 +388,9 @@ const Dashboard = () => {
                 title="Delivered"
                 percentageChange={cardPercentage.deliveredCardsPercentage}
                 bgcolor="#4caf50"
+                handleCardClick={() =>
+                  nav("/cards?tab=totalCards&status=DELIVERED")
+                }
               />
             </Grid>
             <Grid item xs={12} sm={4} md={3} lg={2}>
@@ -379,6 +399,9 @@ const Dashboard = () => {
                 title="Undelivered"
                 percentageChange={cardPercentage.undeliveredCardsPercentage}
                 bgcolor="#f44336"
+                handleCardClick={() =>
+                  nav("/cards?tab=totalCards&status=UNDELIVERED")
+                }
               />
             </Grid>
             <Grid item xs={12} sm={4} md={3} lg={2}>
@@ -387,6 +410,9 @@ const Dashboard = () => {
                 title="Discarded"
                 percentageChange={cardPercentage.discardCardsPercentage}
                 bgcolor="#9e9e9e"
+                handleCardClick={() =>
+                  nav("/cards?tab=totalCards&status=DISCARDED")
+                }
               />
             </Grid>
 
@@ -397,6 +423,7 @@ const Dashboard = () => {
                 percentageChange={cardPercentage.totalHospitalPercentage}
                 height="120px" // Greater height for the first card
                 bgcolor="#ff5722"
+                handleCardClick={() => nav("/hospitals")}
               />
             </Grid>
             <Grid item xs={12} sm={4} md={3} lg={2}>
@@ -405,6 +432,9 @@ const Dashboard = () => {
                 title="Hospitals"
                 percentageChange={cardPercentage.hospitalsPercentage}
                 bgcolor="#ff5722"
+                handleCardClick={() =>
+                  nav("/hospitals?hospitalCategory=Hospital")
+                }
               />
             </Grid>
             <Grid item xs={12} sm={4} md={3} lg={2}>
@@ -413,6 +443,9 @@ const Dashboard = () => {
                 title="Medicals"
                 percentageChange={cardPercentage.medicalsPercentage}
                 bgcolor="#ff5722"
+                handleCardClick={() =>
+                  nav("/hospitals?hospitalCategory=Medical")
+                }
               />
             </Grid>
             <Grid item xs={12} sm={4} md={3} lg={2}>
@@ -421,6 +454,9 @@ const Dashboard = () => {
                 title="Labs & Diagnotic"
                 percentageChange={cardPercentage.diagnosticCentersPercentage}
                 bgcolor="#ff5722"
+                handleCardClick={() =>
+                  nav("/hospitals?hospitalCategory=Pathology+Lab")
+                }
               />
             </Grid>
           </>

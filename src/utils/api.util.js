@@ -78,7 +78,6 @@ function patch({ path, body, params, options, isFormData }) {
 }
 
 function upload({ isFormData, url, headers, body }) {
-  // debugger;
   console.log("isFormData", isFormData);
 
   return request({

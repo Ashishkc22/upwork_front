@@ -54,9 +54,8 @@ async function getCardsData({
     return { status, error: error || message };
   } else if (!isEmpty(data)) {
     const tehsilCounts = {};
-    console.log("data", data);
 
-    const idList = data.map((data) => {
+    let idList = data.map((data) => {
       if (tehsilCounts[data.tehsil]) {
         tehsilCounts[data.tehsil] = tehsilCounts[data.tehsil] + 1;
       } else {
@@ -76,10 +75,14 @@ async function getCardsData({
         tehsilCounts,
       };
     }
-    const groupedData = groupBy(
-      data,
-      (card) => `${card.state}/${card.district}/${card.tehsil}`
-    );
+    idList = [];
+    const groupedData = groupBy(data, (card) => {
+      idList.push(card._id);
+      return `${card.state}/${card.district}/${card.tehsil}`;
+    });
+
+    console.log("idList >>>>>", idList);
+
     const newGroupedData = {};
     Object.keys(groupedData).forEach((key) => {
       const groupByCreatedById = groupBy(groupedData[key], "created_by_uid");
@@ -93,7 +96,6 @@ async function getCardsData({
 
     unsortedKeys.map((key) => {
       Object.keys(newGroupedData[key]).forEach((innerKey) => {
-        debugger;
         if ((countMap[key] || 0) < newGroupedData[key][innerKey].length) {
           countMap[key] = newGroupedData[key][innerKey].length;
         }
@@ -211,28 +213,16 @@ async function getDistrictData({ stateId }) {
 }
 
 async function renewCard(payload) {
-  const issueDate = payload.issueDate
-    ? new Date(payload.issueDate)
-    : new Date(payload.createdAt);
-  const expiryYears = payload.expiryYears + 2;
-  const expiryDate = new Date(
-    issueDate.getTime() + expiryYears * 365 * 24 * 60 * 60 * 1000
-  );
-
-  const bodyFormData = new FormData();
-  bodyFormData.append("expiry_date", expiryDate.valueOf());
-  bodyFormData.append("expiry_years", expiryYears);
-  bodyFormData.append("expiry", moment(expiryYears).format("MMM YYYY"));
+  const id = payload.id;
+  delete payload.id;
   const {
     status,
     data,
     message,
     error = "",
   } = await axiosUtil.patch({
-    path: `cards/${payload.id}?token=${tokenUtil.getAuthToken()}`,
-    body: bodyFormData,
-    isFormData: true,
-    options: { headers: { "Content-Type": "multipart/form-data" } },
+    path: `cards/${id}?token=${tokenUtil.getAuthToken()}`,
+    body: payload,
   });
   if (status === "failed") {
     return { status, error: error || message };
@@ -301,7 +291,6 @@ async function uploadImage(image) {
 }
 
 async function updateCard(payload, id, image) {
-  debugger;
   let imgUrl;
   if (image) {
     imgUrl = await uploadImage(image);
@@ -342,6 +331,27 @@ async function deleteCard(id) {
   }
 }
 
+async function markAsPrint(ids) {
+  try {
+    const {
+      status,
+      data,
+      message,
+      error = "",
+    } = await axiosUtil.post({
+      path: `cards/moveStatus?token=${tokenUtil.getAuthToken()}`,
+      body: { uids: ids },
+    });
+    if (status === "failed") {
+      return { status, error: error || message };
+    } else if (!isEmpty(data)) {
+      return data;
+    }
+  } catch (error) {
+    throw error;
+  }
+}
+
 export default {
   getCardsData,
   getUsersByIds,
@@ -351,4 +361,5 @@ export default {
   changeStatus,
   updateCard,
   deleteCard,
+  markAsPrint,
 };

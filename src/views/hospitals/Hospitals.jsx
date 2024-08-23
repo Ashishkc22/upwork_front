@@ -4,7 +4,7 @@ import hospitals from "../../services/hospitals";
 import { isEmpty } from "lodash";
 import { useEffect, useState } from "react";
 import CustomTable from "../../components/CustomTable";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import EditCardDialog from "./EditCardDialog";
 
 let typingTimer;
@@ -33,6 +33,8 @@ const HospitalPage = () => {
 
   const [addHospitalDialog, setAddHospitalDialog] = useState(false);
 
+  let [urlDateType, setUrlDateType] = useSearchParams();
+
   //   API call to get hospital data
   const getHospitals = ({
     search = "em",
@@ -44,6 +46,8 @@ const HospitalPage = () => {
     tehsil,
     district,
   } = {}) => {
+    const urlType = urlDateType.get("hospitalCategory");
+
     if (!search && searchValue && search != "em") {
       search = searchValue;
     }
@@ -55,7 +59,7 @@ const HospitalPage = () => {
           ...(search && search != "em" && { q: search }),
           ...(district && district != "em" && { district }),
           ...(tehsil && tehsil != "em" && { tehsil }),
-          ...(type && type != "em" && { type }),
+          ...(((type && type != "em") || urlType) && { type: type || urlType }),
           ...(status && status != "em" ? { status } : { statu: "ENABLE" }),
           ...(state && state != "em" && { state }),
           ...(duration && duration != "em" && { duration }),
@@ -142,7 +146,7 @@ const HospitalPage = () => {
         }}
         justifyContent="end"
       >
-        <Button
+        {/* <Button
           sx={{
             background: "#ff5722",
             color: "white",
@@ -153,7 +157,7 @@ const HospitalPage = () => {
           onClick={() => setAddHospitalDialog(true)}
         >
           Add hospital
-        </Button>
+        </Button> */}
       </Grid>
       <Grid item xs={12}>
         {/* {!isEmpty(hospitalList) && ( */}

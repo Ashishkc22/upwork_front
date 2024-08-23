@@ -4,6 +4,7 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import { Grid } from "@mui/material";
 import { isEmpty } from "lodash";
+import { useEffect } from "react";
 
 const CustomAutocompleteDropDown = ({
   options,
@@ -11,13 +12,14 @@ const CustomAutocompleteDropDown = ({
   emitAutoCompleteChange,
   defaultValue,
   value,
-  getOptionSelected,
+  getOptionLabel,
 }) => {
   return (
     <Autocomplete
       options={options}
-      defaultValue={defaultValue}
+      // {...(!isEmpty(defaultValue) && { defaultValue: defaultValue })}
       {...(!isEmpty(value) ? { value } : {})}
+      {...(getOptionLabel && { getOptionLabel })}
       onChange={(e, newValue, value) => {
         emitAutoCompleteChange({ e, newValue });
       }}

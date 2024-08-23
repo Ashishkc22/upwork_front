@@ -10,7 +10,12 @@ import Compressor from "compressorjs";
 //   LogoImage: <LogoImage />,
 // }
 
-async function downloadSingleCard({ Element, cardData }) {
+async function downloadSingleCard({
+  Element,
+  cardData,
+  secondaryImage,
+  fileName,
+}) {
   let container;
   let root;
   try {
@@ -52,14 +57,30 @@ async function downloadSingleCard({ Element, cardData }) {
       const width = doc.internal.pageSize.getWidth() * 0.4;
       const height = doc.internal.pageSize.getHeight() * 0.3;
 
+      const backImageWidth = doc.internal.pageSize.getWidth() * 0.4;
+      const backImageheight = doc.internal.pageSize.getHeight() * 0.18;
+
+      // doc.addImage(dataUrl, "PNG", 10, 10, width, height, "", "MEDIUM"); // Adjust position and size as needed
+
       doc.addImage(dataUrl, "PNG", 10, 10, width, height, "", "MEDIUM"); // Adjust position and size as needed
+      doc.addImage(
+        secondaryImage,
+        "JPEG",
+        120,
+        19,
+        backImageWidth,
+        backImageheight,
+        "",
+        "MEDIUM"
+      ); // Adjust position and size as needed
 
       doc.save(
-        `${
-          cardData?.create_by_name
-            ? cardData.create_by_name
-            : cardData.created_by_uid
-        }#${1}_${moment().format("DD_MMM_YYYY_HH_MM")}.pdf`
+        fileName ||
+          `${
+            cardData?.create_by_name
+              ? cardData.create_by_name
+              : cardData.created_by_uid
+          }#${1}_${moment().format("DD_MMM_YYYY_HH_MM")}.pdf`
       );
       // Clean up
       ReactDOM?.unmountComponentAtNode(container);

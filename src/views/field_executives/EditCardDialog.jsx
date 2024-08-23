@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Dialog,
   DialogActions,
@@ -19,12 +19,22 @@ import ImageCropDialog from "./ImageCropDialog";
 import common from "../../services/common";
 import field_executives from "../../services/field_executives";
 import { isEmpty } from "lodash";
+import { styled } from "@mui/material/styles";
+import UploadFileIcon from "@mui/icons-material/UploadFile";
 
-const states = ["State1", "State2", "State3"];
-const districts = ["District1", "District2", "District3"];
-const teamLeaders = ["Leader1", "Leader2", "Leader3"];
+const VisuallyHiddenInput = styled("input")({
+  clip: "rect(0 0 0 0)",
+  clipPath: "inset(50%)",
+  height: 1,
+  overflow: "hidden",
+  position: "absolute",
+  bottom: 0,
+  left: 0,
+  whiteSpace: "nowrap",
+  width: 1,
+});
 
-const EditProfileDialog = ({ open, onClose, data }) => {
+const EditProfileDialog = ({ open, onClose, data, teamLeaderDetails }) => {
   const [profilePic, setProfilePic] = useState(null);
   const [frontID, setFrontID] = useState(null);
   const [backID, setBackID] = useState(null);
@@ -51,11 +61,40 @@ const EditProfileDialog = ({ open, onClose, data }) => {
   const [selectedImageIndex, setSelectedImageIndex] = useState("");
 
   const [updatedImagesNames, setUpdatedImagesNames] = useState({});
+  const fileInputRef = useRef(null);
+  useEffect(() => {
+    if (!isEmpty(teamLeaderDetails)) {
+      setTeamLeader(teamLeaderDetails.tl_id);
+    }
+  }, [teamLeaderDetails]);
 
-  const handleFileChange = (event, setFile) => {
+  // const handleFileChange = (event, setFile) => {
+  //   const file = event.target.files[0];
+  //   if (file) {
+  //     setFile(URL.createObjectURL(file));
+  //   }
+  // };
+
+  useEffect(() => {
+    if (selectedImage) {
+      setIsCropDialogOpened(true);
+    }
+  }, [selectedImage]);
+
+  const handleFileChange = (event) => {
     const file = event.target.files[0];
     if (file) {
-      setFile(URL.createObjectURL(file));
+      const reader = new FileReader();
+      reader.addEventListener("load", () => {
+        if (selectedImageIndex === "Profile") {
+          setProfilePic(reader.result);
+        } else if (selectedImageIndex === "aFront") {
+          setAadhaarFront(reader.result);
+        } else {
+          setSadhaarBack(reader.result);
+        }
+      });
+      reader.readAsDataURL(file);
     }
   };
 
@@ -103,38 +142,42 @@ const EditProfileDialog = ({ open, onClose, data }) => {
       setState(data.state);
       setDistrict(data.district);
       setEmergencyNumber(data.emergency_contact);
-      setTeamLeader(data.teamLeader);
-      console.log("data.teamLeader", data?.team_leader_id);
+    }
+    if (teamLeaderDetails) {
+      setTeamLeader(teamLeaderDetails.name);
     }
   }, [data]);
 
   function handleSaveFormData() {
-    field_executives.saveFieldExecutiveForm({
-      id: data._id,
-      name: name || data?.name,
-      phone: phone || data?.phone,
-      email: email || data?.email,
-      password: password || data.password,
-      address: address || data.address,
-      state: state || data.state,
-      district: district || data.district,
-      team_leader_id: teamLeader || data.team_leader_id,
-      emergency_contact: emergencyNumber || data.emergency_contact,
-      id_proof: data.id_proof,
-      image: data.image,
-      images: {
-        ...(updatedImagesNames?.aadhaarBack && {
-          aadhaarBack: aadhaarBack,
-        }),
-        ...(updatedImagesNames?.aadhaarFront && {
-          aadhaarFront: aadhaarFront,
-        }),
-        ...(updatedImagesNames?.profilePic && {
-          profilePic: profilePic,
-        }),
-      },
-    });
-    onClose();
+    field_executives
+      .saveFieldExecutiveForm({
+        id: data._id,
+        name: name || data?.name,
+        phone: phone || data?.phone,
+        email: email || data?.email,
+        password: password || data.password,
+        address: address || data.address,
+        state: state || data.state,
+        district: district || data.district,
+        team_leader_id: teamLeader || data.team_leader_id,
+        emergency_contact: emergencyNumber || data.emergency_contact,
+        id_proof: data.id_proof,
+        image: data.image,
+        images: {
+          ...(updatedImagesNames?.aadhaarBack && {
+            aadhaarBack: aadhaarBack,
+          }),
+          ...(updatedImagesNames?.aadhaarFront && {
+            aadhaarFront: aadhaarFront,
+          }),
+          ...(updatedImagesNames?.profilePic && {
+            profilePic: profilePic,
+          }),
+        },
+      })
+      .then(() => {
+        onClose(true);
+      });
   }
 
   function handleImageUpdate({ croppedImage, selectedImageIndex }) {
@@ -192,17 +235,30 @@ const EditProfileDialog = ({ open, onClose, data }) => {
             <Avatar
               src={profilePic}
               alt="Profile Pic"
+              // tabIndex={-1}
               sx={{
                 width: 100,
                 height: 100,
                 marginRight: "16px",
                 borderRadius: 2,
               }}
-              onClick={() => {
-                setSelectedImage(profilePic);
-                setIsCropDialogOpened(true);
-                setSelectedImageIndex("Profile");
+              onClick={(e) => {
+                if (profilePic) {
+                  setSelectedImage(profilePic);
+                  setIsCropDialogOpened(true);
+                  setSelectedImageIndex("Profile");
+                }
               }}
+            />
+            <IconButton>
+              <UploadFileIcon onClick={() => fileInputRef.current.click()} />
+            </IconButton>
+            <input
+              type="file"
+              accept="image/*"
+              style={{ display: "none" }} // Hide the input
+              ref={fileInputRef} // Reference to programmatically trigger it
+              onChange={handleFileChange} // Handle the file change event
             />
           </div>
           <TextField
@@ -293,7 +349,7 @@ const EditProfileDialog = ({ open, onClose, data }) => {
               <InputLabel>Team Leader</InputLabel>
               <Select
                 value={teamLeader}
-                defaultValue={data?.team_leader_id}
+                defaultValue={teamLeaderDetails?.tl_id}
                 onChange={(e) => setTeamLeader(e.target.value)}
                 label="Team Leader"
               >
@@ -311,7 +367,7 @@ const EditProfileDialog = ({ open, onClose, data }) => {
             margin="normal"
             variant="standard"
             type="tel"
-            defaultValue={data?.team_leader_id}
+            defaultValue={data?.emergency_contact}
             value={emergencyNumber}
             onChange={(e) => setEmergencyNumber(e.target.value)}
           />
@@ -339,6 +395,14 @@ const EditProfileDialog = ({ open, onClose, data }) => {
                   setSelectedImageIndex("aFront");
                 }}
               />
+              <IconButton sx={{ mr: 1 }}>
+                <UploadFileIcon
+                  onClick={() => {
+                    setSelectedImageIndex("aFront");
+                    fileInputRef.current.click();
+                  }}
+                />
+              </IconButton>
             </div>
             <div
               style={{
@@ -363,6 +427,14 @@ const EditProfileDialog = ({ open, onClose, data }) => {
                   setSelectedImageIndex("aBack");
                 }}
               />
+              <IconButton>
+                <UploadFileIcon
+                  onClick={() => {
+                    setSelectedImageIndex("aBack");
+                    fileInputRef.current.click();
+                  }}
+                />
+              </IconButton>
             </div>
           </Box>
         </DialogContent>

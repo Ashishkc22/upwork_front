@@ -11,7 +11,7 @@ import RefreshIcon from "@mui/icons-material/Refresh";
 import { Card, CardActionArea, Grid, Select } from "@mui/material";
 import CustomAutocompleteDropDown from "../../components/CustomAutocompleteDropDown";
 import SearchTextinput from "../../components/SearchTextInput";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { isElement, isEmpty } from "lodash";
 import common from "../../services/common";
 import ViewModuleIcon from "@mui/icons-material/ViewModule";
@@ -20,6 +20,8 @@ import GetCardStack from "../dashboard/ChipStack";
 import CustomDateRangePicker from "../../components/CustomDateRangePicker";
 import CustomDatePicker from "../../components/CustomDatePicker";
 import hospitals from "../../services/hospitals";
+import TextField from "@mui/material/TextField";
+import Autocomplete from "@mui/material/Autocomplete";
 
 const ScoreCard = ({ value, secondValue, text, bgcolor, name }) => {
   return (
@@ -78,10 +80,12 @@ const Header = ({
 
   const [status, setStatus] = useState({});
   const [categoryOption, setCategoryOption] = useState([]);
-  const [category, setCategory] = useState({});
+  const [category, setCategory] = useState(null);
 
   const [duration, setDuration] = useState();
   const [date, setDate] = useState();
+
+  let [urlDateType, setUrlDateType] = useSearchParams();
 
   const [isDatePickerOpened, setIsDatePickerOpened] = useState(false);
 
@@ -116,7 +120,11 @@ const Header = ({
     const searchParams = new URLSearchParams(window.location.search);
     // Iterate over the data object and append each key-value pair to the URL
     Object.keys(data).forEach((key) => {
-      searchParams.set(key, data[key]);
+      if (!data[key]) {
+        searchParams.delete(key);
+      } else {
+        searchParams.set(key, data[key]);
+      }
     });
     // Update the URL with the new query string
     navigate(`?${searchParams.toString()}`, { replace: true });
@@ -227,8 +235,10 @@ const Header = ({
       if (data.newValue) {
         payload["type"] = data.newValue.name;
         setCategory(data.newValue);
+        addDataToURL({ hospitalCategory: data.newValue.name });
       } else {
-        setCategory({});
+        addDataToURL({ hospitalCategory: "" });
+        setCategory(null);
         delete payload.type;
       }
     } else if (inputName == "duration" && data) {
@@ -273,6 +283,10 @@ const Header = ({
     hospitals.getHospitalCategory().then((data) => {
       setCategoryOption(data.hospital_category);
     });
+    const urlHopitalType = urlDateType.get("hospitalCategory");
+    if (urlHopitalType) {
+      setCategory({ name: urlHopitalType });
+    }
   }, []);
 
   return (
@@ -315,7 +329,7 @@ const Header = ({
               onLoadFocus={true}
               emitSearchChange={(e) => {
                 // setSearchInputValue(e.target.value);
-                handleInputChange({ name: "search", data: e.target.value });
+                handleInputChange({ name: "search", data: e?.target?.value });
               }}
             />
           </Box>
@@ -393,7 +407,51 @@ const Header = ({
           )}
 
           <Box sx={{ mx: 1, minWidth: 140 }}>
-            <CustomAutocompleteDropDown
+            <Autocomplete
+              options={categoryOption.map((option) => {
+                return {
+                  ...option,
+                  label: option["name"],
+                };
+              })}
+              value={category}
+              // {...(!isEmpty(status) && { value: status })}
+              getOptionLabel={(option) => option.name}
+              onChange={(e, newValue, value) => {
+                // setHospitalType(newValue)
+                handleFilterChange({ inputName: "type", data: { newValue } });
+              }}
+              renderOption={(props, option) => {
+                const { key, ...optionProps } = props;
+                return (
+                  <Box
+                    key={key}
+                    sx={{ p: "3px", display: "block" }}
+                    {...optionProps}
+                  >
+                    <Grid container>
+                      <Typography fontSize={12} fontWeight={500}>
+                        {option.label}
+                      </Typography>
+                      {option.code && (
+                        <Typography
+                          fontSize={12}
+                          fontWeight={500}
+                          color="#000000b0"
+                        >
+                          ({`#${option.code}`})
+                        </Typography>
+                      )}
+                    </Grid>
+                  </Box>
+                );
+              }}
+              renderInput={(params) => (
+                <TextField {...params} label="Type" variant="standard" />
+              )}
+            />
+
+            {/* <CustomAutocompleteDropDown
               emitAutoCompleteChange={(data) =>
                 handleFilterChange({ inputName: "type", data })
               }
@@ -404,7 +462,7 @@ const Header = ({
                 };
               })}
               label="Type"
-            />
+            /> */}
           </Box>
 
           <Box sx={{ mx: 1, minWidth: 140 }}>

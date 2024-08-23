@@ -1,10 +1,10 @@
 import Header from "./Header";
-import { Grid, Button } from "@mui/material";
+import { Grid, Card, TablePagination } from "@mui/material";
 import field_executives from "../../services/field_executives";
 import { isEmpty } from "lodash";
 import { useEffect, useState } from "react";
 import CustomTable from "../../components/CustomTable";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import EditCardDialog from "./EditCardDialog";
 
 let typingTimer;
@@ -39,6 +39,11 @@ const HospitalPage = () => {
 
   const [addUsersDialog, setAddUsersDialog] = useState(false);
 
+  const [pageCount, setPageCount] = useState(0);
+  const [page, setPage] = useState(0);
+
+  let [urlDateType, setUrlDateType] = useSearchParams();
+
   //   API call to get hospital data
   const getUsers = ({
     search = "em",
@@ -49,7 +54,9 @@ const HospitalPage = () => {
     type,
     tehsil,
     district,
+    _page,
   } = {}) => {
+    const urlStatus = urlDateType.get("status");
     if (!search && searchValue && search != "em") {
       search = searchValue;
     }
@@ -57,13 +64,15 @@ const HospitalPage = () => {
       .getUsers({
         params: {
           limit: 100,
-          page: 0,
+          page: _page,
           sortBy: "name",
           ...(search && search != "em" && { q: search }),
           ...(district && district != "em" && { district }),
           ...(tehsil && tehsil != "em" && { tehsil }),
           ...(type && type != "em" && { type }),
-          ...(status && status != "em" ? { status } : { statu: "ENABLE" }),
+          ...((status && status != "em") || urlStatus
+            ? { status: status || urlStatus }
+            : {}),
           ...(state && state != "em" && { state }),
           ...(duration && duration != "em" && { duration }),
           ...(till_duration && till_duration != "em" && { till_duration }),
@@ -71,6 +80,8 @@ const HospitalPage = () => {
       })
       .then((response) => {
         if (!isEmpty(response)) {
+          console.log("response FE", response);
+          setPageCount(response.total_results);
           if (!isEmpty(response.data)) {
             setUsersList(response.data);
           }
@@ -86,10 +97,10 @@ const HospitalPage = () => {
     if (data === "") {
       getUsers({ search: "em" });
     }
-    setSearchValue(data);
+    // setSearchValue(data);
     if (!/^\s*$/.test(data)) {
       clearTimeout(typingTimer);
-      typingTimer = setTimeout(function () {
+      typingTimer = setTimeout(() => {
         getUsers({ search: data, ...payload });
       }, 1500);
     }
@@ -149,7 +160,7 @@ const HospitalPage = () => {
         }}
         justifyContent="end"
       >
-        <Button
+        {/* <Button
           sx={{
             background: "#ff5722",
             color: "white",
@@ -160,7 +171,7 @@ const HospitalPage = () => {
           onClick={() => setAddUsersDialog(true)}
         >
           Add field executive
-        </Button>
+        </Button> */}
       </Grid>
       <Grid item xs={12}>
         {/* {!isEmpty(hospitalList) && ( */}
@@ -176,6 +187,28 @@ const HospitalPage = () => {
           showPagiantion
         />
         {/* )} */}
+        <Grid item xs={12} sx={{ height: "39px" }}>
+          <Card
+            sx={{
+              position: "fixed",
+              bottom: "5px",
+              width: "100%",
+              right: "1px",
+            }}
+          >
+            <TablePagination
+              component="div"
+              count={pageCount}
+              page={page}
+              rowsPerPage={100}
+              onPageChange={(e, newPage) => {
+                setPage(newPage);
+                getUsers({ _page: newPage });
+              }}
+              onRowsPerPageChange={() => {}}
+            />
+          </Card>
+        </Grid>
       </Grid>
     </Grid>
   );

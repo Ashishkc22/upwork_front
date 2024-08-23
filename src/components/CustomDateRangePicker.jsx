@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Dialog, DialogActions, Button } from "@mui/material";
 import { DateRange } from "react-date-range";
 import "react-date-range/dist/styles.css"; // Import the styles
@@ -28,7 +28,6 @@ const DateRangeDialog = ({ open, onClose, onApply, isSingleSelect }) => {
     onApply(range);
     handleCloseDialog();
   };
-
   return (
     <Dialog open={open} onClose={handleCloseDialog} maxWidth="sm">
       {/* <DialogContent > */}

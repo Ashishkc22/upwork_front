@@ -32,6 +32,7 @@ const DynamicTable = ({
   tbCellStyle = {},
   dataForSmallScreen,
   handleMenuSelect,
+  highlightedRow = "",
 }) => {
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
@@ -44,11 +45,18 @@ const DynamicTable = ({
   }
 
   const getCellValue = ({ keymap = "", row = {}, rowIndex }) => {
+    if (keymap.label == "RATIO") {
+      return (
+        <Typography variant="body2">
+          {row[keymap.key].toFixed(2) + " %"}
+        </Typography>
+      );
+    }
     if (keymap.key === "created_at" || keymap.key === "expiry_date") {
       return (
         <Typography variant="body2">
           {moment(row?.[keymap.key]).format(
-            keymap.key === "expiry_date" ? "MMM YYYY" : "DD-MM-YYYY"
+            keymap.key === "expiry_date" ? "MMM YYYY" : "DD-MM-YYYY HH:mm:ss"
           )}
         </Typography>
       );
@@ -60,7 +68,10 @@ const DynamicTable = ({
         </Typography>
       );
     }
-    if (keymap.label !== "ACTION") {
+    if (
+      !(isEmpty(keymap.label) && keymap.label !== "ACTION") ||
+      keymap?.key !== "ACTION"
+    ) {
       if (isSmallScreen) {
         if (keymap.isFunction) {
           return calculateAge({ keymap, row, birthYear: row[keymap.key] });
@@ -141,12 +152,12 @@ const DynamicTable = ({
                 onClick={() => rowClick && rowClick(row)}
                 sx={{
                   ":hover": { background: "#f3f3f3a1" },
-                  ...(row?.isPrintedPreviously && { background: "#d1efd1" }),
+                  ...(row?._id === highlightedRow && { background: "#d1efd1" }),
                 }}
               >
                 {headers.map((keymap, cellIndex) => (
                   <TableCell
-                    key={row._id + keymap.label + cellIndex}
+                    key={row._id + keymap?.label + cellIndex}
                     sx={{
                       whiteSpace: "nowrap",
                       py: 0,
@@ -172,7 +183,7 @@ const DynamicTable = ({
               key={row._id + rowIndex}
               sx={{
                 mb: 1,
-                ...(row?.isPrintedPreviously && { background: "#d1efd1" }),
+                ...(row?._id === highlightedRow && { background: "#d1efd1" }),
               }}
             >
               <AccordionSummary

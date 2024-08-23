@@ -17,12 +17,12 @@ import {
 const ThreeDotsDynamicMenu = ({ row, handleMenuSelect }) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const menuItems = [
-    {
-      key: "SUBMITTED",
-      label: "SUBMITTED",
-      icon: "SUBMITTED",
-      onClick: () => console.log("Home clicked"),
-    },
+    // {
+    //   key: "SUBMITTED",
+    //   label: "SUBMITTED",
+    //   icon: "SUBMITTED",
+    //   onClick: () => console.log("Home clicked"),
+    // },
     {
       key: "PRINTED",
       label: "PRINTED",
