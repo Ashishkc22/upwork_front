@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import CustomTable from "../../components/CustomTable";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import EditCardDialog from "./EditCardDialog";
+import LinearIndeterminate from "../../components/LinearProgress";
 
 let typingTimer;
 
@@ -43,6 +44,7 @@ const HospitalPage = () => {
   const [page, setPage] = useState(0);
 
   let [urlDateType, setUrlDateType] = useSearchParams();
+  const [isPageLoading, setIsPageLoading] = useState(false);
 
   //   API call to get hospital data
   const getUsers = ({
@@ -60,6 +62,7 @@ const HospitalPage = () => {
     if (!search && searchValue && search != "em") {
       search = searchValue;
     }
+    setIsPageLoading(true);
     field_executives
       .getUsers({
         params: {
@@ -90,6 +93,7 @@ const HospitalPage = () => {
         } else {
           setUsersList([]);
         }
+        setIsPageLoading(false);
       });
   };
 
@@ -148,19 +152,23 @@ const HospitalPage = () => {
           handleRefresh={handleRefresh}
         />
       </Grid>
-      <Grid
-        item
-        xs={12}
-        sx={{
-          display: "flex",
-          justifyContent: "end",
-          mt: 0,
-          mx: 1,
-          p: 0,
-        }}
-        justifyContent="end"
-      >
-        {/* <Button
+      {isPageLoading ? (
+        <LinearIndeterminate />
+      ) : (
+        <>
+          <Grid
+            item
+            xs={12}
+            sx={{
+              display: "flex",
+              justifyContent: "end",
+              mt: 0,
+              mx: 1,
+              p: 0,
+            }}
+            justifyContent="end"
+          >
+            {/* <Button
           sx={{
             background: "#ff5722",
             color: "white",
@@ -172,44 +180,46 @@ const HospitalPage = () => {
         >
           Add field executive
         </Button> */}
-      </Grid>
-      <Grid item xs={12}>
-        {/* {!isEmpty(hospitalList) && ( */}
-        <CustomTable
-          headers={headers}
-          rows={usersList}
-          tbCellStyle={{ py: "9px" }}
-          dataForSmallScreen={{
-            use: true,
-            title: { keys: ["name", "ID"] },
-          }}
-          rowClick={handleRowClick}
-          showPagiantion
-        />
-        {/* )} */}
-        <Grid item xs={12} sx={{ height: "39px" }}>
-          <Card
-            sx={{
-              position: "fixed",
-              bottom: "5px",
-              width: "100%",
-              right: "1px",
-            }}
-          >
-            <TablePagination
-              component="div"
-              count={pageCount}
-              page={page}
-              rowsPerPage={100}
-              onPageChange={(e, newPage) => {
-                setPage(newPage);
-                getUsers({ _page: newPage });
+          </Grid>
+          <Grid item xs={12}>
+            {/* {!isEmpty(hospitalList) && ( */}
+            <CustomTable
+              headers={headers}
+              rows={usersList}
+              tbCellStyle={{ py: "9px" }}
+              dataForSmallScreen={{
+                use: true,
+                title: { keys: ["name", "ID"] },
               }}
-              onRowsPerPageChange={() => {}}
+              rowClick={handleRowClick}
+              showPagiantion
             />
-          </Card>
-        </Grid>
-      </Grid>
+            {/* )} */}
+            <Grid item xs={12} sx={{ height: "39px" }}>
+              <Card
+                sx={{
+                  position: "fixed",
+                  bottom: "5px",
+                  width: "100%",
+                  right: "1px",
+                }}
+              >
+                <TablePagination
+                  component="div"
+                  count={pageCount}
+                  page={page}
+                  rowsPerPage={100}
+                  onPageChange={(e, newPage) => {
+                    setPage(newPage);
+                    getUsers({ _page: newPage });
+                  }}
+                  onRowsPerPageChange={() => {}}
+                />
+              </Card>
+            </Grid>
+          </Grid>
+        </>
+      )}
     </Grid>
   );
 };

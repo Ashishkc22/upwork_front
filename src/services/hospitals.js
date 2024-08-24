@@ -96,27 +96,30 @@ function generateRandom5DigitNumber() {
 }
 
 async function saveFormData({ id, formData }) {
-  const imageData = formData.images;
-  const uploadedImageUrls = [];
-  for (let i = 0; i < imageData.length; i++) {
-    if (imageData[i] && !imageData[i].includes("https")) {
-      const newformData = new FormData();
-      const imageBlobData = dataUrlToBlob(imageData[i]);
-      newformData.append(
-        "file",
-        imageBlobData,
-        `${generateRandom5DigitNumber()}`
-      );
-      const url = await common.fileUpload(newformData);
-      if (url.error) {
-        continue;
+  if (formData?.images?.length) {
+    const imageData = formData?.images || [];
+    const uploadedImageUrls = [];
+    for (let i = 0; i < imageData.length; i++) {
+      if (imageData[i] && !imageData[i].includes("https")) {
+        const newformData = new FormData();
+        const imageBlobData = dataUrlToBlob(imageData[i]);
+        newformData.append(
+          "file",
+          imageBlobData,
+          `${generateRandom5DigitNumber()}`
+        );
+        const url = await common.fileUpload(newformData);
+        if (url.error) {
+          continue;
+        }
+        uploadedImageUrls.push(url);
+      } else {
+        uploadedImageUrls.push(imageData[i]);
       }
-      uploadedImageUrls.push(url);
-    } else {
-      uploadedImageUrls.push(imageData[i]);
     }
+    formData.images = uploadedImageUrls;
   }
-  formData.images = uploadedImageUrls;
+
   const {
     status,
     data,

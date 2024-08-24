@@ -33,7 +33,7 @@ import { createFilterOptions } from "@mui/material/Autocomplete";
 
 import moment from "moment";
 
-const EditDialog = ({ open, onClose, cardData }) => {
+const EditDialog = ({ open, onClose, cardData, setIscardLoadtion }) => {
   const [profilePic, setProfilePic] = useState(null);
   const [formData, setFormData] = useState({});
   const [stateOption, setStateOption] = useState([]);
@@ -145,7 +145,9 @@ const EditDialog = ({ open, onClose, cardData }) => {
     if (status) {
       newFormData.status = status;
     }
+    setIscardLoadtion(true);
     cardsService.updateCard(newFormData, formData._id, image).finally(() => {
+      setIscardLoadtion(false);
       onClose(true); // Close the dialog after saving
     });
   };

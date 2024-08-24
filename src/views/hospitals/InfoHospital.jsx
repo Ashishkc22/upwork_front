@@ -35,12 +35,14 @@ const HospitalInfoCard = () => {
   const [selectedImage, setSelectedImage] = useState(null);
   const [imageList, setImageList] = useState(hospitalData.images);
   const [selectedImageIndex, setSelectedImageIndex] = useState(null);
+  const [isStatusChecked, setIsStatusChecked] = useState(false);
 
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   const fetchCardData = () => {
     hospitals.getHospitalById({ id }).then((data) => {
       setHospitalData(data);
+      setIsStatusChecked(data.status === "ENABLE");
       setImageList(data.images);
     });
   };
@@ -104,6 +106,15 @@ const HospitalInfoCard = () => {
     </Box>
   );
 
+  const handleStatusChange = async (e) => {
+    const status = isStatusChecked ? "DISABLE" : "ENABLE";
+    await hospitals.saveFormData({
+      id: hospitalData._id,
+      formData: { status },
+    });
+    setIsStatusChecked(!isStatusChecked);
+  };
+
   const handleImageClick = ({ url, index }) => {
     setSelectedImage(url);
     setIsCroppingDialogOpen(true);
@@ -121,7 +132,10 @@ const HospitalInfoCard = () => {
     >
       <EditCardDialog
         open={isEditDialogOpen}
-        onClose={() => setIsEditDialogOpen(false)}
+        onClose={() => {
+          fetchCardData();
+          setIsEditDialogOpen(false);
+        }}
         data={hospitalData}
       />
       <Card sx={{ maxWidth: 1000, width: "100%" }}>
@@ -217,8 +231,8 @@ const HospitalInfoCard = () => {
                   </Grid>
                   <Grid item>
                     <Switch
-                      checked={hospitalData.status === "ENABLE"}
-                      disabled
+                      checked={isStatusChecked}
+                      onChange={handleStatusChange}
                       inputProps={{ "aria-label": "status toggle" }}
                     />
                   </Grid>

@@ -52,6 +52,7 @@ import WhatsAppIcon from "@mui/icons-material/WhatsApp";
 import AddIcon from "@mui/icons-material/Add";
 import domtoimage from "dom-to-image";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import TransparentLoadingScreen from "../../components/LaodingScreenWithWhiteBG";
 
 const images = {
   LogoImage: <img src="/v1cardImages/cardLogo.png" alt="Card Logo" />,
@@ -113,6 +114,8 @@ const CardComponent = () => {
   const [isDetelConfirmationDialog, setIsDetelConfirmationDialog] =
     useState(false);
 
+  const [isCardLoading, setIscardLoadtion] = useState(false);
+
   const [arogyaCardRef, setArogyaCardRef] = useState(null);
 
   const location = useLocation();
@@ -167,6 +170,7 @@ const CardComponent = () => {
     }
   };
   const fetchCardData = ({ paramId = false } = {}) => {
+    setIscardLoadtion(true);
     cards.getCardById({ id: paramId || id }).then((data) => {
       setCardData(data);
       if (data?.status_history?.length) {
@@ -177,6 +181,7 @@ const CardComponent = () => {
         fieldExecutives
           .getTLById({ tl_id: data.team_leader_id })
           .then((tlDetails) => {
+            setIscardLoadtion(false);
             setTLDetails(tlDetails);
           });
       });
@@ -263,11 +268,12 @@ const CardComponent = () => {
 
       console.log("renewPayload", renewPayload);
       console.log("renewIncValue", renewIncValue);
-
+      setIscardLoadtion(true);
       const updatedCardData = await cardService.renewCard({
         ...renewPayload,
         id: cardData._id,
       });
+      setIscardLoadtion(false);
       if (!isEmpty(updatedCardData)) {
         setCardData(updatedCardData);
       }
@@ -280,10 +286,12 @@ const CardComponent = () => {
 
   const handleStatusChange = async ({ payload }) => {
     try {
+      setIscardLoadtion(true);
       const updatedCardData = await cardService.changeStatus(
         payload,
         cardData._id
       );
+      setIscardLoadtion(false);
       if (!isEmpty(updatedCardData)) {
         setCardData(updatedCardData);
       }
@@ -295,7 +303,9 @@ const CardComponent = () => {
 
   const handleCardDelete = async () => {
     try {
+      setIscardLoadtion(true);
       const deletedData = await cardService.deleteCard(cardData._id);
+      setIscardLoadtion(false);
       if (!isEmpty(deletedData)) {
         navigate(-1);
       }
@@ -304,7 +314,7 @@ const CardComponent = () => {
     }
   };
 
-  const handleDownloadCard = () => {
+  const handleDownloadCard = async () => {
     const imageUrl = imageRef.current;
     if (imageUrl) {
       const canvas = document.createElement("canvas");
@@ -313,7 +323,8 @@ const CardComponent = () => {
       canvas.height = imageUrl.height;
       ctx.drawImage(imageUrl, 0, 0);
       const imageDataUrl = canvas.toDataURL("image/jpeg");
-      downloadCards.downloadSingleCard({
+      setIscardLoadtion(true);
+      await downloadCards.downloadSingleCard({
         Element: <ArogyamComponent cardData={cardData} images={images} />,
         secondaryImage: imageDataUrl,
         cardData,
@@ -324,6 +335,7 @@ const CardComponent = () => {
           "DD_MMM_YYYY_HH_mm"
         )}`,
       });
+      setIscardLoadtion(false);
     }
   };
   useEffect(() => {
@@ -390,6 +402,8 @@ const CardComponent = () => {
           e.stopPropagation();
         }}
       >
+        {isCardLoading && <TransparentLoadingScreen />}
+
         {/* renew dialog */}
         <Dialog
           open={isDialogOpen}
@@ -1054,6 +1068,7 @@ const CardComponent = () => {
           }
           setIsEditDialogOpened(false);
         }}
+        setIscardLoadtion={setIscardLoadtion}
       />
       {Boolean(isTimeLineData.length) && (
         <TimeLineDialog

@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import CustomTable from "../../components/CustomTable";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import EditCardDialog from "./EditCardDialog";
+import LinearIndeterminate from "../../components/LinearProgress";
 
 let typingTimer;
 
@@ -34,6 +35,7 @@ const HospitalPage = () => {
   const [addHospitalDialog, setAddHospitalDialog] = useState(false);
 
   let [urlDateType, setUrlDateType] = useSearchParams();
+  const [isPageLoading, setIsPageLoading] = useState(false);
 
   //   API call to get hospital data
   const getHospitals = ({
@@ -51,6 +53,7 @@ const HospitalPage = () => {
     if (!search && searchValue && search != "em") {
       search = searchValue;
     }
+    setIsPageLoading(true);
     hospitals
       .getHospitals({
         params: {
@@ -76,6 +79,7 @@ const HospitalPage = () => {
         } else {
           setHospitalList([]);
         }
+        setIsPageLoading(false);
       });
   };
 
@@ -134,19 +138,23 @@ const HospitalPage = () => {
           handleRefresh={handleRefresh}
         />
       </Grid>
-      <Grid
-        item
-        xs={12}
-        sx={{
-          display: "flex",
-          justifyContent: "end",
-          mt: 0,
-          mx: 1,
-          p: 0,
-        }}
-        justifyContent="end"
-      >
-        {/* <Button
+      {isPageLoading ? (
+        <LinearIndeterminate />
+      ) : (
+        <>
+          <Grid
+            item
+            xs={12}
+            sx={{
+              display: "flex",
+              justifyContent: "end",
+              mt: 0,
+              mx: 1,
+              p: 0,
+            }}
+            justifyContent="end"
+          >
+            {/* <Button
           sx={{
             background: "#ff5722",
             color: "white",
@@ -158,22 +166,24 @@ const HospitalPage = () => {
         >
           Add hospital
         </Button> */}
-      </Grid>
-      <Grid item xs={12}>
-        {/* {!isEmpty(hospitalList) && ( */}
-        <CustomTable
-          headers={headers}
-          rows={hospitalList}
-          tbCellStyle={{ py: "9px" }}
-          dataForSmallScreen={{
-            use: true,
-            title: { keys: ["entity_name", "district"] },
-          }}
-          rowClick={handleRowClick}
-          showPagiantion
-        />
-        {/* )} */}
-      </Grid>
+          </Grid>
+          <Grid item xs={12}>
+            {/* {!isEmpty(hospitalList) && ( */}
+            <CustomTable
+              headers={headers}
+              rows={hospitalList}
+              tbCellStyle={{ py: "9px" }}
+              dataForSmallScreen={{
+                use: true,
+                title: { keys: ["entity_name", "district"] },
+              }}
+              rowClick={handleRowClick}
+              showPagiantion
+            />
+            {/* )} */}
+          </Grid>
+        </>
+      )}
     </Grid>
   );
 };
