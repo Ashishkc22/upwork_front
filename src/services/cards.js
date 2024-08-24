@@ -18,6 +18,7 @@ async function getCardsData({
   tehsil,
   gram_p,
   till_duration,
+  sortBy,
 } = {}) {
   const _payload = {
     token: tokenUtil.getAuthToken(),
@@ -34,7 +35,7 @@ async function getCardsData({
     ...(tehsil && { tehsil }),
     ...(gram_p && { gram_p }),
     ...(till_duration && { till_duration }),
-
+    ...(sortBy && { sortBy }),
     // duration: THIS WEEK
   };
   const {

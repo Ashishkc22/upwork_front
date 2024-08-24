@@ -317,9 +317,12 @@ const CardComponent = () => {
         Element: <ArogyamComponent cardData={cardData} images={images} />,
         secondaryImage: imageDataUrl,
         cardData,
-        fileName: `${cardData.name.replaceAll(" ", "-")}_${
-          cardData?.gram || cardData.district
-        }`,
+        fileName: `${TLDetails.name.replaceAll(
+          " ",
+          "-"
+        )}_${cardData.name.replaceAll(" ", "-")}_#1_${moment().format(
+          "DD_MMM_YYYY_HH_mm"
+        )}`,
       });
     }
   };

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Table,
   TableBody,
@@ -23,6 +23,8 @@ import moment from "moment";
 import { isEmpty } from "lodash";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ThreeDotsDynamicMenu from "./DynamicMenu";
+import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
+import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 
 const DynamicTable = ({
   headers = [],
@@ -33,10 +35,12 @@ const DynamicTable = ({
   dataForSmallScreen,
   handleMenuSelect,
   highlightedRow = "",
+  handleSort,
 }) => {
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
   const isWideScreen = useMediaQuery("(min-width:1200px)");
+  const [sortType, setSortType] = useState("acc");
 
   function calculateAge({ row, keymap, birthYear }) {
     const currentYear = new Date().getFullYear(); // Get the current year
@@ -141,6 +145,26 @@ const DynamicTable = ({
                   }}
                 >
                   {keymap.label}
+                  {keymap.sort && (
+                    <IconButton
+                      size="small"
+                      onClick={() => {
+                        setSortType((pre) => {
+                          const type = pre === "acc" ? "des" : "acc";
+                          if (handleSort) {
+                            handleSort({ colName: keymap.key, type });
+                          }
+                          return type;
+                        });
+                      }}
+                    >
+                      {sortType == "acc" ? (
+                        <ArrowUpwardIcon />
+                      ) : (
+                        <ArrowDownwardIcon />
+                      )}
+                    </IconButton>
+                  )}
                 </TableCell>
               ))}
             </TableRow>

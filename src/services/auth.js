@@ -25,6 +25,24 @@ async function login(payload) {
   }
 }
 
+async function passwordReset(payload) {
+  const {
+    status,
+    data,
+    message,
+    error = "",
+  } = await axiosUtil.post({
+    path: "auth/sendCode",
+    body: payload,
+  });
+  if (status === "failed") {
+    return { message, status, error: error || message };
+  } else if (!isEmpty(data)) {
+    return data;
+  }
+}
+
 export default {
   login,
+  passwordReset,
 };

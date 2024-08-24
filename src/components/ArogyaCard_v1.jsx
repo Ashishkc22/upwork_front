@@ -146,8 +146,8 @@ const ArogyamComponent = ({
               style={{
                 display: "inline-flex",
                 marginTop: "3px",
-                right: "27px",
-                top: "24px",
+                right: "36px",
+                top: "5px",
                 position: "relative",
               }}
             >
@@ -188,7 +188,7 @@ const ArogyamComponent = ({
                   fontSize: "11px",
                   fontWeight: "600",
                   position: "relative",
-                  top: "9px",
+                  top: "7px",
                 }}
               >
                 {formatNumberWithSpaces(cardData.unique_number)}

@@ -62,7 +62,7 @@ async function downloadSingleCard({
 
       // doc.addImage(dataUrl, "PNG", 10, 10, width, height, "", "MEDIUM"); // Adjust position and size as needed
 
-      doc.addImage(dataUrl, "PNG", 10, 10, width, height, "", "MEDIUM"); // Adjust position and size as needed
+      doc.addImage(dataUrl, "PNG", 10, 10, width, height); // Adjust position and size as needed
       doc.addImage(
         secondaryImage,
         "JPEG",
@@ -255,18 +255,37 @@ async function downloadMultipleCardWithMultipleAgent({
     cardCount += imageData[key].length;
   }
 
+  console.log("imageData", imageData);
+
   const imageDataKeys = Object.keys(imageData);
 
   for (let i = 0; i < imageDataKeys.length; i++) {
     const agentIdAndKey = imageDataKeys[i];
     const dataUrl = imageData[agentIdAndKey];
-    xposition = 10;
-    yposition = 0;
+    // xposition = 10;
+    // yposition = 0;
     count = 0;
-    if (i != 0 && imageDataKeys.length > 1) {
-      doc.addPage();
-    }
+    // if (i != 0 && imageDataKeys.length > 1) {
+    //   doc.addPage();
+    // }
+
     for (let j = 0; j < dataUrl.length; j++) {
+      // adding text
+      if (j == 0 || j == 1) {
+        console.log("count", JSON.stringify(count));
+        console.log("agentIdAndKey", agentIdAndKey);
+        const textXposition = j === 0 ? 10 : 120;
+        const textYposition = yposition + 53;
+        console.log("xposition", xposition);
+        console.log("yposition", yposition);
+
+        doc.setFontSize(12);
+        doc.text(`#${agentIdAndKey}`, textXposition - 3, textYposition, {
+          angle: 90,
+          rotationDirection: 1,
+        });
+      }
+
       doc.addImage(
         dataUrl[j],
         "PNG",
@@ -277,14 +296,6 @@ async function downloadMultipleCardWithMultipleAgent({
         "",
         "MEDIUM"
       );
-      // adding text
-      if (count == 0 || count == 1) {
-        doc.setFontSize(12);
-        doc.text(`#${agentIdAndKey}`, xposition - 3, 50, {
-          angle: 90,
-          rotationDirection: 1,
-        });
-      }
 
       if (xposition == 10 && yposition == 0) {
         xposition = 120;
@@ -296,6 +307,7 @@ async function downloadMultipleCardWithMultipleAgent({
           xposition = 120;
         }
       }
+
       count += 1;
       if (count == 10 && j < dataUrl.length - 1) {
         xposition = 10;

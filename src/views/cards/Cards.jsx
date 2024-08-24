@@ -90,7 +90,7 @@ const tableHeaders = [
   { label: "CREATED BY", key: "created_by_name" },
   { label: "CREATED ON", key: "created_at" },
   // { label: "EXPIRY", key: "expiry_date" },
-  { label: "STATUS", key: "status" },
+  { label: "STATUS", key: "status", sort: true },
   { label: "", key: "ACTION" },
 ];
 
@@ -136,6 +136,7 @@ const TableWithCheckBox = ({
   increaseDownloadCardCount,
   handleMenuSelect,
   setMarkAsPrintPending,
+  handleSort,
   // highlightedRow,
 }) => {
   const [checkBox, setCheckBox] = useState(false);
@@ -305,6 +306,7 @@ const TableWithCheckBox = ({
             rowClick={handleRowClick}
             handleMenuSelect={handleMenuSelect}
             highlightedRow={highlightedRow}
+            handleSort={handleSort}
           />
         </Grid>
       )}
@@ -326,6 +328,7 @@ const TableWithExtraElements = ({
   setIsPaginationEnabled,
   setMarkAsPrintPending,
   markAsPrintPending,
+  handleSort,
 }) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
@@ -541,6 +544,7 @@ const TableWithExtraElements = ({
             increaseDownloadCardCount={increaseDownloadCardCount}
             setMarkAsPrintPending={setMarkAsPrintPending}
             markAsPrintPending={markAsPrintPending}
+            handleSort={handleSort}
           />
         );
       })}
@@ -642,10 +646,12 @@ const Cards = () => {
     till_duration,
     _status,
     _page,
+    sortBy,
   } = {}) => {
     // fetch cards data
     const cId = urlDateType.get("createdById");
     const tab = urlDateType.get("tab");
+    console.log("sortBy", sortBy);
 
     cards
       .getCardsData({
@@ -659,6 +665,7 @@ const Cards = () => {
         ...(district && { district }),
         ...(duration && { duration }),
         ...(tehsil && { tehsil }),
+        ...(sortBy && { sortBy }),
         ...((created_by || cId) && { created_by: created_by || cId }),
         ...(till_duration && { till_duration }),
         selectedCard,
@@ -706,6 +713,17 @@ const Cards = () => {
           setCardsDataGroupBy([]);
         }
       });
+  };
+
+  const handleSort = ({ colName, type }) => {
+    console.log("type", type);
+    console.log("colName", colName);
+
+    if (type === "des") {
+      getTableData({ sortBy: colName });
+    } else {
+      getTableData({});
+    }
   };
 
   // const handleStatusChange = async ({ payload }) => {
@@ -1038,6 +1056,7 @@ const Cards = () => {
                   setIsPaginationEnabled={setIsPaginationEnabled}
                   setMarkAsPrintPending={setMarkAsPrintPending}
                   markAsPrintPending={markAsPrintPending}
+                  handleSort={handleSort}
                 />
               );
             })}
@@ -1067,6 +1086,7 @@ const Cards = () => {
             rowClick={handleRowClick}
             handleMenuSelect={handleMenuSelect}
             highlightedRow={highlightedRow}
+            handleSort={handleSort}
           />
         </Grid>
       )}

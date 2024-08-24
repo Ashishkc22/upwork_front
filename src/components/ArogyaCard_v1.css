@@ -46,7 +46,7 @@
 
 .card-container {
   width: 455px;
-  height: 272px;
+  height: 281px;
   /* margin: 1px; */
   background-color: white;
   /* border: 1px solid whitesmoke; */
@@ -70,7 +70,7 @@
 .header-phone {
   font-weight: 600;
   font-size: 14px !important;
-  color: #1191d0;
+  color: #1191D0;
 }
 
 .fill-container {
@@ -96,7 +96,7 @@
   font-size: 20px;
   position: relative;
   font-weight: 600;
-  color: red;
+  color: #CC0000;
   left: 80px;
   top: 28px;
   z-index: 1;
@@ -139,8 +139,8 @@
   width: 221px;
   /* background: red; */
   height: fit-content;
-  top: -30px;
-  left: 69px;
+  top: -34px;
+  left: 63px;
 }
 
 .user-details-container {
@@ -175,18 +175,18 @@
   font-family: "Inter";
   position: relative;
   right: 302px;
-  top: 100px;
+  top: 91px;
   /* background: blanchedalmond; */
   height: 53px;
   font-size: 8px;
   font-weight: 700;
-  width: 97px;
+  width: 120px;
 }
 
 .water-mark {
   position: relative;
-  right: 216px;
-  top: 20px;
+  right: 227px;
+  top: 32px;
 }
 
 .footer {
@@ -194,7 +194,7 @@
   display: flex;
   justify-content: center;
   background: green;
-  bottom: -5px;
+  bottom: -16px;
   font-size: 11px;
   color: white;
   padding-top: 5px;

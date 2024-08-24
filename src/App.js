@@ -1,6 +1,6 @@
 import { CssBaseline, ThemeProvider } from "@mui/material";
 import { ColorModeContext, useMode } from "./theme";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useLocation } from "react-router-dom";
 import { Blank } from "./views/layout/blank.layout";
 import { HomeLayout } from "./views/layout/home.loayout";
 import LoginPage from "./views/login/Login";
