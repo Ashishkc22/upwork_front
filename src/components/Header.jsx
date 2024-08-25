@@ -468,7 +468,6 @@ const Header = ({
       emitCardSelect(urlDateType?.get("tab"));
     }
     if (urlDateType?.get("status")) {
-      console.log("urlDateType?.status", urlDateType?.get("status"));
       addInChipList(urlDateType?.get("status"), "status");
       setStatus({ label: urlDateType?.get("status") });
     }

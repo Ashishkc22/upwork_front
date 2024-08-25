@@ -583,7 +583,6 @@ const TableWithExtraElements = ({
 };
 
 const Cards = () => {
-  const [stateDropdownOptions, setStateDropdownOptions] = useState([]);
   const [userDropdownOptions, setUserDropdownOptions] = useState([]);
   const [totalCardsAndToBePrinted, setTotalCardsAndToBePrinted] = useState({
     totalCards: 0,
@@ -592,19 +591,11 @@ const Cards = () => {
   const [cardsDataGroupedBy, setCardsDataGroupBy] = useState({});
   const [totalCardsData, setTotalCardsData] = useState([]);
   const [selectedCard, setSelectedCard] = useState("toBePrinted");
-  const [state, setState] = useState("");
-  const [search, setSearch] = useState("");
-  const [district, setDistrict] = useState("");
-  const [tehsil, setTehsil] = useState(null);
-  const [createdBy, setCreatedBy] = useState(null);
-  const [duration, setDuration] = useState("");
   const [status, setStatus] = useState(null);
-  const [districtOption, setDistrictOption] = useState([]);
   const [downloadCardMaps, setDownloadCardMaps] = useState({});
   const [isDownloadCompleted, setIsDownloadCompleted] = useState({});
   const [downloadCardCount, setDownloadCardCount] = useState(0);
   const [tehsilCounts, setTehsilCounts] = useState({});
-  const [urlsParams, setUrlsParams] = useState({});
   const [page, setPage] = useState(0);
   const [pageCount, setPageCount] = useState(0);
   const [isPaginationEnabled, setIsPaginationEnabled] = useState(false);
@@ -614,10 +605,6 @@ const Cards = () => {
 
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
-
-  useEffect(() => {
-    console.log("updated markAsPrintPending value", markAsPrintPending);
-  }, [markAsPrintPending]);
 
   const highlightedRow = storageUtil.getStorageData("highlightedRow");
 
@@ -669,7 +656,7 @@ const Cards = () => {
     setDownloadCardCount(newCount);
   };
 
-  const getTableData = ({
+  const getTableData = async ({
     search = null,
     state = null,
     district = null,
@@ -684,63 +671,60 @@ const Cards = () => {
   } = {}) => {
     // fetch cards data
     const cId = urlDateType.get("createdById");
-    const tab = urlDateType.get("tab");
+    // const tab = urlDateType.get("tab");
     const page = Number(urlDateType.get("page"));
 
-    if (page > 0 && selectedCard == tab) {
+    if (page > 0) {
       setPage(page);
       _page = page;
     }
     setIsPageLoading(true);
-    cards
-      .getCardsData({
-        ...((selectedCard === "totalCards" || tab == "totalCards") && {
-          _status: _status,
-        }),
-        ...(selectedCard === "toBePrinted" && { _status: "SUBMITTED" }),
-        page: page < _page ? _page : page,
-        ...(search && { q: search }),
-        ...(gram_p && { gram_p: gram_p }),
-        ...(state && { state: state }),
-        ...(district && { district }),
-        ...(duration && { duration }),
-        ...(tehsil && { tehsil }),
-        ...(sortBy && { sortBy }),
-        ...((created_by || cId) && { created_by: created_by || cId }),
-        ...(till_duration && { till_duration }),
-        selectedCard,
-      })
-      .then((data) => {
-        if (!isEmpty(data)) {
-          setUserDropdownOptions(data.userList);
-          setPageCount(data.totalShowing);
-          setTehsilCounts(data.tehsilCounts || {});
-          if (data.idList) {
-            storageUtil.setStorageData(data.idList, "cards_ids");
-          }
-          if (selectedCard === "toBePrinted") {
-            setCardsDataGroupBy(data.groupedData);
-            setTotalCardsAndToBePrinted({
-              totalCards: data.totalCards,
-              toBePrinted: data.totalPrintedCards,
-              totalPrintCardsShowing: data.totalPrintCardsShowing,
-              totalShowing: data.totalShowing,
-            });
-          } else {
-            setTotalCardsData(data.groupedData);
-          }
-          setTotalCardsAndToBePrinted({
-            totalCards: data.totalCards,
-            toBePrinted: data.totalPrintedCards,
-            totalPrintCardsShowing: data.totalPrintCardsShowing,
-            totalShowing: data.totalShowing,
-          });
-          setIsPageLoading(false);
-        } else {
-          setCardsDataGroupBy([]);
-          setIsPageLoading(false);
-        }
+    const data = await cards.getCardsData({
+      ...(selectedCard === "totalCards" && {
+        _status: _status,
+      }),
+      ...(selectedCard === "toBePrinted" && { _status: "SUBMITTED" }),
+      page: page < _page ? _page : page,
+      ...(search && { q: search }),
+      ...(gram_p && { gram_p: gram_p }),
+      ...(state && { state: state }),
+      ...(district && { district }),
+      ...(duration && { duration }),
+      ...(tehsil && { tehsil }),
+      ...(sortBy && { sortBy }),
+      ...((created_by || cId) && { created_by: created_by || cId }),
+      ...(till_duration && { till_duration }),
+      selectedCard,
+    });
+    if (!isEmpty(data)) {
+      if (data.idList) {
+        storageUtil.setStorageData(data.idList, "cards_ids");
+      }
+      if (selectedCard === "toBePrinted") {
+        setCardsDataGroupBy(data.groupedData);
+        setTotalCardsAndToBePrinted({
+          totalCards: data.totalCards,
+          toBePrinted: data.totalPrintedCards,
+          totalPrintCardsShowing: data.totalPrintCardsShowing,
+          totalShowing: data.totalShowing,
+        });
+      } else {
+        setTotalCardsData(data.groupedData);
+      }
+      setTotalCardsAndToBePrinted({
+        totalCards: data.totalCards,
+        toBePrinted: data.totalPrintedCards,
+        totalPrintCardsShowing: data.totalPrintCardsShowing,
+        totalShowing: data.totalShowing,
       });
+      setUserDropdownOptions(data.userList);
+      setPageCount(data.totalShowing);
+      setTehsilCounts(data.tehsilCounts || {});
+      setIsPageLoading(false);
+    } else {
+      setCardsDataGroupBy([]);
+      setIsPageLoading(false);
+    }
   };
 
   const handleSort = ({ colName, type }) => {
@@ -751,21 +735,6 @@ const Cards = () => {
     }
   };
 
-  // const handleStatusChange = async ({ payload }) => {
-  //   try {
-  //     const updatedCardData = await cardService.changeStatus(
-  //       payload,
-  //       cardData._id
-  //     );
-  //     if (!isEmpty(updatedCardData)) {
-  //       setCardData(updatedCardData);
-  //     }
-  //     setIsDialogOpen(false);
-  //   } catch (error) {
-  //     console.log("error", error);
-  //   }
-  // };
-
   const handleMenuSelect = async (item, selectedCard) => {
     const updatedCardData = await cardService.changeStatus(
       { status: item },
@@ -774,101 +743,6 @@ const Cards = () => {
     getTableData({ _status: status });
   };
 
-  const getDistrictData = ({ stateId }) => {
-    cards.getDistrictData({ stateId }).then((data) => {
-      setDistrictOption(data);
-    });
-  };
-
-  const handleSearch = (value) => {
-    if (value === "") {
-      getTableData({ _status: status });
-    }
-    setSearch(value);
-    if (!/^\s*$/.test(value)) {
-      clearTimeout(typingTimer);
-      typingTimer = setTimeout(function () {
-        getTableData({ search: value });
-      }, 1500);
-    }
-  };
-
-  const handleState = (value) => {
-    setState(value || null);
-    getTableData({ state: value?.name, _status: status });
-    getDistrictData({ stateId: value?._id });
-  };
-
-  const handleDistrictChange = (data) => {
-    setDistrict(data.name || "");
-    getTableData({
-      q: search,
-      state: state.name,
-      district: data?.name || "",
-      _status: status,
-    });
-  };
-
-  const handleTehsilChange = (data) => {
-    setTehsil(data.name || "");
-    getTableData({
-      q: search,
-      state: state.name,
-      tehsil: data?.name || "",
-      _status: status,
-    });
-  };
-
-  const handleCreatedBYChange = (data) => {
-    setCreatedBy(data || null);
-    getTableData({
-      created_by: data?._id,
-      q: search,
-      state: state?.name,
-      district: district?.name || "",
-      _status: status,
-    });
-  };
-  const handleDurationChange = (data) => {
-    let payloadDate;
-    if (typeof data === "object") {
-      if (data.type === "CUSTOM DATE") {
-        payloadDate = {
-          duration: moment(data.value).valueOf(),
-          till_duration: moment().valueOf(),
-        };
-      }
-      if (data.type === "CUSTOM") {
-        const [date] = data.value;
-        payloadDate = {
-          duration: moment(date.endDate).valueOf(),
-          till_duration: moment(date.startDate).valueOf(),
-        };
-      }
-    }
-
-    setDuration(data || "");
-    getTableData({
-      created_by: createdBy?._id,
-      duration: data,
-      q: search,
-      state: state.name,
-      district: district?.name || "",
-      ...(payloadDate && payloadDate),
-      _status: status,
-    });
-  };
-
-  const handleRefresh = () => {
-    getTableData({
-      created_by: createdBy?._id,
-      duration: duration,
-      q: search,
-      state: state.name,
-      district: district?.name || "",
-      _status: status,
-    });
-  };
   function addDataToURL(data) {
     const searchParams = new URLSearchParams(window.location.search);
     // Iterate over the data object and append each key-value pair to the URL
@@ -882,22 +756,6 @@ const Cards = () => {
     // Update the URL with the new query string
     navigate(`?${searchParams.toString()}`, { replace: true });
   }
-
-  const handleStatusChange = (data) => {
-    if (isEmpty(data)) {
-      setStatus(null);
-    } else {
-      setStatus(data?.label);
-    }
-    getTableData({
-      created_by: createdBy?._id,
-      duration: duration,
-      q: search,
-      state: state.name,
-      district: district?.name || "",
-      _status: data?.label || null,
-    });
-  };
 
   const handleGroupCardsDownload = () => {
     setIsCardDownload(true);
@@ -938,36 +796,21 @@ const Cards = () => {
     setDownloadCardCount(0);
   };
 
-  const setURLFilters = () => {
-    const urls = {};
-    urlDateType.entries().forEach(([key, value]) => {
-      urls[key] = value;
-    });
-
-    setUrlsParams(urls);
-    return urls;
-  };
-
-  useEffect(() => {
-    const urls = setURLFilters();
-    common.getAddressData().then((states) => {
-      setStateDropdownOptions(states);
-      if (urls?.stateId) {
-        const _state = states?.find((state) => urls?.stateId === state._id);
-        if (_state) {
-          setState(_state);
-        }
-      }
-    });
-  }, []);
+  // useEffect(() => {
+  //   const urls = setURLFilters();
+  //   common.getAddressData().then((states) => {
+  //     setStateDropdownOptions(states);
+  //     if (urls?.stateId) {
+  //       const _state = states?.find((state) => urls?.stateId === state._id);
+  //       if (_state) {
+  //         setState(_state);
+  //       }
+  //     }
+  //   });
+  // }, []);
 
   useEffect(() => {
-    const statusURL = urlDateType.get("status");
-    if (statusURL) {
-      getTableData({ _status: statusURL });
-    } else {
-      getTableData();
-    }
+    getTableData();
   }, [selectedCard]);
 
   return (
@@ -1005,6 +848,8 @@ const Cards = () => {
           tehsilCounts={tehsilCounts}
           handleSelectCard={(n) => {
             setSelectedCard(n);
+            // console.log("n", n);
+            // getTableData({ selectedCard: n });
           }}
           isImageMode={isImageMode}
           handleViewChange={() => setIsImageMode(!isImageMode)}
