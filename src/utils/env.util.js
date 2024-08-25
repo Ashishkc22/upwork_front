@@ -6,7 +6,7 @@ const apiInfo = {
   },
   pro: {
     protocol: "https",
-    url: "upwork-back-csr2.onrender.com",
+    url: "new-repo-upwork.onrender.com",
   },
 };
 

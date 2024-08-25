@@ -1,4 +1,4 @@
-import Header from "./Header";
+import Header from "../../components/Header";
 import { Grid, Card, TablePagination } from "@mui/material";
 import field_executives from "../../services/field_executives";
 import { isEmpty } from "lodash";
@@ -139,17 +139,22 @@ const HospitalPage = () => {
       />
       <Grid item xs={12}>
         <Header
-          totalCardDetails={{
-            scoreValue: totalUsers,
-            secondaryValue: totalusersToShow,
-            label: "Total Executives",
-            nmae: "Total Executives",
+          toTalScoreDetails={{
+            totalScore: totalUsers || 0,
+            totalScoreToshow: totalusersToShow || 0,
+            text: "Total Executives",
+            name: "totalExecutives",
           }}
-          callBacks={{
-            search: handleSearchChanges,
-            getDataOnFilterChange: getUsers,
-          }}
-          handleRefresh={handleRefresh}
+          statusOption={[
+            { label: "Unverified" },
+            { label: "Active" },
+            { label: "Inactive" },
+            { label: "Suspended" },
+            { label: "Rejected" },
+          ]}
+          apiCallBack={getUsers}
+          showGram={false}
+          showMode={false}
         />
       </Grid>
       {isPageLoading ? (
@@ -196,14 +201,7 @@ const HospitalPage = () => {
             />
             {/* )} */}
             <Grid item xs={12} sx={{ height: "39px" }}>
-              <Card
-                sx={{
-                  position: "fixed",
-                  bottom: "5px",
-                  width: "100%",
-                  right: "1px",
-                }}
-              >
+              <Card>
                 <TablePagination
                   component="div"
                   count={pageCount}

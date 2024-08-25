@@ -22,6 +22,7 @@ import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
 import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
 import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
 import SupervisedUserCircleOutlinedIcon from "@mui/icons-material/SupervisedUserCircleOutlined";
+import { isEmpty } from "lodash";
 
 const drawerWidth = 240;
 
@@ -80,6 +81,7 @@ const Item = ({
   setSelected,
   nav,
   isDrawerOpen,
+  params,
 }) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
@@ -103,7 +105,12 @@ const Item = ({
           cookiesUtil.clearAllCookies();
         }
         if (nav) {
-          nav(to);
+          let path = to;
+          if (!isEmpty(params)) {
+            const _params = new URLSearchParams(params);
+            path = `${to}?${_params.toString()}`;
+          }
+          nav(path);
         }
       }}
       icon={icon}
@@ -121,7 +128,14 @@ const Item = ({
 const navList = [
   { title: "Dashboard", icon: <HomeOutlinedIcon />, path: "dashboard" },
   { title: "Cards", icon: <CreditCardIcon />, path: "cards" },
-  { title: "Hospitals", icon: <LocalHospitalIcon />, path: "hospitals" },
+  {
+    title: "Hospitals",
+    icon: <LocalHospitalIcon />,
+    path: "hospitals",
+    params: {
+      status: "ENABLE",
+    },
+  },
   {
     title: "Field Executives",
     icon: <SupervisedUserCircleOutlinedIcon />,
@@ -181,6 +195,7 @@ export default function MiniDrawer() {
                 isSelected={Boolean(currentPath.startsWith(`/${data.path}`))}
                 setSelected={setSelected}
                 nav={nav}
+                params={data?.params}
                 isDrawerOpen={open}
               />
             </ListItem>

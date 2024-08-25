@@ -277,19 +277,60 @@ const UserInfoCard = () => {
 
               {/* Phone */}
               <Grid item xs={12} sx={{ mt: 2 }}>
-                <Box display="flex" alignItems="center">
+                <Box
+                  display="flex"
+                  alignItems="center"
+                  sx={{ width: "30px !important" }}
+                >
                   <LocalPhoneIcon sx={{ mr: 2 }} />
-                  <Link
-                    onClick={() =>
-                      window.open(`https://wa.me/${userData.phone}`)
-                    }
-                    underline="none"
-                  >
-                    <TextGroup title="Phone" value={userData.phone} />
-                  </Link>
+
+                  <Box mb={1}>
+                    <Typography fontSize="10px" color="text.secondary">
+                      Phone
+                    </Typography>
+                    <Link underline="none" sx={{ width: "fit" }}>
+                      <Typography
+                        variant="h6"
+                        fontSize="12px"
+                        fontWeight={600}
+                        gutterBottom
+                        onClick={() =>
+                          window.open(`https://wa.me/${userData.phone}`)
+                        }
+                      >
+                        {userData.phone}
+                      </Typography>
+                    </Link>
+                  </Box>
+                  {/* <TextGroup title="Phone" value={userData.phone} /> */}
                 </Box>
-                <Box sx={{ ml: { lg: "35px", md: "35px" } }}>
-                  <Link
+                <Box
+                  sx={{
+                    ml: { lg: "35px", md: "35px" },
+                    width: "90px !important",
+                  }}
+                >
+                  <Box mb={1}>
+                    <Typography fontSize="10px" color="text.secondary">
+                      Emergency Contact
+                    </Typography>
+                    <Link underline="none" sx={{ width: "80px" }}>
+                      <Typography
+                        variant="h6"
+                        fontSize="12px"
+                        fontWeight={600}
+                        gutterBottom
+                        onClick={() =>
+                          window.open(
+                            `https://wa.me/${userData.emergency_contact}`
+                          )
+                        }
+                      >
+                        {userData.emergency_contact}
+                      </Typography>
+                    </Link>
+                  </Box>
+                  {/* <Link
                     onClick={() =>
                       window.open(`tel:${userData.emergency_contact}`)
                     }
@@ -299,7 +340,7 @@ const UserInfoCard = () => {
                       title="Emergency Contact"
                       value={userData.emergency_contact}
                     />
-                  </Link>
+                  </Link> */}
                 </Box>
               </Grid>
 
@@ -345,7 +386,7 @@ const UserInfoCard = () => {
                 </Grid>
 
                 <Grid item xs={12}>
-                  <Box mb={1}>
+                  <Box mb={1} sx={{ width: "80px" }}>
                     <Typography fontSize="10px" color="text.secondary">
                       Co-ordinates
                     </Typography>

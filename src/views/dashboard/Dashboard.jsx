@@ -16,7 +16,7 @@ import CustomDatePicker from "../../components/CustomDatePicker";
 import moment from "moment";
 import { isEmpty } from "lodash";
 import DashboardCard from "./StatsCard";
-import getCardStack from "./ChipStack";
+import getCardStack from "../../components/ChipStack";
 import { useNavigate } from "react-router-dom";
 import ImageComponent from "../../components/ImageComponent";
 import CardViewer from "../../components/cardViewer";
@@ -311,7 +311,10 @@ const Dashboard = () => {
             sx={{ maxWidth: "100vw" }}
             disableGutters
           >
-            {getCardStack({ filter, setFilter, date })}
+            {getCardStack({
+              value: filter?.includes("CUSTOM") ? date : filter,
+              setFilter,
+            })}
             {!isEmpty(dashboardData) && (
               <>
                 <Grid item xs={12} sm={4} md={3} lg={2}>
@@ -464,9 +467,7 @@ const Dashboard = () => {
                     title="Hospitals"
                     percentageChange={cardPercentage.hospitalsPercentage}
                     bgcolor="#ff5722"
-                    handleCardClick={() =>
-                      nav("/hospitals?hospitalCategory=Hospital")
-                    }
+                    handleCardClick={() => nav("/hospitals?category=Hospital")}
                   />
                 </Grid>
                 <Grid item xs={12} sm={4} md={3} lg={2}>
@@ -475,9 +476,7 @@ const Dashboard = () => {
                     title="Medicals"
                     percentageChange={cardPercentage.medicalsPercentage}
                     bgcolor="#ff5722"
-                    handleCardClick={() =>
-                      nav("/hospitals?hospitalCategory=Medical")
-                    }
+                    handleCardClick={() => nav("/hospitals?category=Medical")}
                   />
                 </Grid>
                 <Grid item xs={12} sm={4} md={3} lg={2}>
@@ -489,7 +488,7 @@ const Dashboard = () => {
                     }
                     bgcolor="#ff5722"
                     handleCardClick={() =>
-                      nav("/hospitals?hospitalCategory=Pathology+Lab")
+                      nav("/hospitals?category=Pathology+Lab")
                     }
                   />
                 </Grid>

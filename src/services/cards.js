@@ -47,6 +47,7 @@ async function getCardsData({
     total = 0,
     total_showing = 0,
     total_print_card_showing = 0,
+    userList,
   } = await axiosUtil.get({
     path: "cards",
     params: _payload,
@@ -74,6 +75,7 @@ async function getCardsData({
         totalShowing: total_showing,
         idList,
         tehsilCounts,
+        userList,
       };
     }
     idList = [];
@@ -91,61 +93,99 @@ async function getCardsData({
     });
     console.log("newGroupedData", newGroupedData);
 
+    const sortedEntries = Object.entries(newGroupedData).sort((a, b) => {
+      // Get the size of the arrays in each object.
+      const sizeA = Object.values(a[1]).reduce(
+        (acc, arr) => acc + arr.length,
+        0
+      );
+      const sizeB = Object.values(b[1]).reduce(
+        (acc, arr) => acc + arr.length,
+        0
+      );
+
+      // Step 2: Sort in descending order.
+      return sizeB - sizeA;
+    });
+
+    // Step 3: Convert the sorted array back to an object.
+    const sortedData = Object.fromEntries(sortedEntries);
+
+    console.log(sortedEntries);
+    console.log(sortedData);
+
     const unsortedKeys = Object.keys(newGroupedData);
     const countMap = {};
     const sortedObject = new Map();
 
-    unsortedKeys.map((key) => {
-      Object.keys(newGroupedData[key]).forEach((innerKey) => {
+    for (let i = 0; i < unsortedKeys.length; i++) {
+      const key = unsortedKeys[i];
+
+      const innerKeys = Object.keys(newGroupedData[key]);
+      for (let j = 0; j < innerKeys.length; j++) {
+        const innerKey = innerKeys[j];
         if ((countMap[key] || 0) < newGroupedData[key][innerKey].length) {
           countMap[key] = newGroupedData[key][innerKey].length;
         }
-      });
-    });
-
-    console.log("sortedObject", sortedObject);
-
-    for (let i = 0; i < Object.keys(countMap).length; i++) {
-      const maxValue = Object.keys(countMap).reduce(
-        (maxObject, key) => {
-          if (maxObject.maxValue < countMap[key]) {
-            return { key: key, maxValue: countMap[key] };
-          }
-          return maxObject;
-        },
-        { key: "", maxValue: 0 }
-      );
-
-      sortedObject.set(maxValue.key, newGroupedData[maxValue.key]);
-      delete countMap[maxValue.key];
-    }
-
-    const newSortedMapObject = new Map();
-
-    for (let [key, value] of sortedObject) {
-      const newObject = {};
-      const countMap = {};
-      for (let i = 0; i < Object.keys(value).length; i++) {
-        const _key = Object.keys(value)[i];
-        countMap[_key] = sortedObject.get(key)[_key].length;
       }
-
-      Object.keys(countMap)
-        .sort((a, b) => countMap[b] - countMap[a])
-        .forEach((_key) => {
-          newObject[_key] = sortedObject.get(key)[_key];
-        });
-      newSortedMapObject.set(key, newObject);
     }
+
+    // unsortedKeys.map((key) => {
+    //   Object.keys(newGroupedData[key]).forEach((innerKey) => {
+    //     if ((countMap[key] || 0) < newGroupedData[key][innerKey].length) {
+    //       countMap[key] = newGroupedData[key][innerKey].length;
+    //     }
+    //   });
+    // });
+
+    console.log("countMap", countMap);
+    console.log("countMap", Object.keys(countMap));
+
+    // for (let i = 0; i < Object.keys(countMap).length; i++) {
+    //   const maxValue = Object.keys(countMap).reduce(
+    //     (maxObject, key) => {
+    //       if (maxObject.maxValue < countMap[key]) {
+    //         return { key: key, maxValue: countMap[key] };
+    //       }
+    //       return maxObject;
+    //     },
+    //     { key: "", maxValue: 0 }
+    //   );
+    //   debugger;
+    //   sortedObject.set(maxValue.key, newGroupedData[maxValue.key]);
+    //   delete countMap[maxValue.key];
+    // }
+    // console.log("sortedObject", sortedObject);
+
+    // const newSortedMapObject = new Map();
+
+    // for (let [key, value] of sortedObject) {
+    //   const newObject = {};
+    //   const countMap = {};
+    //   for (let i = 0; i < Object.keys(value).length; i++) {
+    //     const _key = Object.keys(value)[i];
+    //     countMap[_key] = sortedObject.get(key)[_key].length;
+    //   }
+
+    //   Object.keys(countMap)
+    //     .sort((a, b) => countMap[b] - countMap[a])
+    //     .forEach((_key) => {
+    //       newObject[_key] = sortedObject.get(key)[_key];
+    //     });
+    //   newSortedMapObject.set(key, newObject);
+    // }
+
+    // console.log("newSortedMapObject", newSortedMapObject);
 
     return {
-      groupedData: Object.fromEntries(newSortedMapObject),
+      groupedData: sortedData,
       totalPrintedCards: total_print_card,
       totalPrintCardsShowing: total_print_card_showing,
       totalShowing: total_showing,
       totalCards: total,
       idList,
       tehsilCounts,
+      userList,
     };
   } else {
     return {

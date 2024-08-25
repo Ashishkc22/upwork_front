@@ -1,4 +1,4 @@
-import ChipStack from "../../components/ChipsStack";
+import ChipStack from "./ChipsStack";
 import { Grid } from "@mui/material";
 
 const CardStack = ({ value, setFilter, type, otherData }) => {

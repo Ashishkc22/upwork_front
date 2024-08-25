@@ -334,6 +334,9 @@ async function downloadMultipleLevelCardData({
     for (let i = 0; i < groupNamekeys.length; i++) {
       const splitName = groupNamekeys[i].split("/");
       const districtName = splitName[splitName.length - 1];
+      console.log("districtName", districtName);
+      console.log("splitName", splitName);
+
       await downloadMultipleCardWithMultipleAgent({
         Element,
         cardData: cardData[groupNamekeys[i]],

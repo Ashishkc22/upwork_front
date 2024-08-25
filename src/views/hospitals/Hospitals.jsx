@@ -1,5 +1,5 @@
-import Header from "./Header";
-import { Grid, Button } from "@mui/material";
+import Header from "../../components/Header";
+import { Grid, Card, TablePagination } from "@mui/material";
 import hospitals from "../../services/hospitals";
 import { isEmpty } from "lodash";
 import { useEffect, useState } from "react";
@@ -34,6 +34,9 @@ const HospitalPage = () => {
 
   const [addHospitalDialog, setAddHospitalDialog] = useState(false);
 
+  const [pageCount, setPageCount] = useState(0);
+  const [page, setPage] = useState(0);
+
   let [urlDateType, setUrlDateType] = useSearchParams();
   const [isPageLoading, setIsPageLoading] = useState(false);
 
@@ -42,11 +45,12 @@ const HospitalPage = () => {
     search = "em",
     till_duration,
     duration,
-    status,
+    _status,
     state,
     type,
     tehsil,
     district,
+    _page,
   } = {}) => {
     const urlType = urlDateType.get("hospitalCategory");
 
@@ -58,12 +62,12 @@ const HospitalPage = () => {
       .getHospitals({
         params: {
           limit: 100,
-          page: 0,
+          page: _page,
           ...(search && search != "em" && { q: search }),
           ...(district && district != "em" && { district }),
           ...(tehsil && tehsil != "em" && { tehsil }),
           ...(((type && type != "em") || urlType) && { type: type || urlType }),
-          ...(status && status != "em" ? { status } : { statu: "ENABLE" }),
+          ...(_status && { status: _status }),
           ...(state && state != "em" && { state }),
           ...(duration && duration != "em" && { duration }),
           ...(till_duration && till_duration != "em" && { till_duration }),
@@ -71,6 +75,7 @@ const HospitalPage = () => {
       })
       .then((response) => {
         if (!isEmpty(response)) {
+          setPageCount(response.total_results);
           if (!isEmpty(response.data)) {
             setHospitalList(response.data);
           }
@@ -125,17 +130,19 @@ const HospitalPage = () => {
       />
       <Grid item xs={12}>
         <Header
-          totalCardDetails={{
-            scoreValue: totalHospitals,
-            secondaryValue: totalHospitalsToShow,
-            label: "Total Hospitals",
-            nmae: "Total Hospitals",
+          toTalScoreDetails={{
+            totalScore: totalHospitals || 0,
+            totalScoreToshow: totalHospitalsToShow || 0,
+            text: "Total Hospitals",
+            name: "totalHospitals",
           }}
-          callBacks={{
-            search: handleSearchChanges,
-            getDataOnFilterChange: getHospitals,
-          }}
-          handleRefresh={handleRefresh}
+          statusOption={[{ label: "ENABLE" }, { label: "DISABLE" }]}
+          apiCallBack={getHospitals}
+          showMode={false}
+          // defaultStatus={{ label: "ENABLE" }}
+          showTehsil={false}
+          showGram={false}
+          showType
         />
       </Grid>
       {isPageLoading ? (
@@ -184,6 +191,21 @@ const HospitalPage = () => {
           </Grid>
         </>
       )}
+      <Grid item xs={12} sx={{ height: "39px" }}>
+        <Card>
+          <TablePagination
+            component="div"
+            count={pageCount}
+            page={page}
+            rowsPerPage={100}
+            onPageChange={(e, newPage) => {
+              setPage(newPage);
+              getHospitals({ _page: newPage });
+            }}
+            onRowsPerPageChange={() => {}}
+          />
+        </Card>
+      </Grid>
     </Grid>
   );
 };

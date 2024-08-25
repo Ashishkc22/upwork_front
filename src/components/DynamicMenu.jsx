@@ -41,12 +41,12 @@ const ThreeDotsDynamicMenu = ({ row, handleMenuSelect }) => {
       icon: "DELIVERED",
       onClick: () => console.log("Contact clicked"),
     },
-    {
-      key: "DISCARDED",
-      label: "DISCARDED",
-      icon: "DISCARDED",
-      onClick: () => console.log("Contact clicked"),
-    },
+    // {
+    //   key: "DISCARDED",
+    //   label: "DISCARDED",
+    //   icon: "DISCARDED",
+    //   onClick: () => console.log("Contact clicked"),
+    // },
     {
       key: "RTO",
       label: "RTO",

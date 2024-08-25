@@ -1,6 +1,14 @@
 import React, { useEffect, useState } from "react";
-import Header from "./Header";
-import { Grid, Typography, Button, useTheme, Box, Card } from "@mui/material";
+import Header from "../../components/Header";
+import {
+  Grid,
+  Typography,
+  Button,
+  useTheme,
+  Box,
+  Card,
+  Link,
+} from "@mui/material";
 import DownloadIcon from "@mui/icons-material/Download";
 import Checkbox from "@mui/material/Checkbox";
 import CustomTable from "../../components/CustomTable";
@@ -198,12 +206,21 @@ const TableWithCheckBox = ({
                   checkBoxClicked(id, !checkBox);
                 }}
               />
-              <Typography
-                sx={{ display: "inline-flex", mr: 1, color: "black" }}
+              <Link
+                onClick={(e) => {
+                  console.log("Clicked ");
+                  e.stopPropagation();
+                  navigate(`/field-executives/${firtsData?.created_by_uid}`);
+                }}
               >
-                {firtsData?.created_by_name && `${firtsData?.created_by_name}`}
-                {`(${firtsData?.created_by_uid})`}
-              </Typography>
+                <Typography
+                  sx={{ display: "inline-flex", mr: 1, color: "black" }}
+                >
+                  {firtsData?.created_by_name &&
+                    `${firtsData?.created_by_name}`}
+                  {`(${firtsData?.created_by_uid})`}
+                </Typography>
+              </Link>
               <Typography
                 variant="h6"
                 sx={{
@@ -438,6 +455,8 @@ const TableWithExtraElements = ({
             }}
             onClick={() => {
               setIsCardDownload(true);
+              const splitName = groupName.split("/");
+              const districtName = splitName[splitName.length - 1];
               downloadCards.downloadMultipleCardWithMultipleAgent({
                 Element: ArogyamComponent,
                 cardData: groupedData,
@@ -451,6 +470,7 @@ const TableWithExtraElements = ({
                   setMarkAsPrintPending((pre) => ({ ...pre, ...keys }));
                 },
                 images: images,
+                districtName,
               });
             }}
           >
@@ -655,6 +675,8 @@ const Cards = () => {
     district = null,
     duration,
     created_by,
+    gram_p,
+    tehsil,
     till_duration,
     _status,
     _page,
@@ -663,7 +685,12 @@ const Cards = () => {
     // fetch cards data
     const cId = urlDateType.get("createdById");
     const tab = urlDateType.get("tab");
-    console.log("sortBy", sortBy);
+    const page = Number(urlDateType.get("page"));
+
+    if (page > 0 && selectedCard == tab) {
+      setPage(page);
+      _page = page;
+    }
     setIsPageLoading(true);
     cards
       .getCardsData({
@@ -673,6 +700,7 @@ const Cards = () => {
         ...(selectedCard === "toBePrinted" && { _status: "SUBMITTED" }),
         page: page < _page ? _page : page,
         ...(search && { q: search }),
+        ...(gram_p && { gram_p: gram_p }),
         ...(state && { state: state }),
         ...(district && { district }),
         ...(duration && { duration }),
@@ -684,6 +712,7 @@ const Cards = () => {
       })
       .then((data) => {
         if (!isEmpty(data)) {
+          setUserDropdownOptions(data.userList);
           setPageCount(data.totalShowing);
           setTehsilCounts(data.tehsilCounts || {});
           if (data.idList) {
@@ -696,21 +725,6 @@ const Cards = () => {
               toBePrinted: data.totalPrintedCards,
               totalPrintCardsShowing: data.totalPrintCardsShowing,
               totalShowing: data.totalShowing,
-            });
-            const ids = new Set();
-            Object.keys(data.groupedData).forEach((key) => {
-              const keyArray = Object.keys(data.groupedData[key]);
-              keyArray.forEach((id) => ids.add(id));
-            });
-            cards.getUsersByIds({ ids }).then((users) => {
-              setUserDropdownOptions(users);
-
-              // if (cId && users) {
-              //   const _createdBy = users.find((user) => user._id === cId);
-              //   if (_createdBy) {
-              //     setCreatedBy(_createdBy);
-              //   }
-              // }
             });
           } else {
             setTotalCardsData(data.groupedData);
@@ -939,7 +953,7 @@ const Cards = () => {
     common.getAddressData().then((states) => {
       setStateDropdownOptions(states);
       if (urls?.stateId) {
-        const _state = states.find((state) => urls?.stateId === state._id);
+        const _state = states?.find((state) => urls?.stateId === state._id);
         if (_state) {
           setState(_state);
         }
@@ -961,47 +975,41 @@ const Cards = () => {
       <Grid item sx={{ mb: 2 }}>
         {isCardDownloading && <LoadingScreen />}
         <Header
-          totalCards={totalCardsAndToBePrinted.totalCards}
-          toBePrinted={totalCardsAndToBePrinted.toBePrinted}
-          totalPrintCardsShowing={
-            totalCardsAndToBePrinted.totalPrintCardsShowing
-          }
-          totalShowing={totalCardsAndToBePrinted.totalShowing}
+          toTalScoreDetails={{
+            totalScore: totalCardsAndToBePrinted?.totalCards || 0,
+            totalScoreToshow: totalCardsAndToBePrinted?.totalShowing || 0,
+            text: "Total Cards",
+            name: "totalCards",
+          }}
+          secondaryTotalDetails={{
+            secondaryTotalScore: totalCardsAndToBePrinted.toBePrinted,
+            secondaryTotalScoreToshow:
+              totalCardsAndToBePrinted.totalPrintCardsShowing,
+            text: "To Be Printed",
+            name: "toBePrinted",
+          }}
+          {...(selectedCard === "totalCards" && {
+            statusOption: [
+              { label: "SUBMITTED" },
+              { label: "PRINTED" },
+              { label: "UNDELIVERED" },
+              { label: "DELIVERED" },
+              { label: "DISCARDED" },
+              { label: "RTO" },
+            ],
+          })}
+          defaultSelectedCard="toBePrinted"
+          showSecondaryScoreCard
           createdByOptions={userDropdownOptions || []}
           createdByKeyMap={{ labelKey: "name", codeKey: "uid" }}
-          stateDropdownOptions={stateDropdownOptions || []}
           tehsilCounts={tehsilCounts}
-          stateKeyMap={{ labelKey: "name" }}
-          durationOptions={[
-            "TODAY",
-            "THIS WEEK",
-            "THIS MONTH",
-            "ALL",
-            "CUSTOM",
-            "CUSTOM DATE",
-          ]}
-          selectedCard={selectedCard}
-          selectedState={state}
-          districtOption={districtOption}
-          districtKeyMap={{ labelKey: "name" }}
-          handleSelectCard={(n) => setSelectedCard(n)}
-          handleSearch={handleSearch}
-          handleState={handleState}
-          handleDistrictChange={handleDistrictChange}
-          handleTehsilChange={handleTehsilChange}
-          handleCreatedBYChange={handleCreatedBYChange}
-          handleDurationChange={handleDurationChange}
-          handleRefresh={handleRefresh}
-          statusOption={[
-            { label: "SUBMITTED" },
-            { label: "PRINTED" },
-            { label: "UNDELIVERED" },
-            { label: "DELIVERED" },
-            { label: "DISCARDED" },
-          ]}
-          handleStatusChange={handleStatusChange}
+          handleSelectCard={(n) => {
+            setSelectedCard(n);
+          }}
           isImageMode={isImageMode}
           handleViewChange={() => setIsImageMode(!isImageMode)}
+          apiCallBack={getTableData}
+          showState={selectedCard != "totalCards"}
         />
         {Boolean(Object.keys(downloadCardMaps).length) && (
           <Stack
@@ -1112,7 +1120,7 @@ const Cards = () => {
           <Grid item xs={12} sx={{ height: "39px" }}>
             <Card
               sx={{
-                position: "fixed",
+                // position: "fixed",
                 bottom: "5px",
                 width: "100%",
                 right: "1px",
@@ -1125,6 +1133,7 @@ const Cards = () => {
                 disabled={Object.keys(markAsPrintPending).length}
                 rowsPerPage={100}
                 onPageChange={(e, newPage) => {
+                  addDataToURL({ page: newPage });
                   setPage(newPage);
                   getTableData({ _page: newPage });
                 }}
