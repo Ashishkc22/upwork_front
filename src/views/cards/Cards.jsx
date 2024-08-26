@@ -1,23 +1,10 @@
 import React, { useEffect, useState } from "react";
 import Header from "../../components/Header";
-import {
-  Grid,
-  Typography,
-  Button,
-  useTheme,
-  Box,
-  Card,
-  Link,
-} from "@mui/material";
-import DownloadIcon from "@mui/icons-material/Download";
-import Checkbox from "@mui/material/Checkbox";
+import { Grid, Typography, useTheme, Box, Card } from "@mui/material";
 import CustomTable from "../../components/CustomTable";
 import { tokens } from "../../theme";
-import IconButton from "@mui/material/IconButton";
 import cards from "../../services/cards";
-import common from "../../services/common";
-import { isEmpty, sortBy } from "lodash";
-import Badge from "@mui/material/Badge";
+import { isEmpty } from "lodash";
 import Stack from "@mui/material/Stack";
 import {
   useNavigate,
@@ -26,16 +13,14 @@ import {
   useParams,
 } from "react-router-dom";
 import ArogyamComponent from "../../components/ArogyaCard_v1";
-import Tooltip from "@mui/material/Tooltip";
 import downloadCards from "../../utils/downloadCards";
 import Fab from "@mui/material/Fab";
-import CheckIcon from "@mui/icons-material/Check";
 import storageUtil from "../../utils/storage.util";
-import moment from "moment";
 import cardService from "../../services/cards";
 import TablePagination from "@mui/material/TablePagination";
 import LinearIndeterminate from "../../components/LinearProgress";
 import LoadingScreen from "../../components/LaodingScreenWithWhiteBG";
+import TableWithExtraElements from "./TableWithExtraElements";
 
 const images = {
   LogoImage: <img src="/v1cardImages/cardLogo.png" alt="Card Logo" />,
@@ -73,20 +58,6 @@ const images = {
       style={{ width: "54px", height: "54px" }}
     />
   ),
-};
-
-let typingTimer;
-
-const SupportImage = () => {
-  return (
-    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAMAAAC7IEhfAAAAV1BMVEVHcExWVWlaWW1PTmNPTmNPTmNPTmNhYHNvbn9PTmNQT2RcXG9UU2hWVWpSUWVXVmpRUGVVVWlXVmpYV2tUU2dRUGVXVmpTUmdTUmZSUWZXVmpRUGVOTWK6xRS/AAAAHHRSTlMAXybq++D3Dgbx1hZUHrx0y2pLQ4ikL32dlDixMiTPfAAAAfZJREFUOMvNVNuypCAMlJsCIoLcvOT/v3MRHGc8Oqf2Zau2H6Y00yZNJ6Rp/jG6ONnkfbIq9t9ZfPWGwAEhl6l75q1BANHLiJRC46IZUD09pbMEzIg573GMuOd8QJoKf0vKEyVj18SkJRGCMO0d50hC+Mm0VLoGz6fELHLLAQ0Lv+ojxDWThAuIbbCh6FI4wNhMBH6gzUFhPn1ahemwhBvE1MzwmdLnhDM8wHSObm+VnRFxLYWpphciRZ1h+CRiYjp/1ArXlJrP8Lbd0dCbEpd9Hy45CR6zrBcU+ChKfMk6bDnVi47yn2+3wY8lyuL+OqCNCZ82todmu39d0W/QtkXhywmOrdp/sp5WgIxHeDmqSJUppxMlRfVM14b31Wljh6ZBus4Ltzrt30xFqlgLcShaytn2R7XHIoHWncTyeCVKoC9iSfNELCZMYax6VEB7afVJPDSGp+tRXWurRr4d/X8g1obKob5Fsxdo0Z1XVFGmTscnhDSQsY5ohwd+tkxapPDlY5V7Y5LDvTKEhVorT0q67wid73zbEimO4chIIPFdjxPUu3He3kQlwD5ZkcpQ8LO0Y/dbXYvPIFJ3HgYx0MOXVZZnZVvrifHSgsZfl17KayqgNaolr6h5+GU/Op1dEiI3wCD++yadZsOYDKj/i607DH3zP+EP/z42JH14Mu8AAAAASUVORK5CYII=" />
-  );
-};
-
-const LogoImage = () => {
-  return (
-    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAeCAYAAAA2Lt7lAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAIRSURBVHgB7VPNSxtBFH9vs7q7KSmh9IMUqSn0UApC6aHWnkJ77bmU9lQKLaGH2q800lLS9lA/EQUxQfADRETEP0BUAh707FnwAyF+R0VNNLszzqzZZIOzRu/7O8x78+a99/vNYwbAhQsXyJfdrkf3VFmRL1Jwe0sRxiUEfaMhOS8kyCaeLDA3COXUIPbfSWvXWdULh4QUUDqSkQ//7n2Z2TaJ4RIgBvkjy0dfGUFGmEBpgK2fNN077Y+F/DxkjkX9MHtXlJ9N1LGbQdCsBUho4dnF/JHXnhdofVatGxiSkLawa9xgoQeVmlTPbMzxBpn407dWc0TYAUIbnXJT36aWNn5MDrCB/C8EEV5x40iASH/btp029Y6gQCuK/dEco/DlZHrq3gE5VQ9IV46Nwy44B9eaQlWy5HnJ3AY+y9MyHBISbHXWXkUCv2yhZl94bl3U+GbT80E2vjd5+UUQ6FiNTrRw98yIrmjIC4L57aKSU/vAAZQYsZI9xTFAo2YtOllvxUoI0u0P/UAwYgu14cfkvhMB/1gINF5ohvTx0QGs2HNKCDRNeV2iPqXEoQwoys3MZE0foEr14mchwX5P7S1AKVIshH8YS+rlCNa+j/O/MlqoAykSaA3dP0NQQTxhZqot9dr7mV64II4J/mTqLTEqIZ5u66zwinJ6Lk4IGea+r9K3CZdAOjqxzFTXgAsXLoQ4AaqmomXW42E6AAAAAElFTkSuQmCC" />
-  );
 };
 
 const tableHeaders = [
@@ -131,461 +102,6 @@ const actions = [
   // },
   // Add more actions as needed
 ];
-
-function markAsPrint({ ids = [] }) {
-  return cardService.markAsPrint(ids.join(","));
-}
-
-// CheckBox Row And Table
-const TableWithCheckBox = ({
-  firtsData,
-  dataLength,
-  colors,
-  groupedData,
-  actions,
-  id,
-  agentName,
-  checkBoxClicked,
-  isCheckBoxChecked = false,
-  isImageMode = false,
-  increaseDownloadCardCount,
-  handleMenuSelect,
-  setMarkAsPrintPending,
-  handleSort,
-  setIsCardDownload,
-  // highlightedRow,
-}) => {
-  const [checkBox, setCheckBox] = useState(false);
-  const navigate = useNavigate();
-  const [isDownloadCompleted, setIsDownloadCompleted] = useState(false);
-  const [pageCount, setPageCount] = useState(1);
-
-  const handleRowClick = (row) => {
-    storageUtil.setStorageData(row._id, "highlightedRow");
-    navigate(`${row._id}`);
-  };
-
-  const highlightedRow = storageUtil.getStorageData("highlightedRow");
-
-  const getPageCount = (total) => {
-    let a = parseInt(total / 10);
-    let rvalue = total - a * 10;
-    if (rvalue === 0) {
-      return a;
-    } else {
-      return a + 1;
-    }
-  };
-
-  useEffect(() => {
-    setCheckBox(isCheckBoxChecked);
-    setPageCount(getPageCount(groupedData.length));
-  }, [isCheckBoxChecked]);
-  return (
-    <Grid container>
-      <Grid item xs={12}>
-        <Button
-          sx={{
-            width: "100%",
-            justifyContent: "start",
-          }}
-        >
-          <Grid
-            container
-            justifyContent="space-between"
-            onClick={() => {
-              if (!checkBox) {
-                increaseDownloadCardCount(dataLength);
-              } else {
-                increaseDownloadCardCount(-dataLength);
-              }
-              setCheckBox(!checkBox);
-              checkBoxClicked(id, !checkBox);
-            }}
-          >
-            <Grid item>
-              <Checkbox
-                checked={checkBox}
-                onChange={() => {
-                  setCheckBox(!checkBox);
-                  checkBoxClicked(id, !checkBox);
-                }}
-              />
-              <Link
-                onClick={(e) => {
-                  console.log("Clicked ");
-                  e.stopPropagation();
-                  navigate(`/field-executives/${firtsData?.created_by_uid}`);
-                }}
-              >
-                <Typography
-                  sx={{ display: "inline-flex", mr: 1, color: "black" }}
-                >
-                  {firtsData?.created_by_name &&
-                    `${firtsData?.created_by_name}`}
-                  {`(${firtsData?.created_by_uid})`}
-                </Typography>
-              </Link>
-              <Typography
-                variant="h6"
-                sx={{
-                  display: "inline-flex",
-                  mr: 1,
-                  color: "black",
-                  fontWeight: 600,
-                }}
-              >
-                {`#${dataLength}`}
-              </Typography>
-            </Grid>
-            <Grid item display="flex" alignItems="center">
-              {/* <Typography
-                sx={{
-                  mr: {
-                    lg: 2,
-                    md: 2,
-                    mr: 1,
-                    textTransform: "none",
-                    color: "Black",
-                  },
-                }}
-              >
-                (Page {pageCount})
-              </Typography> */}
-              <Button
-                sx={{ color: colors.primary[500] }}
-                startIcon={<DownloadIcon />}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  console.log("groupedData", groupedData);
-                  setIsCardDownload(true);
-                  downloadCards.downloadMultipleCard({
-                    cardData: groupedData,
-                    Element: ArogyamComponent,
-                    handleDownloadCompleted: () => {
-                      setIsCardDownload(false);
-                      setIsDownloadCompleted(true);
-                    },
-                    images: images,
-                    agentDetails: { name: agentName, id },
-                  });
-                  setMarkAsPrintPending((pre) => ({ ...pre, [id]: true }));
-                }}
-              >
-                Download
-              </Button>
-              {isDownloadCompleted && (
-                <Button
-                  sx={{
-                    display: "inline-flex",
-                    paddingBottom: 0,
-                    color: colors.primary[500],
-                    alignItems: "center",
-                    py: 1,
-                  }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    markAsPrint({ ids: groupedData.map((gd) => gd._id) }).then(
-                      () => {
-                        setIsDownloadCompleted(false);
-                        setMarkAsPrintPending((pre) => {
-                          delete pre[id];
-                          return pre;
-                        });
-                      }
-                    );
-                  }}
-                >
-                  <Typography
-                    variant="h6"
-                    sx={{ display: "flex", alignItems: "center" }}
-                  >
-                    <CheckIcon />
-                    Mark Printed
-                  </Typography>
-                </Button>
-              )}
-            </Grid>
-          </Grid>
-        </Button>
-      </Grid>
-      {isImageMode ? (
-        <Box sx={{ display: "inline-flex", flexWrap: "wrap" }}>
-          {groupedData.map((cardData, index) => {
-            return (
-              <div style={{ marginRight: 2 }}>
-                <ArogyamComponent
-                  key={cardData._id + index + "ImageMode"}
-                  cardData={cardData}
-                  enableClick={true}
-                  handleClick={handleRowClick}
-                  images={images}
-                />
-              </div>
-            );
-          })}
-        </Box>
-      ) : (
-        <Grid item xs={12} sx={{ mb: 3 }}>
-          <CustomTable
-            headers={tableHeaders}
-            rows={groupedData}
-            actions={actions}
-            rowClick={handleRowClick}
-            handleMenuSelect={handleMenuSelect}
-            highlightedRow={highlightedRow}
-            handleSort={handleSort}
-          />
-        </Grid>
-      )}
-    </Grid>
-  );
-};
-
-// Extra Elements
-const TableWithExtraElements = ({
-  groupName = "",
-  groupedData = {},
-  isImageMode,
-  handleMultipleCheckBox,
-  isDownloadCompleted = {},
-  setIsDownloadCompleted,
-  increaseDownloadCardCount,
-  handleMenuSelect,
-  highlightedRow,
-  setIsPaginationEnabled,
-  setMarkAsPrintPending,
-  markAsPrintPending,
-  handleSort,
-  setIsCardDownload,
-}) => {
-  const theme = useTheme();
-  const colors = tokens(theme.palette.mode);
-  const [districtCheckbox, setDistrictCheckbox] = useState(false);
-  const [tableCheckedBox, setTableCheckedBox] = useState({});
-
-  const getGroupDataLenght = () => {
-    return Object.keys(groupedData).reduce(
-      (value, key) => groupedData[key]?.length + value,
-      0
-    );
-  };
-
-  useEffect(() => {
-    if (isDownloadCompleted) {
-      setDistrictCheckbox(false);
-      if (Object.keys(groupedData)) {
-        const newCheckedBox = {};
-        Object.keys(groupedData).forEach((key) => (newCheckedBox[key] = false));
-        setTableCheckedBox(newCheckedBox);
-      }
-    }
-  }, [isDownloadCompleted]);
-
-  useEffect(() => {
-    if (Object.keys(groupedData)) {
-      const newCheckedBox = {};
-      Object.keys(groupedData).forEach((key) => (newCheckedBox[key] = false));
-      setTableCheckedBox(newCheckedBox);
-    }
-  }, []);
-
-  return (
-    <Grid container sx={{ mx: 2 }} rowGap={2}>
-      <Grid item xs={12} alignItems="cenetr">
-        <Button
-          sx={{ background: colors.grey[100], px: 1 }}
-          startIcon={
-            <Checkbox
-              checked={
-                districtCheckbox
-                // Object.entries(tableCheckedBox).some(
-                //   ([key, value]) => value === true
-                // )
-              }
-              indeterminate={
-                Object.entries(tableCheckedBox).every(
-                  ([key, value]) => value === true
-                ) !=
-                Object.entries(tableCheckedBox).some(
-                  ([key, value]) => value === true
-                )
-              }
-            />
-          }
-          onClick={() => {
-            setDistrictCheckbox(!districtCheckbox);
-            if (!districtCheckbox) {
-              handleMultipleCheckBox({
-                type: "all",
-                value: Object.keys(groupedData),
-                groupName,
-              });
-
-              increaseDownloadCardCount(
-                Object.keys(groupedData).reduce((total, key) => {
-                  if (tableCheckedBox[key]) {
-                    return total;
-                  }
-                  return total + groupedData[key].length;
-                }, 0)
-              );
-            }
-
-            if (!!districtCheckbox) {
-              handleMultipleCheckBox({ type: "all", value: [], groupName });
-              increaseDownloadCardCount(
-                -Object.keys(groupedData).reduce((total, key) => {
-                  if (!tableCheckedBox[key]) {
-                    return total;
-                  }
-                  return total + groupedData[key].length;
-                }, 0)
-              );
-            }
-
-            // reset value
-            const newCheckedBox = {};
-            Object.keys(tableCheckedBox).forEach(
-              (key) => (newCheckedBox[key] = !districtCheckbox)
-            );
-            setTableCheckedBox(newCheckedBox);
-          }}
-        >{`${groupName} (Total: ${getGroupDataLenght()})`}</Button>
-        <Tooltip title="Download full tehsil">
-          <IconButton
-            aria-label="Download full tehsil"
-            sx={{
-              color: colors.primary[500],
-            }}
-            onClick={() => {
-              setIsCardDownload(true);
-              const splitName = groupName.split("/");
-              const districtName = splitName[splitName.length - 1];
-              downloadCards.downloadMultipleCardWithMultipleAgent({
-                Element: ArogyamComponent,
-                cardData: groupedData,
-                handleDownloadCompleted: () => {
-                  const keys = {};
-                  Object.keys(groupedData).forEach((key) => {
-                    keys[key] = true;
-                  });
-                  setIsCardDownload(false);
-                  setIsDownloadCompleted({ [groupName]: true });
-                  setMarkAsPrintPending((pre) => ({ ...pre, ...keys }));
-                },
-                images: images,
-                districtName,
-              });
-            }}
-          >
-            <DownloadIcon />
-          </IconButton>
-        </Tooltip>
-        {isDownloadCompleted[groupName] && (
-          <Button
-            onClick={(e) => {
-              e.stopPropagation();
-              let ids = [];
-              let keys = [];
-              Object.keys(groupedData).forEach((key) => {
-                keys.push(key);
-                if (isDownloadCompleted[groupName]) {
-                  const data = groupedData[key];
-                  console.log("key", key);
-                  ids = [...ids, ...data.map((a) => a._id)];
-                }
-              });
-              setMarkAsPrintPending((pre) => {
-                keys.forEach((id) => {
-                  delete pre[id];
-                });
-                return pre;
-              });
-              markAsPrint({ ids }).then(() => {
-                setIsDownloadCompleted({});
-              });
-            }}
-          >
-            <Typography
-              variant="h6"
-              sx={{
-                display: "inline-flex",
-                paddingBottom: 0,
-                color: colors.primary[500],
-                py: 1,
-              }}
-            >
-              <CheckIcon />
-              MARK PRINTED
-            </Typography>
-          </Button>
-        )}
-      </Grid>
-
-      {Object.keys(groupedData).map((key, index) => {
-        const [firtsData] = groupedData[key];
-        const dataLength = groupedData[key].length;
-        return (
-          <TableWithCheckBox
-            key={key + index + dataLength}
-            firtsData={firtsData}
-            dataLength={dataLength}
-            colors={colors}
-            groupedData={groupedData[key]}
-            id={key}
-            actions={actions}
-            isCheckBoxChecked={tableCheckedBox[key]}
-            checkBoxClicked={(id, value) => {
-              handleMultipleCheckBox({
-                type: value ? "add" : "remove",
-                value: key,
-                groupName,
-              });
-              let isEveryValueFalse = true;
-              Object.keys(groupedData).forEach((lockey) => {
-                if (key != lockey) {
-                  isEveryValueFalse = !tableCheckedBox[lockey];
-                } else {
-                  isEveryValueFalse = !value;
-                }
-              });
-              if (isEveryValueFalse) {
-                setDistrictCheckbox(false);
-              }
-
-              let isEveryValueTrue = false;
-              Object.keys(groupedData).forEach((lockey) => {
-                if (key != lockey) {
-                  isEveryValueTrue = tableCheckedBox[lockey];
-                } else {
-                  isEveryValueTrue = value;
-                }
-              });
-              if (isEveryValueTrue) {
-                setDistrictCheckbox(true);
-              }
-              setTableCheckedBox({
-                ...tableCheckedBox,
-                [key]: value,
-              });
-            }}
-            highlightedRow={highlightedRow}
-            handleMenuSelect={handleMenuSelect}
-            agentName={firtsData?.created_by_name || ""}
-            isImageMode={isImageMode}
-            isDownloadCompleted={isDownloadCompleted || {}}
-            increaseDownloadCardCount={increaseDownloadCardCount}
-            setMarkAsPrintPending={setMarkAsPrintPending}
-            markAsPrintPending={markAsPrintPending}
-            handleSort={handleSort}
-            setIsCardDownload={setIsCardDownload}
-          />
-        );
-      })}
-    </Grid>
-  );
-};
 
 const Cards = () => {
   const [userDropdownOptions, setUserDropdownOptions] = useState([]);
@@ -738,7 +254,7 @@ const Cards = () => {
         totalPrintCardsShowing: data.totalPrintCardsShowing,
         totalShowing: data.totalShowing,
       });
-      setPageCount(data?.totalShowing || 0);
+      setPageCount((pre) => data?.totalShowing || 0);
       setTehsilCounts(data.tehsilCounts || {});
       setIsPageLoading(false);
       setTimeout(() => {
@@ -855,7 +371,9 @@ const Cards = () => {
   // }, []);
 
   useEffect(() => {
-    getTableData();
+    if (selectedCard) {
+      getTableData();
+    }
   }, [selectedCard]);
 
   return (
@@ -893,8 +411,6 @@ const Cards = () => {
           tehsilCounts={tehsilCounts}
           handleSelectCard={(n) => {
             setSelectedCard(n);
-            // console.log("n", n);
-            // getTableData({ selectedCard: n });
           }}
           isImageMode={isImageMode}
           handleViewChange={() => setIsImageMode(!isImageMode)}
@@ -1010,7 +526,7 @@ const Cards = () => {
             <Grid item xs={12} sx={{ height: "39px" }}>
               <Card
                 sx={{
-                  // position: "fixed",
+                  position: "fixed",
                   bottom: "5px",
                   width: "100%",
                   right: "1px",
