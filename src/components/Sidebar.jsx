@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { styled, useTheme } from "@mui/material/styles";
 import Box from "@mui/material/Box";
 import MuiDrawer from "@mui/material/Drawer";
@@ -16,6 +16,7 @@ import ListItemIcon from "@mui/material/ListItemIcon";
 import { Outlet, useLocation } from "react-router-dom";
 import { tokens } from "../theme";
 import { useNavigate } from "react-router-dom";
+import storageUtil from "../utils/storage.util";
 import LocalHospitalIcon from "@mui/icons-material/LocalHospital";
 import CreditCardIcon from "@mui/icons-material/CreditCard";
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
@@ -166,6 +167,14 @@ export default function MiniDrawer() {
   const handleDrawerOpen = () => {
     setOpen(!open);
   };
+
+  useEffect(() => {
+    if (location.pathname != "/cards") {
+      console.log("Changing the page");
+      storageUtil.removeItem("/cards-totalCards");
+      storageUtil.removeItem("/cards-toBePrinted");
+    }
+  }, [location.pathname]);
 
   return (
     <Box sx={{ display: "flex", flexGrow: 1 }}>

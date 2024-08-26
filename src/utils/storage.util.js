@@ -5,6 +5,9 @@ function getStorageData(key) {
 function setStorageData(data, key) {
   localStorage.setItem(key, JSON.stringify(data));
 }
+function removeItem(key) {
+  localStorage.removeItem(key);
+}
 function eraseStroageData() {
   localStorage.clear();
 }
@@ -13,4 +16,5 @@ export default {
   getStorageData,
   setStorageData,
   eraseStroageData,
+  removeItem,
 };

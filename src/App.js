@@ -15,6 +15,7 @@ import InfoHospital from "./views/hospitals/InfoHospital";
 import FieldExecutives from "./views/field_executives/FieldExecutives";
 import UserInfo from "./views/field_executives/UserInfo";
 import Settings from "./views/settings/Settings";
+import RouteWrapper from "./components/RedirectionMonitor";
 
 function App() {
   const [theme, colorMode] = useMode();
