@@ -37,7 +37,7 @@ import DialogTitle from "@mui/material/DialogTitle";
 import cardService from "../../services/cards";
 import { isEmpty } from "lodash";
 import RestoreIcon from "@mui/icons-material/Restore";
-import PlaceIcon from "@mui/icons-material/Place";
+import HistoryIcon from "@mui/icons-material/History";
 import Link from "@mui/material/Link";
 import storageUtil from "../../utils/storage.util";
 import KeyboardArrowLeftIcon from "@mui/icons-material/KeyboardArrowLeft";
@@ -124,6 +124,14 @@ const CardComponent = () => {
 
   let { id } = useParams();
   let newId = id;
+
+  function getLastFourDigits(number) {
+    // Convert the number to a string and slice the last 3 characters
+    const lastThreeDigits = number.toString().slice(-4);
+
+    // Convert it back to a number if needed
+    return Number(lastThreeDigits);
+  }
 
   const updateQueryParam = (_newId) => {
     if (_newId) {
@@ -574,136 +582,241 @@ const CardComponent = () => {
           }
         /> */}
         <CardContent sx={{ px: 5 }}>
-          <Grid container spacing={0} columnSpacing={1}>
-            <Grid item container xs={12} columnSpacing={1}>
-              <Grid item xs={12} md={5}>
-                <Box sx={{ display: "flex", alignItems: "center" }}>
-                  <IconButton
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      navigate(-1);
-                    }}
-                    aria-label="back"
-                    sx={{ mr: 5 }}
-                  >
-                    <ArrowBackIcon sx={{ fontSize: 30 }} />
-                  </IconButton>
-                  <Box>
-                    <TextElement
-                      label="Unique Number"
-                      value={cardData.unique_number}
-                    />
-                  </Box>
-                </Box>
-                <Box>
-                  <TextElement label="Name" value={cardData.name} />
-                </Box>
-
+          <Grid container xs={12} spacing={1} columnSpacing={1}>
+            <Grid item xs={12} md={5}>
+              <Box sx={{ display: "flex", alignItems: "center" }}>
+                <IconButton
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(-1);
+                  }}
+                  aria-label="back"
+                  sx={{ mr: 5 }}
+                >
+                  <ArrowBackIcon sx={{ fontSize: 30 }} />
+                </IconButton>
                 <Box>
                   <TextElement
-                    label="Father/Husband Name"
-                    value={cardData.father_husband_name}
+                    label="Unique Number"
+                    value={cardData.unique_number}
                   />
                 </Box>
-                <Box>
-                  <TextElement label="Gender" value={cardData.gender} />
-                </Box>
-                <Box>
-                  <TextElement label="Birth Year" value={cardData.birth_year} />
-                </Box>
+              </Box>
+              <Box>
+                <TextElement label="Name" value={cardData.name} />
+              </Box>
 
-                <Box sx={{ display: "flex", alignItems: "end" }}>
-                  {/* <IconButton
-                    sx={{
-                      mr: 1,
-                      borderRadius: 0,
-                    }}
-                    onClick={() =>
-                      window.open(`https://wa.me/${cardData.phone}`)
-                    }
-                  >
-                    <div>
-                      <img src="/whatsapp.png" alt="" srcset="" />
-                    </div>
-                    <div style={{ marginLeft: "14px", textAlign: "start" }}>
-                    </div> */}
-                  <TextElement label="Phone" value={cardData.phone} />
+              <Box>
+                <TextElement
+                  label="Father/Husband Name"
+                  value={cardData.father_husband_name}
+                />
+              </Box>
+              <Box>
+                <Grid container col>
+                  <Grid item xs={6}>
+                    <TextElement label="Gender" value={cardData.gender} />
+                  </Grid>
+                  <Grid item>
+                    <TextElement
+                      label="Birth Year"
+                      value={cardData.birth_year}
+                    />
+                  </Grid>
+                </Grid>
+              </Box>
+
+              <Box sx={{ display: "flex", alignItems: "end" }}>
+                <TextElement label="Phone" value={cardData.phone} />
+                <IconButton
+                  sx={{ color: "#23e223", ml: 2 }}
+                  onClick={() => window.open(`https://wa.me/${cardData.phone}`)}
+                >
+                  <WhatsAppIcon />
+                </IconButton>
+              </Box>
+
+              <Box sx={{ display: "flex" }}>
+                <div>
+                  <TextElement
+                    label="Address"
+                    value={`${cardData.area} ${cardData.tehsil}  ${cardData.district} ${cardData.state} `}
+                  />
+                </div>
+              </Box>
+
+              <Box>
+                <Grid container>
+                  {cardData.blood_group && (
+                    <Grid item xs={6}>
+                      <TextElement
+                        label="Blood Group"
+                        value={cardData?.blood_group || ""}
+                      />
+                    </Grid>
+                  )}
+                  {cardData.emergency_contact && (
+                    <Grid item xs={6} sx={{ display: "flex" }}>
+                      <IconButton
+                        onClick={() => window.open(`tel:${FEDetails.phone}`)}
+                      >
+                        <PhoneIcon />
+                      </IconButton>
+                      <TextElement
+                        label="Emergency Contact"
+                        value={cardData.emergency_contact || ""}
+                      />
+                    </Grid>
+                  )}
+                </Grid>
+              </Box>
+              <Box>
+                <Grid container alignItems="end">
+                  <Grid item xs={6}>
+                    <Box>
+                      <TextElement label="Status" value={cardData.status} />
+                      {cardData.discard_reason && (
+                        <span
+                          label=""
+                          style={{ fontSize: 12, color: "#00000075" }}
+                        >
+                          {cardData.discard_reason}
+                        </span>
+                      )}
+                    </Box>
+                  </Grid>
+                  <Grid item>
+                    <Button
+                      aria-controls={
+                        isMenuOpened ? "demo-positioned-menu" : undefined
+                      }
+                      onClick={() => setIsTimeLineOpened(true)}
+                      aria-haspopup="true"
+                      aria-expanded={isMenuOpened ? "true" : undefined}
+                      sx={{
+                        display: "inline-flex",
+                        color: "#ff5722 !important",
+                      }}
+                      variant="standard"
+                      startIcon={<HistoryIcon />}
+                    >
+                      History
+                    </Button>
+                  </Grid>
+                </Grid>
+              </Box>
+              <Box>
+                <TextElement
+                  label="Created At"
+                  value={
+                    cardData?.created_at &&
+                    moment(cardData.created_at).format("DD-MM-YYYY HH:mm:ss")
+                  }
+                />
+              </Box>
+            </Grid>
+
+            <Grid item xs={12} md={7} sm={12} sx={{ ml: 0 }}>
+              <Grid item xs={12}>
+                <Box sx={{ display: "flex", justifyContent: "end" }}>
+                  <Box>
+                    <Button
+                      sx={{
+                        display: "inline-flex",
+                        color: "#ff5722",
+                        p: 1,
+                        m: 0,
+                        mr: 5,
+                      }}
+                      variant="standard"
+                      startIcon={<DeleteIcon />}
+                      onClick={() => setIsDetelConfirmationDialog(true)}
+                    >
+                      Delete
+                    </Button>
+                    <Button
+                      sx={{
+                        display: "inline-flex",
+                        color: "#ff5722",
+                        p: 1,
+                        m: 0,
+                        mr: 3,
+                      }}
+                      variant="standard"
+                      startIcon={<EditIcon />}
+                      onClick={() => setIsEditDialogOpened(true)}
+                    >
+                      Edit
+                    </Button>
+                  </Box>
                   <IconButton
-                    sx={{ color: "#23e223", ml: 2 }}
-                    onClick={() =>
-                      window.open(`https://wa.me/${cardData.phone}`)
-                    }
+                    onClick={copyImageToClipboard}
+                    aria-label="copy image"
                   >
-                    <WhatsAppIcon />
+                    <ContentCopyIcon />
+                  </IconButton>
+
+                  <IconButton
+                    sx={{
+                      display: "inline-flex",
+                      color: "#ff5722",
+                      p: 1,
+                      m: 0,
+                    }}
+                    onClick={() => {
+                      handleDownloadCard();
+                    }}
+                  >
+                    <FileDownloadIcon />
                   </IconButton>
                 </Box>
-
-                <Box sx={{ display: "flex" }}>
-                  {/* <IconButton
-                    sx={{
-                      mr: 1,
-                      height: "46px",
-                      ":hover": {
-                        color: "#0000ff91",
-                      },
-                    }}
-                  >
-                    <PlaceIcon sx={{ fontSize: "30px" }} />
-                  </IconButton> */}
-                  <div>
-                    <TextElement
-                      label="Address"
-                      value={`${cardData.area} ${cardData.tehsil}  ${cardData.district} ${cardData.state} `}
-                    />
-                  </div>
-                </Box>
-
                 <Box>
-                  <Grid container>
-                    {cardData.blood_group && (
-                      <Grid item xs={6}>
-                        <TextElement
-                          label="Blood Group"
-                          value={cardData.blood_group || ""}
-                        />
-                      </Grid>
-                    )}
-                    {cardData.emergency_contact && (
-                      <Grid item xs={6} sx={{ display: "flex" }}>
-                        <IconButton
-                          onClick={() => window.open(`tel:${FEDetails.phone}`)}
-                        >
-                          <PhoneIcon />
-                        </IconButton>
-                        <TextElement
-                          label="Emergency Contact"
-                          value={cardData.emergency_contact || ""}
-                        />
-                      </Grid>
-                    )}
-                  </Grid>
+                  <ArogyamComponentV1
+                    cardData={cardData}
+                    images={images || {}}
+                    passRef={(ref) => setArogyaCardRef(ref)}
+                  />
                 </Box>
               </Grid>
-
-              <Grid item xs={12} md={7} sm={12} sx={{ ml: 0 }}>
-                <Grid item xs={12}>
-                  <Box sx={{ display: "flex", justifyContent: "end" }}>
-                    <Box>
+              <Grid item xs={12}>
+                <Box>
+                  <TextElement label="Token no." value={cardData.s_no} />
+                </Box>
+                <Box>
+                  <Grid container alignItems="end">
+                    <Grid item xs={2}>
+                      <TextElement
+                        label="ID#"
+                        value={cardData?.id_proof?.type}
+                      />
+                    </Grid>
+                    <Grid item>
+                      {cardData?.id_proof?.value && (
+                        <TextElement
+                          label=""
+                          value={`#${getLastFourDigits(
+                            cardData?.id_proof?.value
+                          )}`}
+                        />
+                      )}
+                    </Grid>
+                  </Grid>
+                </Box>
+                <Box>
+                  <Grid container alignItems="center">
+                    <Grid item xs={3}>
+                      <TextElement
+                        label="Expiry"
+                        value={
+                          cardData?.expiry_date &&
+                          moment(cardData.expiry_date).format("MMM YYYY")
+                        }
+                      />
+                    </Grid>
+                    <Grid item>
                       <Button
-                        sx={{
-                          display: "inline-flex",
-                          color: "#ff5722",
-                          p: 1,
-                          m: 0,
-                          mr: 5,
-                        }}
-                        variant="standard"
-                        startIcon={<DeleteIcon />}
-                        onClick={() => setIsDetelConfirmationDialog(true)}
-                      >
-                        Delete
-                      </Button>
-                      <Button
+                        size="midum"
+                        startIcon={<RepeatOneIcon />}
                         sx={{
                           display: "inline-flex",
                           color: "#ff5722",
@@ -711,118 +824,33 @@ const CardComponent = () => {
                           m: 0,
                           mr: 3,
                         }}
-                        variant="standard"
-                        startIcon={<EditIcon />}
-                        onClick={() => setIsEditDialogOpened(true)}
-                      >
-                        Edit
-                      </Button>
-                    </Box>
-                    <IconButton
-                      onClick={copyImageToClipboard}
-                      aria-label="copy image"
-                    >
-                      <ContentCopyIcon />
-                    </IconButton>
-                  </Box>
-                  <Box>
-                    <ArogyamComponentV1
-                      cardData={cardData}
-                      images={images || {}}
-                      passRef={(ref) => setArogyaCardRef(ref)}
-                    />
-                  </Box>
-                </Grid>
-                <Grid item xs={12}>
-                  <Box>
-                    <TextElement label="ID#" value={cardData._id} />
-                  </Box>
-                  <Box>
-                    <TextElement
-                      label="Proof Type"
-                      value={cardData?.id_proof?.type}
-                    />
-                  </Box>
-                  <Box>
-                    <TextElement
-                      label="Expiry"
-                      value={
-                        cardData?.expiry_date &&
-                        moment(cardData.expiry_date).format("MMM YYYY")
-                      }
-                    />
-                  </Box>
+                        onClick={() => {
+                          setDialogType("renew");
+                          const issueDate = new Date(cardData.expiry_date);
+                          console.log(
+                            'moment(issueDate).add(1, "years").format("DD-MM-YYYY")',
+                            moment(issueDate)
+                              .add(1, "years")
+                              .format("DD-MM-YYYY")
+                          );
 
-                  {/* {cardData?.emergency_contact && (
-                    <Box sx={{ display: "flex", alignItems: "center" }}>
-                      <IconButton
-                        sx={{
-                          mr: 1,
-                          borderRadius: 0,
+                          setRenewCalculation(
+                            moment(issueDate)
+                              .add(1, "years")
+                              .format("DD-MM-YYYY")
+                          );
+                          setIsDialogOpen(true);
                         }}
-                        onClick={() =>
-                          window.open(
-                            `https://wa.me/${cardData.emergency_contact}`
-                          )
-                        }
                       >
-                        <div>
-                          <img src="/whatsapp.png" alt="" srcset="" />
-                        </div>
-                        <div style={{ marginLeft: "14px", textAlign: "start" }}>
-                          <TextElement
-                            label="Emergency Contact"
-                            value={cardData.emergency_contact}
-                          />
-                        </div>
-                      </IconButton>
-                    </Box>
-                  )} */}
-
-                  <Box>
-                    <TextElement
-                      label="Created At"
-                      value={
-                        cardData?.created_at &&
-                        moment(cardData.created_at).format(
-                          "DD-MM-YYYY HH:mm:ss"
-                        )
-                      }
-                    />
-                  </Box>
-                </Grid>
-              </Grid>
-            </Grid>
-            <Grid item container xs={12} alignItems="center">
-              <Grid item xs={6}>
-                <Box>
-                  <TextElement label="Status" value={cardData.status} />
-                  {cardData.discard_reason && (
-                    <span label="" style={{ fontSize: 12, color: "#00000075" }}>
-                      {cardData.discard_reason}
-                    </span>
-                  )}
+                        Renew
+                      </Button>
+                    </Grid>
+                  </Grid>
                 </Box>
               </Grid>
-              <Grid item xs={6}>
-                <Button
-                  aria-controls={
-                    isMenuOpened ? "demo-positioned-menu" : undefined
-                  }
-                  onClick={() => setIsTimeLineOpened(true)}
-                  aria-haspopup="true"
-                  aria-expanded={isMenuOpened ? "true" : undefined}
-                  sx={{
-                    display: "inline-flex",
-                    color: "#ff5722 !important",
-                    pb: 0,
-                  }}
-                  variant="standard"
-                  startIcon={<VerifiedUserOutlinedIcon />}
-                >
-                  Status timeline
-                </Button>
-              </Grid>
+            </Grid>
+
+            <Grid item container xs={12} alignItems="center">
               <Grid item xs={6}>
                 <Grid
                   container
@@ -908,49 +936,6 @@ const CardComponent = () => {
               }}
             >
               <Box>
-                <Button
-                  sx={{
-                    display: "inline-flex",
-                    color: "#ff5722",
-                    p: 1,
-                    m: 0,
-                    mr: 3,
-                  }}
-                  variant="standard"
-                  startIcon={<FileDownloadIcon />}
-                  onClick={() => {
-                    handleDownloadCard();
-                  }}
-                >
-                  Download
-                </Button>
-
-                <Button
-                  size="large"
-                  startIcon={<RepeatOneIcon />}
-                  sx={{
-                    display: "inline-flex",
-                    color: "#ff5722",
-                    p: 1,
-                    m: 0,
-                    mr: 3,
-                  }}
-                  onClick={() => {
-                    setDialogType("renew");
-                    const issueDate = new Date(cardData.expiry_date);
-                    console.log(
-                      'moment(issueDate).add(1, "years").format("DD-MM-YYYY")',
-                      moment(issueDate).add(1, "years").format("DD-MM-YYYY")
-                    );
-
-                    setRenewCalculation(
-                      moment(issueDate).add(1, "years").format("DD-MM-YYYY")
-                    );
-                    setIsDialogOpen(true);
-                  }}
-                >
-                  Renew
-                </Button>
                 <Button
                   size="large"
                   startIcon={<CancelIcon />}
@@ -1039,6 +1024,9 @@ const CardComponent = () => {
                 >
                   Reprint
                 </Button>
+                <Box>
+                  <TextElement label="" value={cardData._id} />
+                </Box>
               </Box>
             </Box>
           </CardActions>

@@ -234,7 +234,7 @@ const TableWithCheckBox = ({
               </Typography>
             </Grid>
             <Grid item display="flex" alignItems="center">
-              <Typography
+              {/* <Typography
                 sx={{
                   mr: {
                     lg: 2,
@@ -246,7 +246,7 @@ const TableWithCheckBox = ({
                 }}
               >
                 (Page {pageCount})
-              </Typography>
+              </Typography> */}
               <Button
                 sx={{ color: colors.primary[500] }}
                 startIcon={<DownloadIcon />}
