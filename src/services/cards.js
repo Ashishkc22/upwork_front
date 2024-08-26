@@ -84,14 +84,11 @@ async function getCardsData({
       return `${card.state}/${card.district}/${card.tehsil}`;
     });
 
-    console.log("idList >>>>>", idList);
-
     const newGroupedData = {};
     Object.keys(groupedData).forEach((key) => {
       const groupByCreatedById = groupBy(groupedData[key], "created_by_uid");
       newGroupedData[key] = groupByCreatedById;
     });
-    console.log("newGroupedData", newGroupedData);
 
     const sortedEntries = Object.entries(newGroupedData).sort((a, b) => {
       // Get the size of the arrays in each object.
@@ -110,9 +107,6 @@ async function getCardsData({
 
     // Step 3: Convert the sorted array back to an object.
     const sortedData = Object.fromEntries(sortedEntries);
-
-    console.log(sortedEntries);
-    console.log(sortedData);
 
     const unsortedKeys = Object.keys(newGroupedData);
     const countMap = {};
@@ -137,9 +131,6 @@ async function getCardsData({
     //     }
     //   });
     // });
-
-    console.log("countMap", countMap);
-    console.log("countMap", Object.keys(countMap));
 
     // for (let i = 0; i < Object.keys(countMap).length; i++) {
     //   const maxValue = Object.keys(countMap).reduce(

@@ -19,7 +19,12 @@ import common from "../../services/common";
 import { isEmpty, sortBy } from "lodash";
 import Badge from "@mui/material/Badge";
 import Stack from "@mui/material/Stack";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import {
+  useNavigate,
+  useSearchParams,
+  useLocation,
+  useParams,
+} from "react-router-dom";
 import ArogyamComponent from "../../components/ArogyaCard_v1";
 import Tooltip from "@mui/material/Tooltip";
 import downloadCards from "../../utils/downloadCards";
@@ -85,7 +90,7 @@ const LogoImage = () => {
 };
 
 const tableHeaders = [
-  { label: "SNO", key: "s_no" },
+  { label: "SNO", key: "index" },
   { label: "NAME", key: "name" },
   { label: "F/H NAME", key: "father_husband_name" },
   { label: "UID", key: "unique_number" },
@@ -590,7 +595,7 @@ const Cards = () => {
   });
   const [cardsDataGroupedBy, setCardsDataGroupBy] = useState({});
   const [totalCardsData, setTotalCardsData] = useState([]);
-  const [selectedCard, setSelectedCard] = useState("toBePrinted");
+  const [selectedCard, setSelectedCard] = useState("");
   const [status, setStatus] = useState(null);
   const [downloadCardMaps, setDownloadCardMaps] = useState({});
   const [isDownloadCompleted, setIsDownloadCompleted] = useState({});
@@ -607,8 +612,9 @@ const Cards = () => {
   const colors = tokens(theme.palette.mode);
 
   const highlightedRow = storageUtil.getStorageData("highlightedRow");
-
   let [urlDateType, setUrlDateType] = useSearchParams();
+  const location = useLocation();
+  const params = useParams();
 
   // view mode state
   const [isImageMode, setIsImageMode] = useState(false);
@@ -656,6 +662,21 @@ const Cards = () => {
     setDownloadCardCount(newCount);
   };
 
+  const restoreScroll = () => {
+    const searchParams = new URLSearchParams(window.location.search).get("tab");
+    const scrollValue = storageUtil.getStorageData(
+      `${location.pathname}-${searchParams}`
+    );
+    console.log("scrollValue", scrollValue);
+
+    if (scrollValue) {
+      window.scrollTo({
+        top: scrollValue,
+        behavior: "smooth",
+      });
+    }
+  };
+
   const getTableData = async ({
     search = null,
     state = null,
@@ -684,7 +705,7 @@ const Cards = () => {
         _status: _status,
       }),
       ...(selectedCard === "toBePrinted" && { _status: "SUBMITTED" }),
-      page: page < _page ? _page : page,
+      page: _page,
       ...(search && { q: search }),
       ...(gram_p && { gram_p: gram_p }),
       ...(state && { state: state }),
@@ -718,9 +739,12 @@ const Cards = () => {
         totalShowing: data.totalShowing,
       });
       setUserDropdownOptions(data.userList);
-      setPageCount(data.totalShowing);
+      setPageCount(data?.totalShowing || 0);
       setTehsilCounts(data.tehsilCounts || {});
       setIsPageLoading(false);
+      setTimeout(() => {
+        restoreScroll();
+      }, 10);
     } else {
       setCardsDataGroupBy([]);
       setIsPageLoading(false);
@@ -795,6 +819,22 @@ const Cards = () => {
     setDownloadCardMaps({});
     setDownloadCardCount(0);
   };
+
+  useEffect(() => {
+    // if (!isEmpty(cardsDataGroupedBy)) {
+    const searchParams = new URLSearchParams(window.location.search).get("tab");
+    const handleScroll = () => {
+      console.log("window.scrollY", window.scrollY);
+
+      storageUtil.setStorageData(
+        window.scrollY,
+        `${location.pathname}-${searchParams}`
+      );
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+    // }
+  }, []);
 
   // useEffect(() => {
   //   const urls = setURLFilters();
@@ -888,106 +928,107 @@ const Cards = () => {
           </Stack>
         )}
       </Grid>
-
-      {isPageLoading ? (
-        <LinearIndeterminate />
-      ) : (
-        <>
-          {selectedCard === "toBePrinted" ? (
-            isEmpty(cardsDataGroupedBy) ? (
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  height: "100vh", // Full viewport height
-                  width: "100%", // Full width
-                  textAlign: "center",
-                }}
-              >
-                <Typography variant="h6" color="textSecondary">
-                  No Records Found
-                </Typography>
-              </Box>
-            ) : (
-              <Grid item sx={{ my: 1, mr: 2 }}>
-                {Object.keys(cardsDataGroupedBy).map((key, index) => {
+      <Box>
+        {isPageLoading ? (
+          <LinearIndeterminate />
+        ) : (
+          <>
+            {selectedCard === "toBePrinted" ? (
+              isEmpty(cardsDataGroupedBy) ? (
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    height: "100vh", // Full viewport height
+                    width: "100%", // Full width
+                    textAlign: "center",
+                  }}
+                >
+                  <Typography variant="h6" color="textSecondary">
+                    No Records Found
+                  </Typography>
+                </Box>
+              ) : (
+                <Grid item sx={{ my: 1, mr: 2 }}>
+                  {Object.keys(cardsDataGroupedBy).map((key, index) => {
+                    return (
+                      <TableWithExtraElements
+                        key={key + index}
+                        groupName={key}
+                        groupedData={cardsDataGroupedBy[key]}
+                        isImageMode={isImageMode}
+                        handleMultipleCheckBox={handleMultipleCheckBox}
+                        isDownloadCompleted={isDownloadCompleted}
+                        setIsDownloadCompleted={setIsDownloadCompleted}
+                        increaseDownloadCardCount={increaseDownloadCardCount}
+                        handleMenuSelect={handleMenuSelect}
+                        highlightedRow={highlightedRow}
+                        setIsPaginationEnabled={setIsPaginationEnabled}
+                        setMarkAsPrintPending={setMarkAsPrintPending}
+                        markAsPrintPending={markAsPrintPending}
+                        handleSort={handleSort}
+                        setIsCardDownload={setIsCardDownload}
+                      />
+                    );
+                  })}
+                </Grid>
+              )
+            ) : isImageMode ? (
+              <Box sx={{ display: "flex", flexWrap: "wrap" }}>
+                {totalCardsData.map((cardData, index) => {
                   return (
-                    <TableWithExtraElements
-                      key={key + index}
-                      groupName={key}
-                      groupedData={cardsDataGroupedBy[key]}
-                      isImageMode={isImageMode}
-                      handleMultipleCheckBox={handleMultipleCheckBox}
-                      isDownloadCompleted={isDownloadCompleted}
-                      setIsDownloadCompleted={setIsDownloadCompleted}
-                      increaseDownloadCardCount={increaseDownloadCardCount}
-                      handleMenuSelect={handleMenuSelect}
-                      highlightedRow={highlightedRow}
-                      setIsPaginationEnabled={setIsPaginationEnabled}
-                      setMarkAsPrintPending={setMarkAsPrintPending}
-                      markAsPrintPending={markAsPrintPending}
-                      handleSort={handleSort}
-                      setIsCardDownload={setIsCardDownload}
-                    />
+                    <div style={{ marginRight: 2 }}>
+                      <ArogyamComponent
+                        key={cardData._id + index + "ImageMode"}
+                        cardData={cardData}
+                        enableClick={true}
+                        images={images}
+                      />
+                    </div>
                   );
                 })}
+              </Box>
+            ) : (
+              <Grid item sx={{ mx: 2 }}>
+                <CustomTable
+                  headers={tableHeaders}
+                  rows={totalCardsData}
+                  actions={actions}
+                  rowClick={handleRowClick}
+                  handleMenuSelect={handleMenuSelect}
+                  highlightedRow={highlightedRow}
+                  handleSort={handleSort}
+                />
               </Grid>
-            )
-          ) : isImageMode ? (
-            <Box sx={{ display: "flex", flexWrap: "wrap" }}>
-              {totalCardsData.map((cardData, index) => {
-                return (
-                  <div style={{ marginRight: 2 }}>
-                    <ArogyamComponent
-                      key={cardData._id + index + "ImageMode"}
-                      cardData={cardData}
-                      enableClick={true}
-                      images={images}
-                    />
-                  </div>
-                );
-              })}
-            </Box>
-          ) : (
-            <Grid item sx={{ mx: 2 }}>
-              <CustomTable
-                headers={tableHeaders}
-                rows={totalCardsData}
-                actions={actions}
-                rowClick={handleRowClick}
-                handleMenuSelect={handleMenuSelect}
-                highlightedRow={highlightedRow}
-                handleSort={handleSort}
-              />
-            </Grid>
-          )}
-          <Grid item xs={12} sx={{ height: "39px" }}>
-            <Card
-              sx={{
-                // position: "fixed",
-                bottom: "5px",
-                width: "100%",
-                right: "1px",
-              }}
-            >
-              <TablePagination
-                component="div"
-                count={pageCount}
-                page={page}
-                disabled={Object.keys(markAsPrintPending).length}
-                rowsPerPage={100}
-                onPageChange={(e, newPage) => {
-                  addDataToURL({ page: newPage });
-                  setPage(newPage);
-                  getTableData({ _page: newPage });
+            )}
+            <Grid item xs={12} sx={{ height: "39px" }}>
+              <Card
+                sx={{
+                  // position: "fixed",
+                  bottom: "5px",
+                  width: "100%",
+                  right: "1px",
                 }}
-                onRowsPerPageChange={() => {}}
-              />
-            </Card>
-          </Grid>
-        </>
-      )}
+              >
+                <TablePagination
+                  component="div"
+                  count={pageCount}
+                  page={page}
+                  disabled={Object.keys(markAsPrintPending).length}
+                  rowsPerPage={100}
+                  onPageChange={(e, newPage) => {
+                    addDataToURL({ page: newPage });
+                    setPage(newPage);
+                    getTableData({ _page: newPage });
+                  }}
+                  onRowsPerPageChange={() => {}}
+                />
+              </Card>
+            </Grid>
+          </>
+        )}
+      </Box>
     </Grid>
   );
 };

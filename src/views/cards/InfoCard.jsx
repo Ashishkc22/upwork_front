@@ -230,7 +230,9 @@ const CardComponent = () => {
     return (
       <Box
         {...(path && {
-          onClick: () => navigate(path),
+          onClick: () => {
+            navigate(path);
+          },
         })}
         sx={{
           ...(path && { ":hover": { cursor: "pointer", color: "blue" } }),
@@ -366,8 +368,8 @@ const CardComponent = () => {
         // width: "100vw",
       }}
       onClick={(e) => {
+        e.stopPropagation();
         if (!isEditDialogOpened) {
-          e.stopPropagation();
           navigate(-1);
         }
       }}
@@ -378,6 +380,10 @@ const CardComponent = () => {
           sx={{
             borderRadius: 0,
             color: "#ff5722",
+          }}
+          onClick={(e) => {
+            e.stopPropagation();
+            handleKeyPress({ key: "ArrowLeft" });
           }}
         >
           <KeyboardArrowLeftIcon />
@@ -1045,8 +1051,9 @@ const CardComponent = () => {
             borderRadius: 0,
             color: "#ff5722",
           }}
-          onClick={() => {
-            // Your right button action here
+          onClick={(e) => {
+            e.stopPropagation();
+            handleKeyPress({ key: "ArrowRight" });
           }}
         >
           <ChevronRightIcon />

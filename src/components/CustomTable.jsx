@@ -68,7 +68,7 @@ const DynamicTable = ({
     if (keymap.key === "index") {
       return (
         <Typography variant="body2" noWrap>
-          {rowIndex}
+          {rowIndex + 1}
         </Typography>
       );
     }

@@ -127,7 +127,14 @@ const Item = ({
 
 const navList = [
   { title: "Dashboard", icon: <HomeOutlinedIcon />, path: "dashboard" },
-  { title: "Cards", icon: <CreditCardIcon />, path: "cards" },
+  {
+    title: "Cards",
+    icon: <CreditCardIcon />,
+    path: "cards",
+    params: {
+      tab: "toBePrinted",
+    },
+  },
   {
     title: "Hospitals",
     icon: <LocalHospitalIcon />,
