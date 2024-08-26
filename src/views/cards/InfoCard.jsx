@@ -336,12 +336,7 @@ const CardComponent = () => {
         Element: <ArogyamComponent cardData={cardData} images={images} />,
         secondaryImage: imageDataUrl,
         cardData,
-        fileName: `${TLDetails.name.replaceAll(
-          " ",
-          "-"
-        )}_${cardData.name.replaceAll(" ", "-")}_#1_${moment().format(
-          "DD_MMM_YYYY_HH_mm"
-        )}`,
+        fileName: `${cardData.unique_number}_${cardData.name}_${cardData?.area}`,
       });
       setIscardLoadtion(false);
     }
