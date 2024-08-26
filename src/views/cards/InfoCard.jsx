@@ -670,12 +670,22 @@ const CardComponent = () => {
                   <Grid item xs={6}>
                     <Box>
                       <TextElement label="Status" value={cardData.status} />
-                      {cardData.discard_reason && (
+                      {/* {cardData.discard_reason && (
                         <span
                           label=""
                           style={{ fontSize: 12, color: "#00000075" }}
                         >
                           {cardData.discard_reason}
+                        </span>
+                      )} */}
+                      {cardData.discard_reason && (
+                        <span
+                          label=""
+                          style={{ fontSize: 12, color: "#00000075" }}
+                        >
+                          {moment(cardData.status_updated_at).format(
+                            "DD-MM-YYYY HH:mm:ss"
+                          )}
                         </span>
                       )}
                     </Box>
