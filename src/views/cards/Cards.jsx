@@ -738,7 +738,6 @@ const Cards = () => {
         totalPrintCardsShowing: data.totalPrintCardsShowing,
         totalShowing: data.totalShowing,
       });
-      setUserDropdownOptions(data.userList);
       setPageCount(data?.totalShowing || 0);
       setTehsilCounts(data.tehsilCounts || {});
       setIsPageLoading(false);
@@ -749,6 +748,11 @@ const Cards = () => {
       setCardsDataGroupBy([]);
       setIsPageLoading(false);
     }
+  };
+
+  const getUsersList = async () => {
+    const userList = await cardService.getUsersList();
+    setUserDropdownOptions(userList);
   };
 
   const handleSort = ({ colName, type }) => {
@@ -822,6 +826,7 @@ const Cards = () => {
 
   useEffect(() => {
     // if (!isEmpty(cardsDataGroupedBy)) {
+    getUsersList();
     const searchParams = new URLSearchParams(window.location.search).get("tab");
     const handleScroll = () => {
       console.log("window.scrollY", window.scrollY);

@@ -47,7 +47,6 @@ async function getCardsData({
     total = 0,
     total_showing = 0,
     total_print_card_showing = 0,
-    userList,
   } = await axiosUtil.get({
     path: "cards",
     params: _payload,
@@ -75,7 +74,6 @@ async function getCardsData({
         totalShowing: total_showing,
         idList,
         tehsilCounts,
-        userList,
       };
     }
     idList = [];
@@ -176,7 +174,6 @@ async function getCardsData({
       totalCards: total,
       idList,
       tehsilCounts,
-      userList,
     };
   } else {
     return {
@@ -201,6 +198,29 @@ async function getUsersByIds({ ids = [] } = {}) {
       ids: Array.from(ids).join(","),
     },
   });
+  if (status === "failed") {
+    return { status, error: error || message };
+  } else if (!isEmpty(data)) {
+    return data;
+  }
+}
+
+async function getUsersList({ ids = [] } = {}) {
+  const {
+    status,
+    data,
+    message,
+    error = "",
+    userList,
+  } = await axiosUtil.get({
+    path: "cards/card-users",
+    params: {
+      token: tokenUtil.getAuthToken(),
+    },
+  });
+  console.log("userList", userList);
+  return userList;
+
   if (status === "failed") {
     return { status, error: error || message };
   } else if (!isEmpty(data)) {
@@ -394,4 +414,5 @@ export default {
   updateCard,
   deleteCard,
   markAsPrint,
+  getUsersList,
 };
