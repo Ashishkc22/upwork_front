@@ -1,5 +1,5 @@
 import Header from "../../components/Header";
-import { Grid, Card, TablePagination } from "@mui/material";
+import { Grid, Card, TablePagination, Box } from "@mui/material";
 import field_executives from "../../services/field_executives";
 import { isEmpty } from "lodash";
 import { useEffect, useState } from "react";
@@ -88,9 +88,11 @@ const HospitalPage = () => {
           if (!isEmpty(response.data)) {
             setUsersList(response.data);
           }
-          setTotalUsers(response?.total || 0);
-          setTotalUsersToShow(response?.total_results || 0);
+          setTotalUsers(() => response?.total);
+          setTotalUsersToShow(() => response?.total_results);
         } else {
+          setTotalUsers(0);
+          setTotalUsersToShow(0);
           setUsersList([]);
         }
         setIsPageLoading(false);
@@ -140,8 +142,8 @@ const HospitalPage = () => {
       <Grid item xs={12}>
         <Header
           toTalScoreDetails={{
-            totalScore: totalUsers || 0,
-            totalScoreToshow: totalusersToShow || 0,
+            totalScore: totalUsers,
+            totalScoreToshow: totalusersToShow,
             text: "Total Executives",
             name: "totalExecutives",
           }}
@@ -155,13 +157,14 @@ const HospitalPage = () => {
           apiCallBack={getUsers}
           showGram={false}
           showMode={false}
+          showOtherCard={true}
         />
       </Grid>
       {isPageLoading ? (
         <LinearIndeterminate />
       ) : (
         <>
-          <Grid
+          {/* <Grid
             item
             xs={12}
             sx={{
@@ -184,8 +187,8 @@ const HospitalPage = () => {
           onClick={() => setAddUsersDialog(true)}
         >
           Add field executive
-        </Button> */}
-          </Grid>
+        </Button>
+          </Grid> */}
           <Grid item xs={12}>
             {/* {!isEmpty(hospitalList) && ( */}
             <CustomTable
@@ -199,9 +202,18 @@ const HospitalPage = () => {
               rowClick={handleRowClick}
               showPagiantion
             />
+            <Box sx={{ height: "20px" }}></Box>
+
             {/* )} */}
             <Grid item xs={12} sx={{ height: "39px" }}>
-              <Card>
+              <Card
+                sx={{
+                  position: "fixed",
+                  bottom: "5px",
+                  width: "100%",
+                  right: "1px",
+                }}
+              >
                 <TablePagination
                   component="div"
                   count={pageCount}

@@ -450,8 +450,14 @@ const UserInfoCard = () => {
               </Button>
               <Button
                 onClick={
-                  () => handleUserSuspension()
-                  // setIsSuspensionDialogOpened(true)
+                  // () => handleUserSuspension()
+                  () => {
+                    if (userData?.status != "Suspended") {
+                      setIsSuspensionDialogOpened(true);
+                    } else {
+                      handleUserSuspension();
+                    }
+                  }
                 }
               >
                 {statupMap[userData?.status]

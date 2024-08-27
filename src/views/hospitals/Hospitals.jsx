@@ -143,6 +143,7 @@ const HospitalPage = () => {
           showTehsil={false}
           showGram={false}
           showType
+          showOtherCard={true}
         />
       </Grid>
       {isPageLoading ? (

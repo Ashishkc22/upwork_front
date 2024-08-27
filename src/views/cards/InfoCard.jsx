@@ -123,7 +123,6 @@ const CardComponent = () => {
   const navigate = useNavigate();
 
   let { id } = useParams();
-  let newId = id;
 
   function getLastFourDigits(number) {
     // Convert the number to a string and slice the last 3 characters
@@ -202,9 +201,9 @@ const CardComponent = () => {
 
   const handleKeyPress = ({ key }) => {
     if (key === "ArrowLeft" || key === "ArrowRight") {
+      let newId = id;
       if (idList?.length && newId) {
         let indexOf = idList.indexOf(newId.trim());
-        console.log("indexOf", indexOf);
 
         if (indexOf != 0 && key == "ArrowLeft") {
           indexOf = indexOf - 1;
@@ -439,9 +438,7 @@ const CardComponent = () => {
                       endIcon={<AddIcon />}
                       onClick={() => {
                         setDialogType("renew");
-                        const issueDate = cardData.issue_date
-                          ? moment(cardData.issue_date, "DD/MM/YYYY")
-                          : new Date(cardData.created_at);
+                        const issueDate = new Date(cardData.expiry_date);
 
                         setRenewCalculation(
                           moment(issueDate, "DD/MM/YYYY")
@@ -460,9 +457,7 @@ const CardComponent = () => {
                       endIcon={<AddIcon />}
                       onClick={() => {
                         setDialogType("renew");
-                        const issueDate = cardData.issue_date
-                          ? moment(cardData.issue_date, "DD/MM/YYYY")
-                          : new Date(cardData.created_at);
+                        const issueDate = new Date(cardData.expiry_date);
 
                         setRenewCalculation(
                           moment(issueDate, "DD/MM/YYYY")
@@ -631,7 +626,11 @@ const CardComponent = () => {
                 <TextElement label="Phone" value={cardData.phone} />
                 <IconButton
                   sx={{ color: "#23e223", ml: 2 }}
-                  onClick={() => window.open(`https://wa.me/${cardData.phone}`)}
+                  onClick={() =>
+                    window.open(
+                      `https://wa.me/+91${cardData.phone}?text=token no. ${cardData.s_no}`
+                    )
+                  }
                 >
                   <WhatsAppIcon />
                 </IconButton>
@@ -838,12 +837,6 @@ const CardComponent = () => {
                         onClick={() => {
                           setDialogType("renew");
                           const issueDate = new Date(cardData.expiry_date);
-                          console.log(
-                            'moment(issueDate).add(1, "years").format("DD-MM-YYYY")',
-                            moment(issueDate)
-                              .add(1, "years")
-                              .format("DD-MM-YYYY")
-                          );
 
                           setRenewCalculation(
                             moment(issueDate)
@@ -889,7 +882,9 @@ const CardComponent = () => {
                     <IconButton
                       sx={{ color: "#23e223" }}
                       onClick={() =>
-                        window.open(`https://wa.me/+91${FEDetails.phone}`)
+                        window.open(
+                          `https://wa.me/+91${FEDetails.phone}?text=token no. ${cardData.s_no}`
+                        )
                       }
                     >
                       <WhatsAppIcon />
@@ -926,7 +921,9 @@ const CardComponent = () => {
                     <IconButton
                       sx={{ color: "#23e223" }}
                       onClick={() =>
-                        window.open(`https://wa.me/+91${TLDetails.phone}`)
+                        window.open(
+                          `https://wa.me/+91${TLDetails.phone}?text=token no. ${cardData.s_no}`
+                        )
                       }
                     >
                       <WhatsAppIcon />

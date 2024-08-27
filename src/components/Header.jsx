@@ -57,6 +57,31 @@ const ScoreCard = ({
     </Card>
   );
 };
+
+const OtherScoreCard = ({ value, secondValue, text, emitCardSelect, name }) => {
+  return (
+    <Card
+      elevation={0}
+      sx={{
+        my: 1,
+        flexGrow: 1,
+        borderRadius: 3,
+      }}
+    >
+      <CardActionArea onClick={() => emitCardSelect(name)}>
+        <Box sx={{ p: 1 }} textAlign="center">
+          <Typography fontSize={25} fontWeight={600}>
+            {secondValue != value ? `${secondValue}/${value}` : value}
+          </Typography>
+          <Typography fontSize={12} fontWeight={500} color="#00000059">
+            {text}
+          </Typography>
+        </Box>
+      </CardActionArea>
+    </Card>
+  );
+};
+
 let typingTimer;
 const Header = ({
   toTalScoreDetails = {},
@@ -76,7 +101,9 @@ const Header = ({
   showTehsil = true,
   showGram = true,
   showType = false,
-  showState = true,
+  showState = false,
+  showDistrict = true,
+  showOtherCard = false,
 }) => {
   const navigate = useNavigate();
   const [selectedCard, setSelectedCard] = useState(defaultSelectedCard);
@@ -527,7 +554,12 @@ const Header = ({
   ]);
 
   useEffect(() => {
-    getAddressData({ type: "state" });
+    if (showDistrict) {
+      getAddressData({ type: "district" });
+    }
+    if (showState) {
+      getAddressData({ type: "state" });
+    }
     setURLFilters();
     // if (!isEmpty(defaultStatus)) {
     //   setStatus(defaultStatus);
@@ -556,16 +588,27 @@ const Header = ({
       {/* Score Cards on the left */}
       <Grid item>
         <Grid container alignItems="center">
-          <ScoreCard
-            // value={headerData.totalCards}
-            value={toTalScoreDetails.totalScore}
-            secondValue={toTalScoreDetails.totalScoreToshow || 0}
-            text={toTalScoreDetails.text}
-            name={toTalScoreDetails.name}
-            bgcolor="#ffeee8"
-            emitCardSelect={emitCardSelect}
-            isCardSelected={selectedCard === toTalScoreDetails.name}
-          />
+          {showOtherCard ? (
+            <OtherScoreCard
+              value={toTalScoreDetails.totalScore}
+              secondValue={toTalScoreDetails.totalScoreToshow}
+              text={toTalScoreDetails.text}
+              name={toTalScoreDetails.name}
+              bgcolor="#ffeee8"
+            />
+          ) : (
+            <ScoreCard
+              // value={headerData.totalCards}
+              value={toTalScoreDetails.totalScore}
+              secondValue={toTalScoreDetails.totalScoreToshow}
+              text={toTalScoreDetails.text}
+              name={toTalScoreDetails.name}
+              bgcolor="#ffeee8"
+              emitCardSelect={emitCardSelect}
+              isCardSelected={selectedCard === toTalScoreDetails.name}
+            />
+          )}
+
           {showSecondaryScoreCard && (
             <>
               <Divider orientation="vertical" flexItem sx={{ my: 3, mx: 2 }} />

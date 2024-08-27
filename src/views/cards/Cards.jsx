@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, memo } from "react";
 import Header from "../../components/Header";
 import { Grid, Typography, useTheme, Box, Card } from "@mui/material";
 import CustomTable from "../../components/CustomTable";
@@ -22,42 +22,55 @@ import LinearIndeterminate from "../../components/LinearProgress";
 import LoadingScreen from "../../components/LaodingScreenWithWhiteBG";
 import TableWithExtraElements from "./TableWithExtraElements";
 
+const LogoImage = memo(() => (
+  <img src="/v1cardImages/cardLogo.png" alt="Card Logo" />
+));
+
+const Phone = memo(() => (
+  <img
+    src="/v1cardImages/phone.png"
+    alt="Phone"
+    style={{ width: "10px", height: "10px", marginRight: "9px" }}
+  />
+));
+
+const Loc = memo(() => (
+  <img
+    src="/v1cardImages/loc.png"
+    alt="Location"
+    style={{ width: "10px", height: "10px", marginRight: "9px" }}
+  />
+));
+
+const WaterMark = memo(() => (
+  <img
+    src="/v1cardImages/waterMark.png"
+    alt="Watermark"
+    style={{
+      width: "118px",
+      right: "29px",
+      position: "relative",
+      bottom: "47px",
+      zIndex: 0, // Changed from "z-index" to "zIndex" for correct React syntax
+    }}
+  />
+));
+
+const Support = memo(() => (
+  <img
+    src="/v1cardImages/support.png"
+    alt="Support"
+    style={{ width: "54px", height: "54px" }}
+  />
+));
+
+// Storing all memoized components in an object
 const images = {
-  LogoImage: <img src="/v1cardImages/cardLogo.png" alt="Card Logo" />,
-  Phone: (
-    <img
-      src="/v1cardImages/phone.png"
-      alt="Phone"
-      style={{ width: "10px", height: "10px", marginRight: "9px" }}
-    />
-  ),
-  Loc: (
-    <img
-      src="/v1cardImages/loc.png"
-      alt="Location"
-      style={{ width: "10px", height: "10px", marginRight: "9px" }}
-    />
-  ),
-  WaterMark: (
-    <img
-      src="/v1cardImages/waterMark.png"
-      alt="Watermark"
-      style={{
-        width: "118px",
-        right: "29px",
-        position: "relative",
-        bottom: "47px",
-        "z-index": 0,
-      }}
-    />
-  ),
-  Support: (
-    <img
-      src="/v1cardImages/support.png"
-      alt="support"
-      style={{ width: "54px", height: "54px" }}
-    />
-  ),
+  LogoImage: <LogoImage />,
+  Phone: <Phone />,
+  Loc: <Loc />,
+  WaterMark: <WaterMark />,
+  Support: <Support />,
 };
 
 const tableHeaders = [
@@ -142,34 +155,64 @@ const Cards = () => {
 
   const handleMultipleCheckBox = (data) => {
     if (data.type == "all") {
-      setDownloadCardMaps({
-        ...downloadCardMaps,
-        [data.groupName]: data.value,
+      setDownloadCardMaps((pre) => {
+        if (!data.value.length) {
+          delete pre[data.groupName];
+          return pre;
+        }
+        return {
+          ...pre,
+          [data.groupName]: data.value,
+        };
       });
     }
     if (data.type == "add") {
-      const newObject = [].concat(downloadCardMaps?.[data.groupName] || []);
-      newObject.push(data.value);
-      setDownloadCardMaps({
-        ...downloadCardMaps,
-        [data.groupName]: newObject,
+      setDownloadCardMaps((pre) => {
+        const newObject = [].concat(pre?.[data.groupName] || []);
+        newObject.push(data.value);
+        return {
+          ...pre,
+          [data.groupName]: newObject,
+        };
       });
     }
     if (data.type == "remove") {
-      const tempObj = { ...downloadCardMaps };
-      let newObject = [].concat(downloadCardMaps?.[data.groupName] || []);
-      newObject = newObject.filter((key) => key != data.value);
-      if (!newObject.length) {
-        delete tempObj[data.groupName];
-        setDownloadCardMaps({
-          ...tempObj,
-        });
-      } else {
-        setDownloadCardMaps({
-          ...downloadCardMaps,
-          [data.groupName]: newObject,
-        });
-      }
+      // setDownloadCardMaps((pre) => {
+      //   const tempObj = { ...downloadCardMaps };
+      //   let newObject = [].concat(downloadCardMaps?.[data.groupName] || []);
+      //   newObject = newObject.filter((key) => key != data.value);
+      //   if (!newObject.length) {
+      //     delete tempObj[data.groupName];
+      //     return {
+      //       ...tempObj,
+      //     };
+      //   } else {
+      //     return {
+      //       ...pre,
+      //       [data.groupName]: newObject,
+      //     };
+      //   }
+      // });
+
+      setDownloadCardMaps((prev) => {
+        // Destructure the previous state
+        const { [data.groupName]: groupItems = [], ...rest } = prev;
+
+        // Filter out the selected value
+        const updatedGroupItems = groupItems.filter(
+          (key) => key !== data.value
+        );
+
+        // If the updated group is empty, remove it; otherwise, update the group
+        if (updatedGroupItems.length === 0) {
+          return rest; // Remove the group entirely
+        }
+
+        return {
+          ...prev,
+          [data.groupName]: updatedGroupItems, // Update with the filtered group
+        };
+      });
     }
   };
 
@@ -183,8 +226,6 @@ const Cards = () => {
     const scrollValue = storageUtil.getStorageData(
       `${location.pathname}-${searchParams}`
     );
-    console.log("scrollValue", scrollValue);
-
     if (scrollValue) {
       window.scrollTo({
         top: scrollValue,
@@ -415,7 +456,6 @@ const Cards = () => {
           isImageMode={isImageMode}
           handleViewChange={() => setIsImageMode(!isImageMode)}
           apiCallBack={getTableData}
-          showState={selectedCard != "totalCards"}
         />
         {Boolean(Object.keys(downloadCardMaps).length) && (
           <Stack
@@ -521,6 +561,7 @@ const Cards = () => {
                   highlightedRow={highlightedRow}
                   handleSort={handleSort}
                 />
+                <Box sx={{ height: "20px" }}></Box>
               </Grid>
             )}
             <Grid item xs={12} sx={{ height: "39px" }}>
