@@ -168,13 +168,13 @@ export default function MiniDrawer() {
     setOpen(!open);
   };
 
-  useEffect(() => {
-    if (location.pathname != "/cards") {
-      console.log("Changing the page");
-      storageUtil.removeItem("/cards-totalCards");
-      storageUtil.removeItem("/cards-toBePrinted");
-    }
-  }, [location.pathname]);
+  // useEffect(() => {
+  //   if (location.pathname != "/cards") {
+  //     console.log("Changing the page");
+  //     storageUtil.removeItem("/cards-totalCards");
+  //     storageUtil.removeItem("/cards-toBePrinted");
+  //   }
+  // }, [location.pathname]);
 
   return (
     <Box sx={{ display: "flex", flexGrow: 1 }}>
