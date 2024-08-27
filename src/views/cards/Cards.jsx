@@ -223,9 +223,13 @@ const Cards = () => {
 
   const restoreScroll = () => {
     const searchParams = new URLSearchParams(window.location.search).get("tab");
+    const name = `${location.pathname}-${searchParams}`;
     const scrollValue = storageUtil.getStorageData(
       `${location.pathname}-${searchParams}`
     );
+    console.log("scrollValue", scrollValue);
+    console.log("name", name);
+
     if (scrollValue) {
       window.scrollTo({
         top: scrollValue,
@@ -384,17 +388,7 @@ const Cards = () => {
   useEffect(() => {
     // if (!isEmpty(cardsDataGroupedBy)) {
     getUsersList();
-    const searchParams = new URLSearchParams(window.location.search).get("tab");
-    const handleScroll = () => {
-      console.log("window.scrollY", window.scrollY);
 
-      storageUtil.setStorageData(
-        window.scrollY,
-        `${location.pathname}-${searchParams}`
-      );
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
     // }
   }, []);
 
@@ -415,6 +409,17 @@ const Cards = () => {
     if (selectedCard) {
       getTableData();
     }
+    const searchParams = new URLSearchParams(window.location.search).get("tab");
+    console.log("searchParams", searchParams);
+
+    const handleScroll = () => {
+      storageUtil.setStorageData(
+        window.scrollY,
+        `${location.pathname}-${searchParams}`
+      );
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, [selectedCard]);
 
   return (
