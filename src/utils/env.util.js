@@ -6,7 +6,7 @@ const apiInfo = {
   },
   pro: {
     protocol: "https",
-    url: "new-repo-upwork.onrender.com",
+    url: "asia-south1-health-demo-dev.cloudfunctions.net/app",
   },
 };
 
