@@ -185,6 +185,79 @@ async function getCardsData({
   }
 }
 
+async function getToBePrintedCards({
+  _status,
+  limit = 100,
+  page = 0,
+  responseType = "LIST",
+  q,
+  state,
+  district,
+  duration,
+  created_by,
+  selectedCard,
+  tehsil,
+  gram_p,
+  till_duration,
+  sortBy,
+} = {}) {
+  const _payload = {
+    token: tokenUtil.getAuthToken(),
+    mode: "ADMIN",
+    limit,
+    page,
+    responseType,
+    ...(_status && { status: _status }),
+    ...(q && { q }),
+    ...(state && { state }),
+    ...(district && { district }),
+    ...(duration && { duration }),
+    ...(created_by && { created_by }),
+    ...(tehsil && { tehsil }),
+    ...(gram_p && { gram_p }),
+    ...(till_duration && { till_duration }),
+    ...(sortBy && { sortBy }),
+    // duration: THIS WEEK
+  };
+  const {
+    status,
+    data,
+    message,
+    error = "",
+    cardIds,
+    tehsilCount,
+    total_print_card = 0,
+    total = 0,
+    total_showing = 0,
+    total_print_card_showing = 0,
+  } = await axiosUtil.get({
+    path: "cards/to-be-printed",
+    params: _payload,
+  });
+  if (status === "failed") {
+    return { status, error: error || message };
+  } else if (!isEmpty(data)) {
+    console.log("new data format", {
+      groupedData: data,
+      totalPrintedCards: total_print_card,
+      totalPrintCardsShowing: total_print_card_showing,
+      totalShowing: total_showing,
+      totalCards: total,
+      idList: cardIds,
+      tehsilCounts: tehsilCount,
+    });
+    return {
+      groupedData: data,
+      totalPrintedCards: total_print_card,
+      totalPrintCardsShowing: total_print_card_showing,
+      totalShowing: total_showing,
+      totalCards: total,
+      idList: cardIds,
+      tehsilCounts: tehsilCount,
+    };
+  }
+}
+
 async function getUsersByIds({ ids = [] } = {}) {
   const {
     status,
@@ -415,4 +488,5 @@ export default {
   deleteCard,
   markAsPrint,
   getUsersList,
+  getToBePrintedCards,
 };

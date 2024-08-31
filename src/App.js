@@ -16,6 +16,7 @@ import FieldExecutives from "./views/field_executives/FieldExecutives";
 import UserInfo from "./views/field_executives/UserInfo";
 import Settings from "./views/settings/Settings";
 import RouteWrapper from "./components/RedirectionMonitor";
+import Bin from "./views/bin/Bin";
 
 function App() {
   const [theme, colorMode] = useMode();
@@ -39,6 +40,7 @@ function App() {
               <Route path="/field-executives" element={<FieldExecutives />} />
               <Route path="/field-executives/:id" element={<UserInfo />} />
               <Route path="/settings" element={<Settings />} />
+              <Route path="/bin" element={<Bin />} />
             </Route>
           </Route>
           <Route path="*" element={<PageNotFound />} />

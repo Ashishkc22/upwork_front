@@ -177,7 +177,7 @@ const EditDialog = ({ open, onClose, cardData, setIscardLoadtion }) => {
         selectedImageIndex={0}
         mode="Edit"
       />
-      <Dialog open={open} onClose={onClose} maxWidth="md">
+      <Dialog open={open} maxWidth="md">
         <DialogTitle>Edit Details</DialogTitle>
         <DialogContent>
           <Grid container spacing={2}>

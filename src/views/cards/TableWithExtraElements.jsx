@@ -78,27 +78,28 @@ const TableWithExtraElements = ({
   const [tableCheckedBox, setTableCheckedBox] = useState({});
 
   const getGroupDataLenght = () => {
-    return Object.keys(groupedData).reduce(
-      (value, key) => groupedData[key]?.length + value,
-      0
-    );
+    return groupedData.reduce((value, data) => data.cardCount + value, 0);
   };
 
   useEffect(() => {
     if (isDownloadCompleted) {
       setDistrictCheckbox(false);
-      if (Object.keys(groupedData)) {
+      if (groupedData.length) {
         const newCheckedBox = {};
-        Object.keys(groupedData).forEach((key) => (newCheckedBox[key] = false));
+        groupedData.forEach(
+          (cardData) => (newCheckedBox[cardData._id.createdBy] = false)
+        );
         setTableCheckedBox(newCheckedBox);
       }
     }
   }, [isDownloadCompleted]);
 
   useEffect(() => {
-    if (Object.keys(groupedData)) {
+    if (groupedData.length) {
       const newCheckedBox = {};
-      Object.keys(groupedData).forEach((key) => (newCheckedBox[key] = false));
+      groupedData.forEach(
+        (cardData) => (newCheckedBox[cardData._id.createdBy] = false)
+      );
       setTableCheckedBox(newCheckedBox);
     }
   }, []);
@@ -110,12 +111,7 @@ const TableWithExtraElements = ({
           sx={{ background: colors.grey[100], px: 1 }}
           startIcon={
             <Checkbox
-              checked={
-                districtCheckbox
-                // Object.entries(tableCheckedBox).some(
-                //   ([key, value]) => value === true
-                // )
-              }
+              checked={districtCheckbox}
               indeterminate={
                 Object.entries(tableCheckedBox).every(
                   ([key, value]) => value === true
@@ -127,34 +123,32 @@ const TableWithExtraElements = ({
             />
           }
           onClick={() => {
-            setDistrictCheckbox(!districtCheckbox);
             if (!districtCheckbox) {
               handleMultipleCheckBox({
                 type: "all",
-                value: Object.keys(groupedData),
+                value: groupedData.map((d) => d._id.createdBy),
                 groupName,
               });
 
               increaseDownloadCardCount(
-                Object.keys(groupedData).reduce((total, key) => {
-                  if (tableCheckedBox[key]) {
+                groupedData.reduce((total, cardData) => {
+                  if (tableCheckedBox[cardData._id.createdBy]) {
                     return total;
                   }
-                  return total + groupedData[key].length;
+                  return total + cardData.cardCount;
                 }, 0)
               );
             }
 
             if (!!districtCheckbox) {
               handleMultipleCheckBox({ type: "all", value: [], groupName });
-              increaseDownloadCardCount(
-                -Object.keys(groupedData).reduce((total, key) => {
-                  if (!tableCheckedBox[key]) {
-                    return total;
-                  }
-                  return total + groupedData[key].length;
-                }, 0)
-              );
+              const unSelectedCount = groupedData.reduce((total, cardData) => {
+                if (!tableCheckedBox[cardData._id.createdBy]) {
+                  return total;
+                }
+                return total + cardData.cardCount;
+              }, 0);
+              increaseDownloadCardCount(-unSelectedCount);
             }
 
             // reset value
@@ -163,6 +157,7 @@ const TableWithExtraElements = ({
               (key) => (newCheckedBox[key] = !districtCheckbox)
             );
             setTableCheckedBox(newCheckedBox);
+            setDistrictCheckbox(!districtCheckbox);
           }}
         >{`${groupName} (Total: ${getGroupDataLenght()})`}</Button>
         <Tooltip title="Download full tehsil">
@@ -180,8 +175,8 @@ const TableWithExtraElements = ({
                 cardData: groupedData,
                 handleDownloadCompleted: () => {
                   const keys = {};
-                  Object.keys(groupedData).forEach((key) => {
-                    keys[key] = true;
+                  groupedData.forEach((cardData) => {
+                    keys[cardData._id.createdBy] = true;
                   });
                   setIsCardDownload(false);
                   setIsDownloadCompleted({ [groupName]: true });
@@ -236,19 +231,26 @@ const TableWithExtraElements = ({
         )}
       </Grid>
 
-      {Object.keys(groupedData).map((key, index) => {
-        const [firtsData] = groupedData[key];
-        const dataLength = groupedData[key].length;
+      {groupedData.map((feCards, index) => {
+        // const groupByDistrict = groupedData[key];
+        const firtsData = {
+          created_by_uid: feCards.userDetails.uid,
+          created_by_name: feCards.userDetails.name,
+        };
+        const key = feCards._id.createdBy;
+
+        // const dataLength = groupedData[key].length;
         return (
           <TableWithCheckBox
-            key={key + index + dataLength}
+            key={feCards.uid + index + feCards.name}
             firtsData={firtsData}
-            dataLength={dataLength}
+            dataLength={feCards.cardCount}
             colors={colors}
-            groupedData={groupedData[key]}
-            id={key}
+            groupedData={feCards.cards}
+            id={feCards._id.location}
             actions={[]}
             isCheckBoxChecked={tableCheckedBox[key]}
+            tlDetails={feCards.teamLeaderDetails[0]}
             checkBoxClicked={(id, value) => {
               handleMultipleCheckBox({
                 type: value ? "add" : "remove",
@@ -256,9 +258,9 @@ const TableWithExtraElements = ({
                 groupName,
               });
               let isEveryValueFalse = true;
-              Object.keys(groupedData).forEach((lockey) => {
-                if (key != lockey) {
-                  isEveryValueFalse = !tableCheckedBox[lockey];
+              groupedData.forEach((lockey) => {
+                if (key != lockey._id.createdBy) {
+                  isEveryValueFalse = !tableCheckedBox[lockey._id.createdBy];
                 } else {
                   isEveryValueFalse = !value;
                 }
@@ -268,9 +270,9 @@ const TableWithExtraElements = ({
               }
 
               let isEveryValueTrue = false;
-              Object.keys(groupedData).forEach((lockey) => {
-                if (key != lockey) {
-                  isEveryValueTrue = tableCheckedBox[lockey];
+              groupedData.forEach((lockey) => {
+                if (key != lockey._id.createdBy) {
+                  isEveryValueTrue = tableCheckedBox[lockey._id.createdBy];
                 } else {
                   isEveryValueTrue = value;
                 }
@@ -294,6 +296,7 @@ const TableWithExtraElements = ({
             handleSort={handleSort}
             setIsCardDownload={setIsCardDownload}
           />
+          // <>{feCards?._id?.location}</>
         );
       })}
     </Grid>

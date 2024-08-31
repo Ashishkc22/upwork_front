@@ -53,6 +53,7 @@ import AddIcon from "@mui/icons-material/Add";
 import domtoimage from "dom-to-image";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import TransparentLoadingScreen from "../../components/LaodingScreenWithWhiteBG";
+import { enqueueSnackbar } from "notistack";
 
 const images = {
   LogoImage: <img src="/v1cardImages/cardLogo.png" alt="Card Logo" />,
@@ -92,9 +93,8 @@ const images = {
   ),
 };
 
-const idList = storageUtil.getStorageData("cards_ids");
-
 const CardComponent = () => {
+  const idList = storageUtil.getStorageData("cards_ids");
   const [isMenuOpened, setIsMenuOpened] = useState(false);
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [isTimeLineOpened, setIsTimeLineOpened] = useState(false);
@@ -167,13 +167,22 @@ const CardComponent = () => {
         // Write the ClipboardItem to the clipboard
         await navigator.clipboard.write([clipboardItem]);
 
-        alert("Image copied to clipboard!");
+        enqueueSnackbar("Image copied to clipboard!", {
+          variant: "success",
+          autoHideDuration: 2000,
+        });
       } else {
-        alert("arogyaCardRef not found");
+        enqueueSnackbar("arogyaCardRef not found", {
+          variant: "error",
+          autoHideDuration: 2000,
+        });
       }
     } catch (error) {
       console.error("Failed to copy image:", error);
-      alert("Failed to copy image.");
+      enqueueSnackbar("Failed to copy image.", {
+        variant: "error",
+        autoHideDuration: 2000,
+      });
     }
   };
   const fetchCardData = ({ paramId = false } = {}) => {
@@ -199,19 +208,37 @@ const CardComponent = () => {
     return fieldExecutives.getUserById({ uid });
   };
 
+  const isArrowButtonDisable = (key) => {
+    const newId = window.location.pathname.split("/")[2];
+    const indexOf = idList.indexOf(newId.trim());
+    if (key == "f") {
+      return indexOf === idList.length - 1;
+    }
+    return indexOf === 0;
+  };
+
   const handleKeyPress = ({ key }) => {
     if (key === "ArrowLeft" || key === "ArrowRight") {
-      let newId = id;
+      const newId = window.location.pathname.split("/")[2];
       if (idList?.length && newId) {
         let indexOf = idList.indexOf(newId.trim());
+        if (key === "ArrowLeft" && indexOf === 0) {
+          return;
+        }
+        if (key === "ArrowRight" && indexOf === idList?.length - 1) {
+          return;
+        }
+        console.log("CLICKED");
+        console.log("indexOf", indexOf);
+        console.log("idList", idList);
 
-        if (indexOf != 0 && key == "ArrowLeft") {
+        if (key == "ArrowLeft") {
           indexOf = indexOf - 1;
-        } else if (idList?.length != indexOf) {
+        } else {
           indexOf = indexOf + 1;
         }
         updateQueryParam(idList?.[indexOf]);
-        newId = idList?.[indexOf];
+        // newId = idList?.[indexOf];
         fetchCardData({ paramId: idList?.[indexOf] });
       }
     }
@@ -384,6 +411,7 @@ const CardComponent = () => {
             e.stopPropagation();
             handleKeyPress({ key: "ArrowLeft" });
           }}
+          disabled={isArrowButtonDisable()}
         >
           <KeyboardArrowLeftIcon />
         </IconButton>
@@ -675,23 +703,20 @@ const CardComponent = () => {
                   <Grid item xs={6}>
                     <Box>
                       <TextElement label="Status" value={cardData.status} />
-                      {/* {cardData.discard_reason && (
+                      {cardData.discard_reason && (
                         <span
                           label=""
                           style={{ fontSize: 12, color: "#00000075" }}
                         >
                           {cardData.discard_reason}
                         </span>
-                      )} */}
-                      {cardData.discard_reason && (
-                        <span
-                          label=""
-                          style={{ fontSize: 12, color: "#00000075" }}
-                        >
+                      )}
+                      {cardData.status_updated_at && (
+                        <div style={{ fontSize: 12, color: "#00000075" }}>
                           {moment(cardData.status_updated_at).format(
                             "DD-MM-YYYY HH:mm:ss"
                           )}
-                        </span>
+                        </div>
                       )}
                     </Box>
                   </Grid>
@@ -1052,6 +1077,7 @@ const CardComponent = () => {
             e.stopPropagation();
             handleKeyPress({ key: "ArrowRight" });
           }}
+          disabled={isArrowButtonDisable("f")}
         >
           <ChevronRightIcon />
         </IconButton>
@@ -1070,7 +1096,8 @@ const CardComponent = () => {
       {Boolean(isTimeLineData.length) && (
         <TimeLineDialog
           open={isTimeLineOpened}
-          onClose={() => {
+          onClose={(e) => {
+            e.stopPropagation();
             setIsTimeLineOpened(false);
           }}
           data={isTimeLineData}

@@ -17,6 +17,15 @@
   font-style: normal;
 }
 
+.chip-path {
+  position: "absolute";
+  width: "100%";
+  height: "100%";
+  background: "#fda330";
+  clip-path: ellipse(61% 92% at 73% 7%);
+  z-index: 1;
+}
+
 .circle-container {
   box-shadow: inset 0 0 0px #ffffff36, inset 0 6px 5px #4f4f4f30, inset 0 0px 0px #ffffff00;
   position: absolute;
@@ -32,6 +41,24 @@
   /* left: 79px; */
   right: 157px;
   z-index: 1;
+}
+@media print {
+  .circle-container {
+    box-shadow: inset 0 0 0px #ffffff36, inset 0 6px 5px #4f4f4f30, inset 0 0px 0px #ffffff00;
+    position: absolute;
+    width: 44px;
+    height: 44px;
+    background-color: white;
+    border-radius: 50%;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    top: 28px;
+    /* left: 79px; */
+    right: 157px;
+    z-index: 1;
+  }
 }
 
 .cursor:hover {

@@ -30,12 +30,13 @@ const DynamicTable = ({
   headers = [],
   rows = [],
   actions = [],
-  rowClick = () => {},
+  rowClick,
   tbCellStyle = {},
   dataForSmallScreen,
   handleMenuSelect,
   highlightedRow = "",
   handleSort,
+  showActionMenu = true,
 }) => {
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
@@ -48,7 +49,12 @@ const DynamicTable = ({
     return birthYearNumber ? currentYear - birthYearNumber : null; // Calculate and return age, or null if birth year is invalid
   }
 
-  const getCellValue = ({ keymap = "", row = {}, rowIndex }) => {
+  const getCellValue = ({
+    keymap = "",
+    row = {},
+    rowIndex,
+    showActionMenu,
+  }) => {
     if (keymap.label == "RATIO") {
       return (
         <Typography variant="body2">
@@ -56,7 +62,11 @@ const DynamicTable = ({
         </Typography>
       );
     }
-    if (keymap.key === "created_at" || keymap.key === "expiry_date") {
+    if (
+      keymap.key === "created_at" ||
+      keymap.key === "expiry_date" ||
+      keymap.key === "deleted_at"
+    ) {
       return (
         <Typography variant="body2">
           {moment(row?.[keymap.key]).format(
@@ -108,7 +118,12 @@ const DynamicTable = ({
               {action.icon}
             </IconButton>
           ))}
-          <ThreeDotsDynamicMenu row={row} handleMenuSelect={handleMenuSelect} />
+          {showActionMenu && (
+            <ThreeDotsDynamicMenu
+              row={row}
+              handleMenuSelect={handleMenuSelect}
+            />
+          )}
         </Box>
       );
     }
@@ -119,9 +134,9 @@ const DynamicTable = ({
       component={Paper}
       sx={{
         maxWidth: {
-          lg: "100%",
-          md: "90%",
-          sm: "95%",
+          lg: "98%",
+          md: "98%",
+          sm: "99%",
         },
         overflowX: "auto",
       }}
@@ -193,7 +208,7 @@ const DynamicTable = ({
                       ...(!isEmpty(tbCellStyle) && tbCellStyle),
                     }}
                   >
-                    {getCellValue({ keymap, row, rowIndex })}
+                    {getCellValue({ keymap, row, rowIndex, showActionMenu })}
                   </TableCell>
                 ))}
               </TableRow>
@@ -201,7 +216,7 @@ const DynamicTable = ({
           </TableBody>
         </Table>
       ) : (
-        <Box>
+        <>
           {rows.map((row, rowIndex) => (
             <Accordion
               key={row._id + rowIndex}
@@ -231,19 +246,16 @@ const DynamicTable = ({
                             <div>
                               {row[key] && (
                                 <div style={{ display: "inline-flex" }}>
-                                  {/* <Typography
-                                    variant="body"
-                                    sx={{ fontWeight: 600 }}
-                                  >
-                                    {key.replaceAll("_", " ")}
-                                  </Typography> */}
                                   <Typography
                                     variant="h6"
                                     sx={{ mx: 1, fontWeight: 500 }}
                                   >
-                                    {row[key]}
+                                    {key === "deleted_at"
+                                      ? moment(row[key]).format(
+                                          "DD-MM-YYYY HH:mm:ss"
+                                        )
+                                      : row[key]}
                                   </Typography>
-                                  {" - "}
                                 </div>
                               )}
                             </div>
@@ -253,9 +265,11 @@ const DynamicTable = ({
                     )}
                   </Typography>
                   <Box display="flex">
-                    <Button variant="text" onClick={() => rowClick(row)}>
-                      Details
-                    </Button>
+                    {rowClick && (
+                      <Button variant="text" onClick={() => rowClick(row)}>
+                        Details
+                      </Button>
+                    )}
                     {actions?.map((action, actionIndex) => (
                       <IconButton
                         key={row._id + action.label + actionIndex}
@@ -272,10 +286,12 @@ const DynamicTable = ({
                         {action.smallIcon}
                       </IconButton>
                     ))}
-                    <ThreeDotsDynamicMenu
-                      row={row}
-                      handleMenuSelect={handleMenuSelect}
-                    />
+                    {showActionMenu && (
+                      <ThreeDotsDynamicMenu
+                        row={row}
+                        handleMenuSelect={handleMenuSelect}
+                      />
+                    )}
                   </Box>
                 </Box>
               </AccordionSummary>
@@ -317,27 +333,12 @@ const DynamicTable = ({
                           </Typography>
                         </Box>
                       )
-                    //  : (
-                    //   <Box key={key} sx={{ mb: 1 }}>
-                    //     <Typography variant="body2" fontWeight="bold">
-                    //       {key
-                    //         ?.replace(/_/g, " ")
-                    //         ?.replace(/\b\w/g, (char) => char.toUpperCase())}
-                    //       :
-                    //     </Typography>
-                    //     <img
-                    //       src={row?.[key]}
-                    //       alt="Profile"
-                    //       style={{ maxWidth: "100%", height: "auto" }}
-                    //     />
-                    //   </Box>
-                    // )
                   )}
                 </Grid>
               </AccordionDetails>
             </Accordion>
           ))}
-        </Box>
+        </>
       )}
     </TableContainer>
   );

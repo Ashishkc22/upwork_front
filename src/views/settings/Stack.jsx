@@ -26,6 +26,18 @@ import CloseIcon from "@mui/icons-material/Close";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import { isEmpty } from "lodash";
 import { useEffect } from "react";
+import settings from "../../services/settings";
+import Switch from "@mui/material/Switch";
+import { styled } from "@mui/material/styles";
+
+const ColoredSwitch = styled(Switch)(({ theme }) => ({
+  "& .MuiSwitch-switchBase.Mui-checked": {
+    color: "#ff5722",
+  },
+  "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
+    backgroundColor: "#ff5722",
+  },
+}));
 
 let typingTimer;
 
@@ -101,7 +113,21 @@ const StateList = ({
   titleWithCount,
   stackData,
   handleItemClick,
-  selectedDetails,
+  gramPanchayat,
+  janPanchayat,
+  tehsil,
+  pincode,
+  updatedAdminBy,
+  sarpanch,
+  sachiv,
+  rojgarSahayak,
+  isVerified,
+  apiCallBack = () => {},
+  stackName,
+  preSelectedDetails,
+  districtDetails,
+  showHidden,
+  handleSwitchChange,
 }) => {
   const [states, setStates] = useState([]);
   const [filteredStates, setFilteredStates] = useState([]);
@@ -122,10 +148,12 @@ const StateList = ({
   };
 
   useEffect(() => {
-    console.log("stackData", stackData);
-
     if (!isEmpty(stackData)) {
       setStates(stackData);
+    }
+    if (isEmpty(stackData)) {
+      setStates([]);
+      setFilteredStates([]);
     }
     if (!isEmpty(stackData) && isEmpty(searchTerm)) {
       setFilteredStates(stackData);
@@ -133,10 +161,9 @@ const StateList = ({
   }, [stackData]);
 
   const handleFilter = (e) => {
-    let value = e.target.value;
+    let value = e?.target?.value;
+    console.log("valuevalue", value);
     if (value === "") {
-      console.log("valuevalue", value);
-
       setFilteredStates(states);
       setSearchTerm("");
     }
@@ -145,8 +172,10 @@ const StateList = ({
       setSearchTerm(value);
       typingTimer = setTimeout(function () {
         setFilteredStates(
-          states.filter((state) =>
-            state.name.toLowerCase().includes(e.target.value.toLowerCase())
+          states.filter(
+            (state) =>
+              state?.name &&
+              state.name.toLowerCase().includes(e?.target?.value?.toLowerCase())
           )
         );
       }, 1500);
@@ -168,9 +197,28 @@ Text Dialog  logic
     setDialogOpen(false);
   };
 
-  const handleAddAction = () => {
+  const handleAddAction = async () => {
     console.log("Text value:", textValue);
     // Implement the logic for the Add action here
+    const keyMap = {
+      district: "stateId",
+      tehsil: "districtId",
+      janPanchayat: "districtId",
+      gramPanchayat: "janPanchayatId",
+      gram: "gramPanchayatId",
+    };
+    await settings.addAddressType({
+      type: stackName,
+      body: {
+        ...(!isEmpty(preSelectedDetails) && {
+          [keyMap[stackName]]: preSelectedDetails._id,
+        }),
+        name: textValue,
+        active: true,
+      },
+    });
+
+    apiCallBack(stackName);
     handleCloseDialog(); // Optionally close the dialog after adding
   };
 
@@ -195,13 +243,33 @@ Text Dialog  logic
         </InputAdornment>
       );
     }
+
+    let isButtonDisable = false;
+
+    if (isEmpty(preSelectedDetails)) isButtonDisable = true;
+
+    if (stackName === "state") isButtonDisable = false;
+
     return (
       <InputAdornment position="end">
-        <IconButton edge="end" onClick={handleOpenDialog}>
+        <IconButton
+          edge="end"
+          onClick={handleOpenDialog}
+          disabled={isButtonDisable}
+        >
           <AddIcon />
         </IconButton>
       </InputAdornment>
     );
+  };
+
+  const handleGramVerify = async () => {
+    // call -- settings
+    await settings.varifyGramPanchayat({
+      id: gramPanchayat._id,
+      verified: true,
+    });
+    apiCallBack(stackName);
   };
 
   return (
@@ -235,7 +303,7 @@ Text Dialog  logic
         sx={{
           width: "100%",
           maxWidth: 360,
-          maxHeight: "583px",
+          maxHeight: "550px",
           overflow: "scroll",
           overflowX: "hidden",
           "::-webkit-scrollbar": {
@@ -254,82 +322,135 @@ Text Dialog  logic
           onTextChange={handleTextChange}
           onAdd={handleAddAction}
         />
-        <List>
-          {filteredStates.map((state) => (
-            <ListItemButton
-              key={state}
-              sx={{
-                borderRadius: "30px",
-                ...(selectedItem._id === state._id && {
-                  background: "#fbe9e7",
-                }),
-              }}
-              onClick={() => handleItemClick(state)}
-            >
-              <ListItem
+        {(!isEmpty(preSelectedDetails) || stackName === "state") && (
+          <List>
+            {filteredStates.map((state, index) => (
+              <ListItemButton
+                key={state?._id + index + searchInputLabel}
                 sx={{
-                  m: 0,
-                  p: 0,
-                  ...(selectedItem._id === state._id && { color: "#ff5722" }),
+                  borderRadius: "30px",
+                  ...(selectedItem._id === state._id && {
+                    background: "#fbe9e7",
+                  }),
                 }}
-                secondaryAction={
-                  <IconButton
-                    edge="end"
-                    aria-label="delete"
-                    sx={{
-                      ...(selectedItem._id === state._id && {
-                        color: "#ff5722",
-                      }),
-                    }}
-                    onClick={() => handleDeleteState(state)}
-                  >
-                    <ArrowForwardIcon />
-                  </IconButton>
-                }
+                onClick={() => handleItemClick(state)}
               >
-                <ListItemText primary={state.name} />
-              </ListItem>
-            </ListItemButton>
-          ))}
-        </List>
+                <ListItem
+                  sx={{
+                    m: 0,
+                    p: 0,
+                    ...(selectedItem._id === state._id && { color: "#ff5722" }),
+                  }}
+                >
+                  <ListItemText primary={state.name} s />
+                  {showHidden && (
+                    <ColoredSwitch
+                      checked={state?.active || false}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleSwitchChange({
+                          stackName,
+                          id: state._id,
+                          active: !state.active,
+                        });
+                        setFilteredStates((pre) => {
+                          const newObject = [...pre];
+                          newObject[index].active = !pre[index].active;
+                          return newObject;
+                        });
+                      }}
+                    />
+                  )}
+                  {
+                    <IconButton
+                      edge="end"
+                      aria-label="delete"
+                      sx={{
+                        ...(selectedItem._id === state._id && {
+                          color: "#ff5722",
+                        }),
+                      }}
+                      onClick={() => handleDeleteState(state)}
+                    >
+                      <ArrowForwardIcon />
+                    </IconButton>
+                  }
+                </ListItem>
+              </ListItemButton>
+            ))}
+          </List>
+        )}
       </Stack>
-      {!isEmpty(selectedDetails) && (
-        <Container maxWidth="md" sx={{ marginTop: 4 }}>
+
+      {!isEmpty(gramPanchayat) && (
+        <Container maxWidth="md" sx={{ marginTop: 4 }} justifyContent="center">
           <Grid container spacing={2}>
-            <Grid item xs={12} md={6}>
-              <InfoCard title="Gram Panchayat" value="" />
+            {!isEmpty(gramPanchayat) && (
+              <Grid item xs={12}>
+                <InfoCard title="Gram Panchayat" value={gramPanchayat.name} />
+              </Grid>
+            )}
+            {!isEmpty(janPanchayat) && (
+              <Grid item xs={12}>
+                <InfoCard title="Jan Panchayat" value={janPanchayat} />
+              </Grid>
+            )}
+            {!isEmpty(tehsil?.name) && (
+              <Grid item xs={12}>
+                <InfoCard title="Tehsil" value={tehsil?.name} />
+              </Grid>
+            )}
+            {!isEmpty(pincode) && (
+              <Grid item xs={12}>
+                <InfoCard title="Pincode" value={pincode} />
+              </Grid>
+            )}
+            {!isEmpty(updatedAdminBy) && (
+              <Grid item xs={12}>
+                <InfoCard title="Updated Admin By" value={updatedAdminBy} />
+              </Grid>
+            )}
+            {!isEmpty(sarpanch?.name) && (
+              <Grid item xs={12}>
+                <InfoCard
+                  title="Sarpanch"
+                  value={sarpanch.name}
+                  phone={sarpanch.phone}
+                />
+              </Grid>
+            )}
+            {!isEmpty(sachiv?.name) && (
+              <Grid item xs={12}>
+                <InfoCard
+                  title="Sachiv"
+                  value={sachiv.name}
+                  phone={sachiv.phone}
+                />
+              </Grid>
+            )}
+            {!isEmpty(rojgarSahayak.name) && (
+              <Grid item xs={12}>
+                <InfoCard
+                  title="Rojgar Sahayak"
+                  value={rojgarSahayak.name}
+                  phone={rojgarSahayak.phone}
+                />
+              </Grid>
+            )}
+            <Divider sx={{ marginY: 4 }} />
+            <Grid item xs={12}>
+              <Button
+                variant="contained"
+                disabled={isVerified}
+                sx={{
+                  background: "#4caf50",
+                  ":hover": { background: "#016c06" },
+                }}
+                onClick={handleGramVerify}
+              >
+                {isVerified ? "Verified" : "Verify Now"}
+              </Button>
             </Grid>
-            <Grid item xs={12} md={6}>
-              <InfoCard title="Jan Panchayat" value="NA" />
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <InfoCard title="Tehsil" value="Tehsil1" />
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <InfoCard title="Pincode" value="9752741" />
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <InfoCard title="Updated Admin By" value="REKHA" />
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <InfoCard title="Sarpanch" value="MAN SINGH" phone="8668266350" />
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <InfoCard title="Sachiv" value="YADAV" phone="8668266350" />
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <InfoCard
-                title="Rojgar Sahayak"
-                value="SATYANARAYAN YADAV"
-                phone="8668266350"
-              />
-            </Grid>
-          </Grid>
-          <Divider sx={{ marginY: 4 }} />
-          <Grid container justifyContent="center">
-            <Button variant="contained" color="primary">
-              Verify Now
-            </Button>
           </Grid>
         </Container>
       )}

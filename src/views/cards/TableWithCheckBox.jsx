@@ -92,6 +92,7 @@ const TableWithCheckBox = ({
   setMarkAsPrintPending,
   handleSort,
   setIsCardDownload,
+  tlDetails,
   // highlightedRow,
 }) => {
   const [checkBox, setCheckBox] = useState(false);
@@ -207,6 +208,7 @@ const TableWithCheckBox = ({
                     },
                     images: images,
                     agentDetails: { name: agentName, id },
+                    tlDetails: tlDetails,
                   });
                   setMarkAsPrintPending((pre) => ({ ...pre, [id]: true }));
                 }}

@@ -10,6 +10,24 @@ import Compressor from "compressorjs";
 //   LogoImage: <LogoImage />,
 // }
 
+const LabelCard = ({ tlName, fEName, count }) => (
+  <div
+    style={{
+      width: "454px",
+      height: "281px",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      flexDirection: "column",
+      border: "black solid",
+    }}
+  >
+    <h2 style={{ margin: "0px" }}>TL Name</h2>
+    <h2 style={{ margin: "0px" }}>FE Name</h2>
+    <h2 style={{ margin: "0px" }}>3</h2>
+  </div>
+);
+
 async function downloadSingleCard({
   Element,
   cardData,
@@ -78,8 +96,8 @@ async function downloadSingleCard({
         fileName ||
           `${
             cardData?.create_by_name
-              ? cardData.create_by_name
-              : cardData.created_by_uid
+              ? cardData.create_by_name.replaceAll(" ", "_")
+              : cardData.created_by_uid.replaceAll(" ", "_")
           }#${1}_${moment().format("DD_MMM_YYYY_HH_MM")}.pdf`
       );
       // Clean up
@@ -163,6 +181,7 @@ async function downloadMultipleCard({
   handleDownloadCompleted,
   images,
   agentDetails,
+  tlDetails,
 }) {
   const doc = new jsPDF("p", "mm", "letter", true);
   const width = doc.internal.pageSize.getWidth() * 0.4;
@@ -173,6 +192,30 @@ async function downloadMultipleCard({
   const cardCount = cardData.length;
   let pageCount = 1;
   const imageData = (await getImageData({ Element, cardData, images })) || [];
+
+  createAFENameTLName({
+    doc,
+    feName: agentDetails?.name,
+    tlName: tlDetails?.name,
+    count: cardCount,
+    // startX: i == 0 ? 10 : 130,
+    // startY: 10,
+    startX: xposition,
+    startY: yposition + 10,
+  });
+
+  if (xposition == 10 && yposition == 0) {
+    xposition = 120;
+  } else {
+    if (xposition == 120) {
+      xposition = 10;
+      yposition = yposition + 53;
+    } else if (xposition == 10) {
+      xposition = 120;
+    }
+  }
+  let textXposition = 215;
+  let textYposition = 35;
 
   imageData.forEach((dataUrl, index) => {
     doc.addImage(
@@ -185,21 +228,40 @@ async function downloadMultipleCard({
       "",
       "MEDIUM"
     );
-    if (count == 0 || count == 1) {
-      doc.setFontSize(12);
-      doc.text(
-        `${
-          agentDetails?.name ? agentDetails.name : agentDetails.id
-        }_${pageCount}/${cardCount}`,
-        xposition - 3,
-        50,
-        {
-          angle: 90,
-          rotationDirection: 1,
-        }
-      );
+    // if (count == 0 || count == 1) {
+    //   doc.setFontSize(12);
+    //   doc.text(
+    //     `${
+    //       agentDetails?.name
+    //         ? agentDetails.name.replaceAll(" ", "_")
+    //         : agentDetails.id
+    //     }_${pageCount}/${cardCount}`,
+    //     xposition - 3,
+    //     50,
+    //     {
+    //       angle: 90,
+    //       rotationDirection: 1,
+    //     }
+    //   );
+    // }
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "bold");
+    doc.text(`${index + 1}`, textXposition - 3, textYposition, {
+      angle: 90,
+      rotationDirection: 1,
+    });
+    if (
+      (index / 2 === 1 && textXposition === 215) ||
+      (index === 0 && textXposition === 215) ||
+      index === imageData.length - 1
+    ) {
+      textYposition += 50;
+    }
+    if (index != imageData.length - 1) {
+      textXposition = textXposition === 105 ? 215 : 105;
     }
     count += 1;
+
     if (xposition == 10 && yposition == 0) {
       xposition = 120;
     } else {
@@ -220,12 +282,34 @@ async function downloadMultipleCard({
 
     if (index == cardData.length - 1) {
       doc.save(
-        `${
-          agentDetails?.name ? agentDetails.name : agentDetails.id
+        `${tlDetails.name.replaceAll(" ", "_")}_${
+          agentDetails?.name
+            ? agentDetails.name.replaceAll(" ", "_")
+            : agentDetails.id
         }#${cardCount}_${moment().format("DD_MMM_YYYY_HH_MM")}.pdf`
       );
       handleDownloadCompleted();
     }
+  });
+}
+
+function createAFENameTLName({ doc, feName, tlName, count, startX, startY }) {
+  const pxToPt = (px) => px * 0.75;
+  const boxWidth = pxToPt(115); // 340.5 pt
+  const boxHeight = pxToPt(65); // 210.75 pt
+  doc.rect(startX, startY, boxWidth, boxHeight);
+  doc.setFontSize(20);
+  const combinedText = `${feName}\n${tlName}\n${count}`;
+  const textWidth = doc.getTextWidth(
+    combinedText.split("\n").reduce((a, b) => (a.length > b.length ? a : b))
+  );
+  const lineHeight = doc.getLineHeight() / doc.internal.scaleFactor;
+  const textHeight = lineHeight * combinedText.split("\n").length;
+  const textX = startX + (boxWidth - textWidth) / 2;
+  const textY = startY + (boxHeight - textHeight) / 2 + lineHeight; // Adjust for vertical centering
+  doc.text(combinedText, startX + boxWidth / 2, textY, {
+    align: "center",
+    maxWidth: boxWidth,
   });
 }
 
@@ -244,48 +328,74 @@ async function downloadMultipleCardWithMultipleAgent({
   let cardCount = 0;
   let count = 0;
 
-  const cardDataKeys = Object.keys(cardData);
+  console.log("cardDataKeys", cardData);
 
   const imageData = {};
-  for (let i = 0; i < cardDataKeys.length; i++) {
-    const key = cardDataKeys[i];
+  for (let i = 0; i < cardData.length; i++) {
+    const key = cardData[i]._id.createdBy;
 
-    imageData[key] =
-      (await getImageData({ Element, cardData: cardData[key], images })) || [];
+    imageData[key] = {
+      feDetails: cardData[i].userDetails,
+      tlDetails: cardData[i].teamLeaderDetails,
+      url:
+        (await getImageData({
+          Element,
+          cardData: cardData[i].cards,
+          images,
+        })) || "",
+    };
     cardCount += imageData[key].length;
   }
-
-  console.log("imageData", imageData);
+  let textXposition = 215;
+  let textYposition = 35;
 
   const imageDataKeys = Object.keys(imageData);
-
   for (let i = 0; i < imageDataKeys.length; i++) {
     const agentIdAndKey = imageDataKeys[i];
-    const dataUrl = imageData[agentIdAndKey];
-    // xposition = 10;
-    // yposition = 0;
-    count = 0;
-    // if (i != 0 && imageDataKeys.length > 1) {
-    //   doc.addPage();
-    // }
+    const dataUrl = imageData[agentIdAndKey].url;
+    const feDetails = imageData[agentIdAndKey].feDetails;
+    const [tlDetails] = imageData[agentIdAndKey]?.tlDetails || [];
 
     for (let j = 0; j < dataUrl.length; j++) {
       // adding text
-      if (j == 0 || j == 1) {
-        console.log("count", JSON.stringify(count));
-        console.log("agentIdAndKey", agentIdAndKey);
-        const textXposition = j === 0 ? 10 : 120;
-        const textYposition = yposition + 53;
-        console.log("xposition", xposition);
-        console.log("yposition", yposition);
-
-        doc.setFontSize(12);
-        doc.text(`#${agentIdAndKey}`, textXposition - 3, textYposition, {
-          angle: 90,
-          rotationDirection: 1,
+      if (j == 0) {
+        createAFENameTLName({
+          doc,
+          feName: feDetails?.name,
+          tlName: tlDetails?.name,
+          count: dataUrl.length,
+          // startX: i == 0 ? 10 : 130,
+          // startY: 10,
+          startX: xposition,
+          startY: yposition + 10,
         });
+        if (xposition == 10 && yposition == 0) {
+          xposition = 120;
+        } else {
+          if (xposition == 120) {
+            xposition = 10;
+            yposition = yposition + 53;
+          } else if (xposition == 10) {
+            xposition = 120;
+          }
+        }
       }
-
+      doc.setFontSize(12);
+      doc.setFont("helvetica", "bold");
+      doc.text(`${j + 1}`, textXposition - 3, textYposition, {
+        angle: 90,
+        rotationDirection: 1,
+      });
+      if (
+        (j / 2 === 1 && textXposition === 215) ||
+        (j === 0 && textXposition === 215) ||
+        j === dataUrl.length - 1
+      ) {
+        textYposition += 50;
+      }
+      if (j != dataUrl.length - 1) {
+        textXposition = textXposition === 105 ? 215 : 105;
+      }
       doc.addImage(
         dataUrl[j],
         "PNG",
@@ -296,7 +406,6 @@ async function downloadMultipleCardWithMultipleAgent({
         "",
         "MEDIUM"
       );
-
       if (xposition == 10 && yposition == 0) {
         xposition = 120;
       } else {

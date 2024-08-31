@@ -154,8 +154,6 @@ const Cards = () => {
   };
 
   const handleMultipleCheckBox = (data) => {
-    console.log("CheckBox data ALL", data);
-
     if (data.type == "all") {
       setDownloadCardMaps((pre) => {
         if (!data.value.length) {
@@ -262,83 +260,54 @@ const Cards = () => {
       setPage(page);
       _page = page;
     }
-    if (selectedCard) {
-      setIsPageLoading(true);
-      let data;
-      if (selectedCard === "toBePrinted") {
-        data = await cards.getToBePrintedCards({
-          ...(selectedCard === "totalCards" && {
-            _status: _status,
-          }),
-          ...(selectedCard === "toBePrinted" && { _status: "SUBMITTED" }),
-          page: _page,
-          ...(search && { q: search }),
-          ...(gram_p && { gram_p: gram_p }),
-          ...(state && { state: state }),
-          ...(district && { district }),
-          ...(duration && { duration }),
-          ...(tehsil && { tehsil }),
-          ...(sortBy && { sortBy }),
-          ...((created_by || cId) && { created_by: created_by || cId }),
-          ...(till_duration && { till_duration }),
-          selectedCard,
-        });
-      } else {
-        data = await cards.getCardsData({
-          ...(selectedCard === "totalCards" && {
-            _status: _status,
-          }),
-          ...(selectedCard === "toBePrinted" && { _status: "SUBMITTED" }),
-          page: _page,
-          ...(search && { q: search }),
-          ...(gram_p && { gram_p: gram_p }),
-          ...(state && { state: state }),
-          ...(district && { district }),
-          ...(duration && { duration }),
-          ...(tehsil && { tehsil }),
-          ...(sortBy && { sortBy }),
-          ...((created_by || cId) && { created_by: created_by || cId }),
-          ...(till_duration && { till_duration }),
-          selectedCard,
-        });
+    setIsPageLoading(true);
+    const data = await cards.getCardsData({
+      ...(selectedCard === "totalCards" && {
+        _status: _status,
+      }),
+      ...(selectedCard === "toBePrinted" && { _status: "SUBMITTED" }),
+      page: _page,
+      ...(search && { q: search }),
+      ...(gram_p && { gram_p: gram_p }),
+      ...(state && { state: state }),
+      ...(district && { district }),
+      ...(duration && { duration }),
+      ...(tehsil && { tehsil }),
+      ...(sortBy && { sortBy }),
+      ...((created_by || cId) && { created_by: created_by || cId }),
+      ...(till_duration && { till_duration }),
+      selectedCard,
+    });
+    if (!isEmpty(data)) {
+      if (data.idList) {
+        storageUtil.setStorageData(data.idList, "cards_ids");
       }
-
-      console.log("Old data format", data);
-      if (!isEmpty(data)) {
-        if (data.idList) {
-          storageUtil.setStorageData(data.idList, "cards_ids");
-        }
-        console.log("selectedCard", selectedCard);
-        console.log("data", data);
-
-        if (selectedCard === "toBePrinted") {
-          setCardsDataGroupBy(data.groupedData);
-          setTotalCardsAndToBePrinted({
-            totalCards: data.totalCards,
-            toBePrinted: data.totalPrintedCards,
-            totalPrintCardsShowing: data.totalPrintCardsShowing,
-            totalShowing: data.totalShowing,
-          });
-        } else {
-          setTotalCardsData(data.groupedData);
-        }
-
+      if (selectedCard === "toBePrinted") {
+        setCardsDataGroupBy(data.groupedData);
         setTotalCardsAndToBePrinted({
           totalCards: data.totalCards,
           toBePrinted: data.totalPrintedCards,
           totalPrintCardsShowing: data.totalPrintCardsShowing,
           totalShowing: data.totalShowing,
         });
-        setPageCount(data?.totalShowing);
-        setTehsilCounts(data.tehsilCounts || {});
-        setIsPageLoading(false);
-        setTimeout(() => {
-          restoreScroll();
-        }, 10);
       } else {
-        setCardsDataGroupBy([]);
-        setIsPageLoading(false);
+        setTotalCardsData(data.groupedData);
       }
+      setTotalCardsAndToBePrinted({
+        totalCards: data.totalCards,
+        toBePrinted: data.totalPrintedCards,
+        totalPrintCardsShowing: data.totalPrintCardsShowing,
+        totalShowing: data.totalShowing,
+      });
+      setPageCount(data?.totalShowing);
+      setTehsilCounts(data.tehsilCounts || {});
+      setIsPageLoading(false);
+      setTimeout(() => {
+        restoreScroll();
+      }, 10);
+    } else {
+      setCardsDataGroupBy([]);
+      setIsPageLoading(false);
     }
   };
 
@@ -384,26 +353,19 @@ const Cards = () => {
     // setIsDownloadCompleted
 
     let keys = [];
-    console.log("cardsDataGroupedBy", cardsDataGroupedBy);
-
     Object.keys(downloadCardMaps).forEach((groupName) => {
-      const selectedCardData = [];
+      const selectedCardData = {};
       _isDownloadCompleted[groupName] = true;
       keys = downloadCardMaps[groupName].concat(keys);
-      cardsDataGroupedBy[groupName].forEach((cardData) => {
-        const key = cardData._id.createdBy;
+      Object.keys(cardsDataGroupedBy[groupName]).forEach((key) => {
         if (downloadCardMaps[groupName].includes(key)) {
           _isDownloadCompleted[key] = true;
-          selectedCardData.push(cardData);
+          selectedCardData[key] = cardsDataGroupedBy[groupName][key];
         }
       });
       cardsToDownload[groupName] = selectedCardData;
     });
-    console.log("cardsToDownload", cardsToDownload);
-
     const markAsPending = {};
-    console.log("keys", keys);
-
     keys.forEach((key) => {
       markAsPending[key] = true;
     });
@@ -444,7 +406,9 @@ const Cards = () => {
   // }, []);
 
   useEffect(() => {
-    getTableData();
+    if (selectedCard) {
+      getTableData();
+    }
     const searchParams = new URLSearchParams(window.location.search).get("tab");
     console.log("searchParams", searchParams);
 
@@ -616,6 +580,7 @@ const Cards = () => {
               right: "1px",
             }}
           >
+            {page}
             <TablePagination
               component="div"
               count={pageCount}

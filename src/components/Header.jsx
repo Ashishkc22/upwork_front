@@ -404,6 +404,10 @@ const Header = ({
   };
 
   function getAddressData(payload) {
+    if (payload?.type == "district") {
+      const params = { stateId: "63c681806072b29c2133326e" };
+      payload.params = params;
+    }
     common.getAddressData(payload).then((data) => {
       if (payload?.type == "tehsil" && !data?.error) {
         setTehsilOption(data || []);

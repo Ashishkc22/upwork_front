@@ -23,6 +23,7 @@ import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
 import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
 import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
 import SupervisedUserCircleOutlinedIcon from "@mui/icons-material/SupervisedUserCircleOutlined";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import { isEmpty } from "lodash";
 
 const drawerWidth = 240;
@@ -148,6 +149,11 @@ const navList = [
     title: "Field Executives",
     icon: <SupervisedUserCircleOutlinedIcon />,
     path: "field-executives",
+  },
+  {
+    title: "Bin",
+    icon: <DeleteOutlineIcon sx={{ color: "red" }} />,
+    path: "bin",
   },
   { title: "Settings", icon: <SettingsOutlinedIcon />, path: "settings" },
   { title: "Logout", icon: <LogoutOutlinedIcon />, path: "/" },
