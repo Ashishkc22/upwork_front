@@ -874,6 +874,47 @@ const CardComponent = () => {
                         Renew
                       </Button>
                     </Grid>
+                    <Grid item xs={6}>
+                      <Grid
+                        container
+                        alignItems="end"
+                        columnSpacing={1}
+                        sx={{ my: 1 }}
+                      >
+                        <Grid item>
+                          {/* `/field-executives/${cardData.created_by_uid}` */}
+                          <TextElement
+                            label="TL Name"
+                            value={TLDetails.name}
+                            path={`/field-executives/${TLDetails.tl_id}?isTL=true`}
+                            subText={`UID: ${TLDetails.tl_id}`}
+                          />
+                        </Grid>
+
+                        <Grid item>
+                          <IconButton>
+                            <PhoneIcon
+                              onClick={() =>
+                                window.open(`tel:${TLDetails.phone}`)
+                              }
+                            />
+                          </IconButton>
+                        </Grid>
+
+                        <Grid item>
+                          <IconButton
+                            sx={{ color: "#23e223" }}
+                            onClick={() =>
+                              window.open(
+                                `https://wa.me/+91${TLDetails.phone}?text=token no. ${cardData.s_no}`
+                              )
+                            }
+                          >
+                            <WhatsAppIcon />
+                          </IconButton>
+                        </Grid>
+                      </Grid>
+                    </Grid>
                   </Grid>
                 </Box>
               </Grid>
@@ -909,45 +950,6 @@ const CardComponent = () => {
                       onClick={() =>
                         window.open(
                           `https://wa.me/+91${FEDetails.phone}?text=token no. ${cardData.s_no}`
-                        )
-                      }
-                    >
-                      <WhatsAppIcon />
-                    </IconButton>
-                  </Grid>
-                </Grid>
-              </Grid>
-              <Grid item xs={6}>
-                <Grid
-                  container
-                  alignItems="end"
-                  columnSpacing={1}
-                  sx={{ my: 1 }}
-                >
-                  <Grid item>
-                    {/* `/field-executives/${cardData.created_by_uid}` */}
-                    <TextElement
-                      label="TL Name"
-                      value={TLDetails.name}
-                      path={`/field-executives/${TLDetails.tl_id}?isTL=true`}
-                      subText={`UID: ${TLDetails.tl_id}`}
-                    />
-                  </Grid>
-
-                  <Grid item>
-                    <IconButton>
-                      <PhoneIcon
-                        onClick={() => window.open(`tel:${TLDetails.phone}`)}
-                      />
-                    </IconButton>
-                  </Grid>
-
-                  <Grid item>
-                    <IconButton
-                      sx={{ color: "#23e223" }}
-                      onClick={() =>
-                        window.open(
-                          `https://wa.me/+91${TLDetails.phone}?text=token no. ${cardData.s_no}`
                         )
                       }
                     >
