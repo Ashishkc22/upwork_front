@@ -208,7 +208,12 @@ const EditCardDialog = ({ open, onClose, data, mode = "Edit" }) => {
   }
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+    <Dialog
+      open={open}
+      // onClose={onClose}
+      maxWidth="sm"
+      fullWidth
+    >
       <DialogTitle>Edit Hospital</DialogTitle>
       <DialogContent sx={{ height: "700px" }}>
         <Grid container sx={{ py: 2 }} columnSpacing={2} rowSpacing={2}>
@@ -383,7 +388,8 @@ const EditCardDialog = ({ open, onClose, data, mode = "Edit" }) => {
               </Grid>
               <Grid item>
                 <Button
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.stopPropagation();
                     setFormData((pre) => {
                       const doctors = [...(pre?.doctors ? pre?.doctors : [])];
                       doctors.push(doctorDetails);
@@ -398,14 +404,15 @@ const EditCardDialog = ({ open, onClose, data, mode = "Edit" }) => {
                   Add
                 </Button>
                 <Button
-                  onClick={() =>
+                  onClick={(e) => {
+                    e.stopPropagation();
                     setDoctorDetails({
                       name: "",
                       type: "",
                       specialization: "",
                       experience: "",
-                    })
-                  }
+                    });
+                  }}
                 >
                   Clear
                 </Button>
@@ -438,7 +445,8 @@ const EditCardDialog = ({ open, onClose, data, mode = "Edit" }) => {
                       <Box>
                         <IconButton>
                           <DeleteIcon
-                            onClick={() => {
+                            onClick={(e) => {
+                              e.stopPropagation();
                               setFormData((pre) => {
                                 const doctor = pre?.doctors || [];
                                 doctor.splice(index, 1);
@@ -658,6 +666,7 @@ const EditCardDialog = ({ open, onClose, data, mode = "Edit" }) => {
                         value={data.name}
                         key={data._id + index}
                         onClick={(e) => {
+                          e.stopPropagation();
                           console.log(e.target.value);
                           e.preventDefault();
                           getAddressData({
@@ -700,6 +709,7 @@ const EditCardDialog = ({ open, onClose, data, mode = "Edit" }) => {
                       value={data.name}
                       key={data.name + index}
                       onClick={(e) => {
+                        e.stopPropagation();
                         e.preventDefault();
                         setFormData((pre) => {
                           return {
@@ -902,7 +912,10 @@ const EditCardDialog = ({ open, onClose, data, mode = "Edit" }) => {
         </Button>
         <Button
           disabled={isImageLoadingInFormData}
-          onClick={() => handleFormSubmit()}
+          onClick={(e) => {
+            e.stopPropagation();
+            handleFormSubmit();
+          }}
           color="primary"
         >
           Save

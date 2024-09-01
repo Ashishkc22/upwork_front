@@ -18,8 +18,8 @@ const headers = [
   { label: "NAME", key: "entity_name" },
   { label: "REG NO", key: "reg_no" },
   { label: "MOB NO.", key: "mobile_no" },
-  { label: "DISTRICT", key: "district" },
   { label: "CITY", key: "city" },
+  { label: "DISTRICT", key: "district" },
   { label: "JOINED DATE", key: "created_at" },
 ];
 
@@ -188,18 +188,18 @@ const HospitalPage = () => {
             }}
             justifyContent="end"
           >
-            {/* <Button
-          sx={{
-            background: "#ff5722",
-            color: "white",
-            ":hover": {
-              background: "#e23f0c",
-            },
-          }}
-          onClick={() => setAddHospitalDialog(true)}
-        >
-          Add hospital
-        </Button> */}
+            <Button
+              sx={{
+                background: "#ff5722",
+                color: "white",
+                ":hover": {
+                  background: "#e23f0c",
+                },
+              }}
+              onClick={() => setAddHospitalDialog(true)}
+            >
+              Add hospital
+            </Button>
           </Grid>
           <Grid item xs={12}>
             {/* {!isEmpty(hospitalList) && ( */}

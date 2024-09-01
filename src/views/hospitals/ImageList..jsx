@@ -65,14 +65,17 @@ const ImageListCard = ({ initialImages = [], onImagesChange }) => {
           <Card sx={{ maxWidth: 345, m: 1 }}>
             <ImageCropDialog
               open={isCroppingDialogOpen}
-              onClose={() => setIsCroppingDialogOpen(false)}
+              onClose={() => {
+                setIsCroppingDialogOpen(false);
+              }}
               image={selectedImage}
               onCropComplete={handleCropComplete}
               selectedImageIndex={index}
               mode="Edit"
             />
             <CardActionArea
-              onClick={() => {
+              onClick={(e) => {
+                e.stopPropagation();
                 setSelectImages(image);
                 setIsCroppingDialogOpen(true);
               }}
