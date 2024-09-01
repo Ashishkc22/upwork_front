@@ -520,6 +520,8 @@ const Cards = () => {
           handleSelectCard={(n) => {
             addDataToURL({ page: "" });
             setPage(0);
+            setDownloadCardMaps({});
+            setDownloadCardCount(0);
             setSelectedCard(n);
           }}
           isImageMode={isImageMode}
