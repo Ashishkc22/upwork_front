@@ -45,13 +45,68 @@ async function passwordReset(payload) {
     body: payload,
   });
   if (status === "failed") {
+    enqueueSnackbar("Send OTP failed", {
+      variant: "error",
+      autoHideDuration: 2000,
+    });
     return { message, status, error: error || message };
   } else if (!isEmpty(data)) {
     return data;
   }
 }
 
+async function verifyOTP(payload) {
+  const {
+    status,
+    data,
+    message,
+    error = "",
+  } = await axiosUtil.post({
+    path: "auth/verifyCode",
+    body: payload,
+  });
+  console.log("data", data);
+
+  if (status === "failed") {
+    enqueueSnackbar("Send OTP failed", {
+      variant: "error",
+      autoHideDuration: 2000,
+    });
+    return { message, status, error: error || message };
+  } else if (data) {
+    return data;
+  }
+}
+
+async function resetPassword(payload) {
+  const resp = await axiosUtil.post({
+    path: "auth/submitPassword",
+    body: payload,
+  });
+  console.log("data", resp);
+
+  if (resp.status === "failed") {
+    enqueueSnackbar("failed to reset password", {
+      variant: "error",
+      autoHideDuration: 2000,
+    });
+    return {
+      message: resp.message,
+      status: resp.status,
+      error: resp.message,
+    };
+  } else if (resp) {
+    enqueueSnackbar("Password changed successfully.", {
+      variant: "success",
+      autoHideDuration: 2000,
+    });
+    return resp;
+  }
+}
+
 export default {
   login,
   passwordReset,
+  verifyOTP,
+  resetPassword,
 };
