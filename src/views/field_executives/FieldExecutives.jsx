@@ -1,5 +1,5 @@
 import Header from "../../components/Header";
-import { Grid, Card, TablePagination, Box } from "@mui/material";
+import { Grid, Card, TablePagination, Box, Button } from "@mui/material";
 import field_executives from "../../services/field_executives";
 import { isEmpty } from "lodash";
 import { useEffect, useState } from "react";
@@ -7,6 +7,8 @@ import CustomTable from "../../components/CustomTable";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import EditCardDialog from "./EditCardDialog";
 import LinearIndeterminate from "../../components/LinearProgress";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 
 let typingTimer;
 
@@ -124,6 +126,30 @@ const HospitalPage = () => {
     getUsers();
   }, []);
 
+  const customPrevioudButton = (porps) => (
+    <Button
+      {...porps}
+      sx={{ mx: 1 }}
+      size="small"
+      variant="standard"
+      startIcon={<ArrowBackIcon />}
+    >
+      Previous
+    </Button>
+  );
+
+  const customNextButton = (porps) => (
+    <Button
+      {...porps}
+      sx={{ mx: 1 }}
+      size="small"
+      variant="standard"
+      startIcon={<ArrowForwardIcon />}
+    >
+      Next
+    </Button>
+  );
+
   return (
     <Grid
       container
@@ -224,6 +250,12 @@ const HospitalPage = () => {
                     getUsers({ _page: newPage });
                   }}
                   onRowsPerPageChange={() => {}}
+                  slots={{
+                    actions: {
+                      nextButton: customNextButton,
+                      previousButton: customPrevioudButton,
+                    },
+                  }}
                 />
               </Card>
             </Grid>

@@ -1,5 +1,5 @@
 import Header from "../../components/Header";
-import { Grid, Card, TablePagination } from "@mui/material";
+import { Grid, Card, TablePagination, Button } from "@mui/material";
 import hospitals from "../../services/hospitals";
 import { isEmpty } from "lodash";
 import { useEffect, useState } from "react";
@@ -7,6 +7,8 @@ import CustomTable from "../../components/CustomTable";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import EditCardDialog from "./EditCardDialog";
 import LinearIndeterminate from "../../components/LinearProgress";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 
 let typingTimer;
 
@@ -113,6 +115,30 @@ const HospitalPage = () => {
     getHospitals();
   }, []);
 
+  const customPrevioudButton = (porps) => (
+    <Button
+      {...porps}
+      sx={{ mx: 1 }}
+      size="small"
+      variant="standard"
+      startIcon={<ArrowBackIcon />}
+    >
+      Previous
+    </Button>
+  );
+
+  const customNextButton = (porps) => (
+    <Button
+      {...porps}
+      sx={{ mx: 1 }}
+      size="small"
+      variant="standard"
+      startIcon={<ArrowForwardIcon />}
+    >
+      Next
+    </Button>
+  );
+
   return (
     <Grid
       container
@@ -193,7 +219,14 @@ const HospitalPage = () => {
         </>
       )}
       <Grid item xs={12} sx={{ height: "39px" }}>
-        <Card>
+        <Card
+          sx={{
+            position: "fixed",
+            bottom: "5px",
+            width: "100%",
+            right: "1px",
+          }}
+        >
           <TablePagination
             component="div"
             count={pageCount}
@@ -204,6 +237,12 @@ const HospitalPage = () => {
               getHospitals({ _page: newPage });
             }}
             onRowsPerPageChange={() => {}}
+            slots={{
+              actions: {
+                nextButton: customNextButton,
+                previousButton: customPrevioudButton,
+              },
+            }}
           />
         </Card>
       </Grid>

@@ -1,6 +1,6 @@
 import React, { useEffect, useState, memo } from "react";
 import Header from "../../components/Header";
-import { Grid, Typography, useTheme, Box, Card } from "@mui/material";
+import { Grid, Typography, useTheme, Box, Card, Button } from "@mui/material";
 import CustomTable from "../../components/CustomTable";
 import { tokens } from "../../theme";
 import cards from "../../services/cards";
@@ -21,6 +21,8 @@ import TablePagination from "@mui/material/TablePagination";
 import LinearIndeterminate from "../../components/LinearProgress";
 import LoadingScreen from "../../components/LaodingScreenWithWhiteBG";
 import TableWithExtraElements from "./TableWithExtraElements";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 
 const LogoImage = memo(() => (
   <img src="/v1cardImages/cardLogo.png" alt="Card Logo" />
@@ -458,6 +460,30 @@ const Cards = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [selectedCard, page]);
 
+  const customPrevioudButton = (porps) => (
+    <Button
+      {...porps}
+      sx={{ mx: 1 }}
+      size="small"
+      variant="standard"
+      startIcon={<ArrowBackIcon />}
+    >
+      Previous
+    </Button>
+  );
+
+  const customNextButton = (porps) => (
+    <Button
+      {...porps}
+      sx={{ mx: 1 }}
+      size="small"
+      variant="standard"
+      startIcon={<ArrowForwardIcon />}
+    >
+      Next
+    </Button>
+  );
+
   return (
     <Grid component="main" sx={{ width: "96%" }}>
       <Grid item sx={{ mb: 2 }}>
@@ -492,6 +518,8 @@ const Cards = () => {
           createdByKeyMap={{ labelKey: "name", codeKey: "uid" }}
           tehsilCounts={tehsilCounts}
           handleSelectCard={(n) => {
+            addDataToURL({ page: "" });
+            setPage(0);
             setSelectedCard(n);
           }}
           isImageMode={isImageMode}
@@ -612,7 +640,7 @@ const Cards = () => {
             sx={{
               position: "fixed",
               bottom: "5px",
-              width: "35%",
+              width: "50%",
               right: "1px",
             }}
           >
@@ -627,6 +655,12 @@ const Cards = () => {
                 setPage(newPage);
               }}
               onRowsPerPageChange={() => {}}
+              slots={{
+                actions: {
+                  nextButton: customNextButton,
+                  previousButton: customPrevioudButton,
+                },
+              }}
             />
           </Card>
         </Grid>
