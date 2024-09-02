@@ -313,25 +313,10 @@ async function downloadMultipleCardWithMultipleAgent({
   const doc = new jsPDF("p", "mm", "letter", true);
   const width = doc.internal.pageSize.getWidth() * 0.4;
   const height = doc.internal.pageSize.getHeight() * 0.3;
-
+  let xposition = 10;
+  let yposition = 0;
   let cardCount = 0;
   let count = 0;
-  // ------------------------Card left
-  // card on left side values
-  // xposition = 10;
-  // yposition = 0; incr by 54
-  // ------------------------Card right
-  // card on right side values
-  // xposition = 120;
-  // yposition = 0;  incr by 54
-
-  // ------------------------Card Count right
-  // card on right side values
-  // textXposition = 215;
-  // textYposition = 35; incr by 50
-  // ------------------------Card Count left
-  // textXposition = 105;
-  // textYposition = 35; incr by 50
 
   const imageData = {};
   for (let i = 0; i < cardData.length; i++) {
@@ -349,8 +334,10 @@ async function downloadMultipleCardWithMultipleAgent({
     };
     cardCount += imageData[key].length;
   }
-  let xposition = 10;
-  let yposition = 0;
+
+  let textXposition = 215;
+  let textYposition = 35;
+
   const imageDataKeys = Object.keys(imageData);
   for (let i = 0; i < imageDataKeys.length; i++) {
     const agentIdAndKey = imageDataKeys[i];
@@ -358,23 +345,14 @@ async function downloadMultipleCardWithMultipleAgent({
     const feDetails = imageData[agentIdAndKey].feDetails;
     const [tlDetails] = imageData[agentIdAndKey]?.tlDetails || [];
 
-    let pageCardLimit = 9;
-
-    console.log("xposition", xposition);
-    console.log("xposition", yposition);
-    console.log("xposition count text", xposition + 95);
-    console.log("xposition count text", yposition + 35);
-    console.log("i -----------------------------", i);
-    console.log("pageCardLimit -----------------------------", pageCardLimit);
-    console.log("count -----------------------------", count);
+    // textXposition = 215;
+    // textYposition = 35;
+    let pageLimit = 10;
 
     for (let j = 0; j < dataUrl.length; j++) {
-      // ADD BOX WITH TLNAME/FENAME
-      if (i === 1) {
-        debugger;
-      }
-      if (j === 0) {
-        console.log("TLFE TEXTBOX -----------------------------", j);
+      // adding text
+      if (j == 0) {
+        pageLimit = 9;
         createAFENameTLName({
           doc,
           feName: feDetails?.name,
@@ -383,25 +361,44 @@ async function downloadMultipleCardWithMultipleAgent({
           startX: xposition,
           startY: yposition + 10,
         });
-        if (count === 9) {
-          xposition = 10;
-          yposition = 0;
-          count = 0;
-          doc.addPage();
+        console.log("xposition New Table ----", xposition);
+        console.log("yposition New Table ----", xposition);
+        console.log("textXposition New Table ----", textXposition);
+        console.log("textYposition New Table ----", textYposition);
+        if (xposition == 10 && yposition == 0) {
+          xposition = 120;
         } else {
-          if (xposition === 120) {
+          if (xposition == 120) {
+            xposition = 10;
             yposition = yposition + 54;
+            textXposition = 105;
+          } else if (xposition == 10) {
+            xposition = 120;
           }
-          xposition = xposition === 10 ? 120 : 10;
-          count += 1;
         }
       }
-      console.log("j -----------------------------", j);
+      doc.setFontSize(12);
+      doc.setFont("helvetica", "bold");
+      doc.text(`${j + 1}`, textXposition - 3, textYposition, {
+        angle: 90,
+        rotationDirection: 1,
+      });
 
-      console.log("xposition", xposition);
-      console.log("xposition", yposition);
+      // console.log("textXposition", textXposition);
+      // console.log("textYposition", textYposition);
+      // console.log("index ----------------------", j);
+      // console.log("pageLimit ----------------------", pageLimit);
 
-      // ADD CARD IMAGE
+      if (
+        (j / 2 - parseInt(j / 2) === 0 && textXposition === 215) ||
+        (j === 0 && textXposition === 215) ||
+        j === dataUrl.length - 1
+      ) {
+        textYposition += 50;
+      }
+      if (j != dataUrl.length - 1) {
+        textXposition = textXposition === 105 ? 215 : 105;
+      }
       doc.addImage(
         dataUrl[j],
         "PNG",
@@ -412,29 +409,27 @@ async function downloadMultipleCardWithMultipleAgent({
         "",
         "MEDIUM"
       );
-
-      // ADD CARD COUNT TEXT
-      doc.setFontSize(12);
-      doc.setFont("helvetica", "bold");
-      doc.text(`${j + 1}`, xposition + 95 - 3, yposition + 35, {
-        angle: 90,
-        rotationDirection: 1,
-      });
-
-      if (xposition === 120) {
-        yposition = yposition + 54;
+      if (xposition == pageLimit && yposition == 0) {
+        xposition = 120;
+      } else {
+        if (xposition == 120) {
+          xposition = 10;
+          yposition = yposition + 54;
+        } else if (xposition == 10) {
+          xposition = 120;
+        }
       }
-      // ADD NEW PAGE
-      if (count === 9) {
-        console.log("ADDING NEW PAGE -------------------------");
+      if (pageLimit === j) {
+        pageLimit = 10;
+      }
+      count += 1;
+      if (count == pageLimit && j < dataUrl.length - 1) {
         xposition = 10;
         yposition = 0;
         doc.addPage();
+        textXposition = 105;
+        textYposition = 35;
         count = 0;
-        pageCardLimit = 10;
-      } else {
-        count += 1;
-        xposition = xposition === 10 ? 120 : 10;
       }
     }
   }

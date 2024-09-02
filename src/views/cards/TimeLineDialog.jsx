@@ -6,7 +6,13 @@ import StatusTimeline from "./Timeline";
 
 const StatusDialog = ({ open, onClose, data }) => {
   return (
-    <Dialog onClose={onClose} open={open} fullWidth maxWidth="md">
+    <Dialog
+      onClose={onClose}
+      open={open}
+      fullWidth
+      maxWidth="md"
+      onClick={(e) => e.stopPropagation()}
+    >
       <DialogTitle>
         Status Timeline
         <IconButton

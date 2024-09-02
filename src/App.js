@@ -1,4 +1,5 @@
 import { CssBaseline, ThemeProvider } from "@mui/material";
+// import { useEffect } from "react";
 import { ColorModeContext, useMode } from "./theme";
 import { Routes, Route } from "react-router-dom";
 import { Blank } from "./views/layout/blank.layout";
@@ -17,8 +18,52 @@ import UserInfo from "./views/field_executives/UserInfo";
 import Settings from "./views/settings/Settings";
 import RouteWrapper from "./components/RedirectionMonitor";
 import Bin from "./views/bin/Bin";
+// import { loadFontFromCache, cacheGoogleFont } from "./utils/cache.util";
+
+// const loadGoogleFonts = async () => {
+//   const googleFontUrls = [
+//     // "https://fonts.googleapis.com/css2?family=Source+Code+Pro:ital,wght@400:600:700&display=swap",
+//     "https://fonts.googleapis.com/css2?family=Libre+Barcode+39&family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&display=swap",
+//     "https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,600;1,14..32,600&display=swap",
+//     "https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,500;1,14..32,500&display=swap",
+//   ];
+
+//   for (const url of googleFontUrls) {
+//     const cssText = await cacheGoogleFont(url);
+//     if (cssText) {
+//       const style = document.createElement("style");
+//       style.innerHTML = cssText;
+//       document.head.appendChild(style);
+//     }
+//   }
+// };
+
+// const loadFonts = async () => {
+//   const addFontToHeader = (name, fontUrl, wight = "normal") => {
+//     const style = document.createElement("style");
+//     style.innerHTML = `
+//       @font-face {
+//         font-family:${name};
+//         src: url(${fontUrl}) format('truetype');
+//         font-weight: ${wight};
+//         font-style: normal;
+//       }
+//     `;
+//     document.head.appendChild(style);
+//   };
+//   loadFontFromCache("/fonts/Poppins-Regular.ttf").then((url) =>
+//     addFontToHeader("Poppins-regular", url)
+//   );
+//   loadFontFromCache("/fonts/Poppins-Light.ttf").then((url) =>
+//     addFontToHeader("Poppins-light", url, 300)
+//   );
+// };
 
 function App() {
+  // useEffect(() => {
+  //   // loadGoogleFonts();
+  //   // loadFonts();
+  // }, []);
   const [theme, colorMode] = useMode();
   return (
     <ColorModeContext.Provider value={colorMode}>

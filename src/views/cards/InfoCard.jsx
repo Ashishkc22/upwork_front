@@ -13,8 +13,8 @@ import {
   InputLabel,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import ArogyamComponent from "../../components/ArogyaCard";
-import ArogyamComponentV1 from "../../components/ArogyaCard_v1";
+import ArogyamComponent from "../../components/ArogyaCard_v2";
+// import ArogyamComponent from "../../components/ArogyaCard_v1";
 import VerifiedUserOutlinedIcon from "@mui/icons-material/VerifiedUserOutlined";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import MenuItem from "@mui/material/MenuItem";
@@ -55,42 +55,19 @@ import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import TransparentLoadingScreen from "../../components/LaodingScreenWithWhiteBG";
 import { enqueueSnackbar } from "notistack";
 
+// import waterMarkImg from "../../v1cardImages/waterMark.png";
+// import supportImg from "../../v1cardImages/support.png";
+// import locImg from "../../v1cardImages/loc.png";
+// import phoneImg from "../../v1cardImages/phone.png";
+// import cardLogoImg from "../../v1cardImages/cardLogo.png";
+
+// // Storing all memoized components in an object
 const images = {
-  LogoImage: <img src="/v1cardImages/cardLogo.png" alt="Card Logo" />,
-  Phone: (
-    <img
-      src="/v1cardImages/phone.png"
-      alt="Phone"
-      style={{ width: "10px", height: "10px", marginRight: "9px" }}
-    />
-  ),
-  Loc: (
-    <img
-      src="/v1cardImages/loc.png"
-      alt="Location"
-      style={{ width: "10px", height: "10px", marginRight: "9px" }}
-    />
-  ),
-  WaterMark: (
-    <img
-      src="/v1cardImages/waterMark.png"
-      alt="Watermark"
-      style={{
-        width: "118px",
-        right: "29px",
-        position: "relative",
-        bottom: "47px",
-        "z-index": 0,
-      }}
-    />
-  ),
-  Support: (
-    <img
-      src="/v1cardImages/support.png"
-      alt="support"
-      style={{ width: "54px", height: "54px" }}
-    />
-  ),
+  // waterMark: waterMarkImg,
+  // support: supportImg,
+  // loc: locImg,
+  // phone: phoneImg,
+  // logo: cardLogoImg,
 };
 
 const CardComponent = () => {
@@ -725,12 +702,15 @@ const CardComponent = () => {
                       aria-controls={
                         isMenuOpened ? "demo-positioned-menu" : undefined
                       }
+                      disabled={!Boolean(isTimeLineData.length)}
                       onClick={() => setIsTimeLineOpened(true)}
                       aria-haspopup="true"
                       aria-expanded={isMenuOpened ? "true" : undefined}
                       sx={{
                         display: "inline-flex",
-                        color: "#ff5722 !important",
+                        color: !Boolean(isTimeLineData.length)
+                          ? "gray"
+                          : "#ff5722 !important",
                       }}
                       variant="standard"
                       startIcon={<HistoryIcon />}
@@ -806,7 +786,7 @@ const CardComponent = () => {
                   </IconButton>
                 </Box>
                 <Box>
-                  <ArogyamComponentV1
+                  <ArogyamComponent
                     cardData={cardData}
                     images={images || {}}
                     passRef={(ref) => setArogyaCardRef(ref)}

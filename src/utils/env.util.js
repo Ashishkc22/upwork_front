@@ -6,7 +6,7 @@ const apiInfo = {
   },
   pro: {
     protocol: "https",
-    url: "asia-south1-health-demo-dev.cloudfunctions.net/app",
+    url: "new-repo-upwork.onrender.com",
   },
 };
 
@@ -21,6 +21,7 @@ function isLocalEnvironment() {
   const localIPRegex = /^(127\.0\.0\.1|::1|localhost|192\.168\.|10\.|172\.)/;
 
   return localIPRegex.test(ipAddress);
+  // return false;
 }
 
 function protocol() {

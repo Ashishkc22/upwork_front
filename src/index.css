@@ -1,4 +1,24 @@
 @import url("https://fonts.googleapis.com/css2?family=Source+Code+Pro:ital,wght@400:600:700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Libre+Barcode+39&family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,600;1,14..32,600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,500;1,14..32,500&display=swap'); 
+
+
+@font-face {
+  font-family: 'Poppins-regular';
+  src: url('./fonts/Poppins-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+
+
+@font-face {
+  font-family: 'Poppins-light';
+  src: url('./fonts/Poppins-Light.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
 
 html,
 body,

@@ -12,7 +12,7 @@ import {
   useLocation,
   useParams,
 } from "react-router-dom";
-import ArogyamComponent from "../../components/ArogyaCard_v1";
+import ArogyamComponent from "../../components/ArogyaCard_v2";
 import downloadCards from "../../utils/downloadCards";
 import Fab from "@mui/material/Fab";
 import storageUtil from "../../utils/storage.util";
@@ -24,55 +24,19 @@ import TableWithExtraElements from "./TableWithExtraElements";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 
-const LogoImage = memo(() => (
-  <img src="/v1cardImages/cardLogo.png" alt="Card Logo" />
-));
+import waterMarkImg from "../../v1cardImages/waterMark.png";
+import supportImg from "../../v1cardImages/support.png";
+import locImg from "../../v1cardImages/loc.png";
+import phoneImg from "../../v1cardImages/phone.png";
+import cardLogoImg from "../../v1cardImages/cardLogo.png";
 
-const Phone = memo(() => (
-  <img
-    src="/v1cardImages/phone.png"
-    alt="Phone"
-    style={{ width: "10px", height: "10px", marginRight: "9px" }}
-  />
-));
-
-const Loc = memo(() => (
-  <img
-    src="/v1cardImages/loc.png"
-    alt="Location"
-    style={{ width: "10px", height: "10px", marginRight: "9px" }}
-  />
-));
-
-const WaterMark = memo(() => (
-  <img
-    src="/v1cardImages/waterMark.png"
-    alt="Watermark"
-    style={{
-      width: "118px",
-      right: "29px",
-      position: "relative",
-      bottom: "47px",
-      zIndex: 0, // Changed from "z-index" to "zIndex" for correct React syntax
-    }}
-  />
-));
-
-const Support = memo(() => (
-  <img
-    src="/v1cardImages/support.png"
-    alt="Support"
-    style={{ width: "54px", height: "54px" }}
-  />
-));
-
-// Storing all memoized components in an object
+// // Storing all memoized components in an object
 const images = {
-  LogoImage: <LogoImage />,
-  Phone: <Phone />,
-  Loc: <Loc />,
-  WaterMark: <WaterMark />,
-  Support: <Support />,
+  waterMark: waterMarkImg,
+  support: supportImg,
+  loc: locImg,
+  phone: phoneImg,
+  logo: cardLogoImg,
 };
 
 const tableHeaders = [
@@ -237,7 +201,7 @@ const Cards = () => {
     if (scrollValue) {
       window.scrollTo({
         top: scrollValue,
-        behavior: "smooth",
+        // behavior: "smooth",
       });
     }
   };
@@ -304,8 +268,6 @@ const Cards = () => {
           selectedCard,
         });
       }
-
-      console.log("Old data format", data);
       if (!isEmpty(data)) {
         if (data.idList) {
           storageUtil.setStorageData(data.idList, "cards_ids");

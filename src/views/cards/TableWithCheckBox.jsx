@@ -5,13 +5,28 @@ import Checkbox from "@mui/material/Checkbox";
 import CustomTable from "../../components/CustomTable";
 
 import { useNavigate } from "react-router-dom";
-import ArogyamComponent from "../../components/ArogyaCard_v1";
+import ArogyamComponent from "../../components/ArogyaCard_v2";
 
 import downloadCards from "../../utils/downloadCards";
 
 import CheckIcon from "@mui/icons-material/Check";
 import storageUtil from "../../utils/storage.util";
 import cardService from "../../services/cards";
+
+import waterMarkImg from "../../v1cardImages/waterMark.png";
+import supportImg from "../../v1cardImages/support.png";
+import locImg from "../../v1cardImages/loc.png";
+import phoneImg from "../../v1cardImages/phone.png";
+import cardLogoImg from "../../v1cardImages/cardLogo.png";
+
+// Storing all memoized components in an object
+const images = {
+  waterMark: waterMarkImg,
+  support: supportImg,
+  loc: locImg,
+  phone: phoneImg,
+  logo: cardLogoImg,
+};
 
 function markAsPrint({ ids = [] }) {
   return cardService.markAsPrint(ids.join(","));
@@ -36,44 +51,6 @@ const tableHeaders = [
   { label: "STATUS", key: "status", sort: true },
   { label: "", key: "ACTION" },
 ];
-
-const images = {
-  LogoImage: <img src="/v1cardImages/cardLogo.png" alt="Card Logo" />,
-  Phone: (
-    <img
-      src="/v1cardImages/phone.png"
-      alt="Phone"
-      style={{ width: "10px", height: "10px", marginRight: "9px" }}
-    />
-  ),
-  Loc: (
-    <img
-      src="/v1cardImages/loc.png"
-      alt="Location"
-      style={{ width: "10px", height: "10px", marginRight: "9px" }}
-    />
-  ),
-  WaterMark: (
-    <img
-      src="/v1cardImages/waterMark.png"
-      alt="Watermark"
-      style={{
-        width: "118px",
-        right: "29px",
-        position: "relative",
-        bottom: "47px",
-        "z-index": 0,
-      }}
-    />
-  ),
-  Support: (
-    <img
-      src="/v1cardImages/support.png"
-      alt="support"
-      style={{ width: "54px", height: "54px" }}
-    />
-  ),
-};
 
 // CheckBox Row And Table
 const TableWithCheckBox = ({
@@ -206,7 +183,7 @@ const TableWithCheckBox = ({
                       setIsCardDownload(false);
                       setIsDownloadCompleted(true);
                     },
-                    images: images,
+                    // images: images,
                     agentDetails: { name: agentName, id },
                     tlDetails: tlDetails,
                   });

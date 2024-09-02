@@ -27,6 +27,7 @@ import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import { isEmpty } from "lodash";
 
 const drawerWidth = 240;
+const drawerVersion = "v1.0.0";
 
 const openedMixin = (theme) => ({
   width: drawerWidth,
@@ -223,6 +224,18 @@ export default function MiniDrawer() {
             </ListItem>
           ))}
         </List>
+        <Box
+          sx={{
+            mt: "auto", // Push the version to the bottom
+            p: 2,
+            textAlign: "center",
+            borderTop: "1px solid rgba(0, 0, 0, 0.12)",
+          }}
+        >
+          <Typography variant="body2" color="textSecondary">
+            {drawerVersion}
+          </Typography>
+        </Box>
       </Drawer>
       {/* <DrawerHeader /> */}
       <Outlet />
