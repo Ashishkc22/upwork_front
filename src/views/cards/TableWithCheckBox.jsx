@@ -183,7 +183,7 @@ const TableWithCheckBox = ({
                       setIsCardDownload(false);
                       setIsDownloadCompleted(true);
                     },
-                    // images: images,
+                    images: images,
                     agentDetails: { name: agentName, id },
                     tlDetails: tlDetails,
                   });

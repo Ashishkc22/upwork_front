@@ -1,9 +1,8 @@
-import domtoimage from "dom-to-image";
+import domtoimage from "dom-to-image-more";
 import jsPDF from "jspdf";
 import { createRoot } from "react-dom/client";
 import ReactDOM from "react-dom";
 import moment from "moment";
-import Compressor from "compressorjs";
 
 // images: {
 //   SupportImage: <SupportImage />,
@@ -158,6 +157,15 @@ function getImageData({ Element, cardData = [], images }) {
   });
 }
 
+async function processInBatches(cardData, batchSize, Element, images) {
+  const allData = [];
+  for (let i = 0; i < cardData.length; i += batchSize) {
+    const batch = cardData.slice(i, i + batchSize);
+    const batchData = await getImageData({ Element, cardData: batch, images });
+    allData.push(...batchData);
+  }
+  return allData;
+}
 async function downloadMultipleCard({
   Element,
   cardData,
