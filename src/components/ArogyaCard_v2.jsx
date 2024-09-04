@@ -3,6 +3,7 @@ import moment from "moment";
 import React, { useEffect } from "react";
 import clsx from "clsx";
 import { useRef } from "react";
+import { DrawBarcode_Code39 } from "../utils/barcode.util";
 
 const ArogyamComponent = ({
   cardData,
@@ -12,6 +13,7 @@ const ArogyamComponent = ({
   handleClick,
   images,
   passRef,
+  style,
 }) => {
   function calculateAge({ row, keymap, birthYear }) {
     const currentYear = new Date().getFullYear(); // Get the current year
@@ -49,6 +51,7 @@ const ArogyamComponent = ({
   return (
     <div
       ref={divRef}
+      style={{ ...(style && style) }}
       className={"card-container " + clsx(enableClick && "cursor")}
       id={cardData._id}
       onClick={() => {
@@ -75,6 +78,20 @@ const ArogyamComponent = ({
       {/* logo */}
       <div>
         <div className="clip-path-container">
+          {/* printMode */}
+          {isPrint && (
+            <div
+              style={{
+                position: "absolute",
+                width: "100%",
+                height: "103%",
+                background: "rgb(253, 163, 48)",
+                clipPath: "ellipse(66.3% 103% at 73% 1%)",
+                top: "-12px",
+                left: "12px",
+              }}
+            ></div>
+          )}
           <div
             style={{
               position: "absolute",
@@ -179,8 +196,8 @@ const ArogyamComponent = ({
             style={{ width: "10px", height: "10px", marginRight: "9px" }}
           />
 
-          <div className="user-loc limited-text-multiline">
-            {limitCharacters(`${cardData?.area},${cardData?.tehsil}`, 20)}
+          <div className="user-loc">
+            {`${cardData?.area},${cardData?.tehsil}`}
           </div>
           <div className="user-loc-2">
             {`${cardData?.district},${cardData?.state}`}
@@ -215,7 +232,7 @@ const ArogyamComponent = ({
           <div className="text-group">
             <div style={{ color: "#666666", fontSize: "9px" }}>Blood group</div>
             <div style={{ fontSize: "11px", color: "Black" }}>
-              cardData?.blood_group
+              {cardData?.blood_group}
             </div>
           </div>
         )}
@@ -266,12 +283,36 @@ const ArogyamComponent = ({
           {formatNumberWithSpaces(cardData.unique_number)}
         </div>
         <div>
-          <span className="barcode">{cardData.unique_number}</span>
+          {cardData?.unique_number && (
+            <div
+              dangerouslySetInnerHTML={{
+                __html: DrawBarcode_Code39(
+                  cardData.unique_number,
+                  1,
+                  "no",
+                  "cm",
+                  0.02,
+                  3,
+                  0.5,
+                  4,
+                  "bottom",
+                  "center",
+                  "",
+                  "black",
+                  "white",
+                  "html"
+                ),
+              }}
+            />
+          )}
           <div className="opp_vertical-text">{cardData.s_no}</div>
         </div>
       </div>
 
-      <div className="footer">
+      <div
+        className="footer"
+        style={{ ...(isPrint && { bottom: "-10px", height: "40px" }) }}
+      >
         ।। खुश है वही जिसने पाया, स्वस्थ मन और निरोगी काया ।।
       </div>
     </div>

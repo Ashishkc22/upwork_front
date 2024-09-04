@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Grid, Typography, Button, useTheme } from "@mui/material";
 import DownloadIcon from "@mui/icons-material/Download";
 import Checkbox from "@mui/material/Checkbox";
@@ -53,6 +53,7 @@ const TableWithExtraElements = ({
   const colors = tokens(theme.palette.mode);
   const [districtCheckbox, setDistrictCheckbox] = useState(false);
   const [tableCheckedBox, setTableCheckedBox] = useState({});
+  const imageRef = useRef(null);
 
   const getGroupDataLenght = () => {
     return groupedData.reduce((value, data) => data.cardCount + value, 0);
@@ -83,6 +84,12 @@ const TableWithExtraElements = ({
 
   return (
     <Grid container sx={{ mx: 2 }} rowGap={2}>
+      <img
+        src="/health-card-back.jpeg"
+        ref={imageRef}
+        alt="health back"
+        style={{ display: "none" }}
+      />
       <Grid item xs={12} alignItems="cenetr">
         <Button
           sx={{ background: colors.grey[100], px: 1 }}
@@ -150,6 +157,7 @@ const TableWithExtraElements = ({
               downloadCards.downloadMultipleCardWithMultipleAgent({
                 Element: ArogyamComponent,
                 cardData: groupedData,
+                secondaryImage: imageRef.current,
                 handleDownloadCompleted: () => {
                   const keys = {};
                   groupedData.forEach((cardData) => {

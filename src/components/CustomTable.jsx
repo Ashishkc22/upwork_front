@@ -24,6 +24,7 @@ import { isEmpty } from "lodash";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ThreeDotsDynamicMenu from "./DynamicMenu";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
+import { useSearchParams } from "react-router-dom";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 
 const DynamicTable = ({
@@ -37,11 +38,12 @@ const DynamicTable = ({
   highlightedRow = "",
   handleSort,
   showActionMenu = true,
+  sortType = "acc",
 }) => {
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
   const isWideScreen = useMediaQuery("(min-width:1200px)");
-  const [sortType, setSortType] = useState("acc");
+  let [urlDateType, setUrlDateType] = useSearchParams();
 
   function calculateAge({ row, keymap, birthYear }) {
     const currentYear = new Date().getFullYear(); // Get the current year
@@ -164,19 +166,22 @@ const DynamicTable = ({
                     <IconButton
                       size="small"
                       onClick={() => {
-                        setSortType((pre) => {
-                          const type = pre === "acc" ? "des" : "acc";
-                          if (handleSort) {
-                            handleSort({ colName: keymap.key, type });
-                          }
-                          return type;
-                        });
+                        if (handleSort) {
+                          handleSort({
+                            colName: keymap.key,
+                            type:
+                              urlDateType.get("sortType") === "acc" ||
+                              urlDateType.get("sortType") === null
+                                ? "des"
+                                : "acc",
+                          });
+                        }
                       }}
                     >
-                      {sortType == "acc" ? (
-                        <ArrowUpwardIcon />
-                      ) : (
+                      {urlDateType.get("sortType") === "des" ? (
                         <ArrowDownwardIcon />
+                      ) : (
+                        <ArrowUpwardIcon />
                       )}
                     </IconButton>
                   )}

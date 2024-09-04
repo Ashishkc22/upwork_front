@@ -1,4 +1,4 @@
-import React, { useEffect, useState, memo } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import Header from "../../components/Header";
 import { Grid, Typography, useTheme, Box, Card, Button } from "@mui/material";
 import CustomTable from "../../components/CustomTable";
@@ -102,12 +102,14 @@ const Cards = () => {
   const [markAsPrintPending, setMarkAsPrintPending] = useState({});
   const [isPageLoading, setIsPageLoading] = useState(false);
   const [isCardDownloading, setIsCardDownload] = useState(false);
+  const imageRef = useRef(null);
 
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
 
   const highlightedRow = storageUtil.getStorageData("highlightedRow");
   let [urlDateType, setUrlDateType] = useSearchParams();
+
   const location = useLocation();
   const params = useParams();
 
@@ -244,7 +246,7 @@ const Cards = () => {
           ...(district && { district }),
           ...(duration && { duration }),
           ...(tehsil && { tehsil }),
-          ...(sortBy && { sortBy }),
+          ...(sortBy && { sortBy: sortBy }),
           ...((created_by || cId) && { created_by: created_by || cId }),
           ...(till_duration && { till_duration }),
           selectedCard,
@@ -276,7 +278,7 @@ const Cards = () => {
         console.log("data", data);
 
         if (selectedCard === "toBePrinted") {
-          setCardsDataGroupBy(data.groupedData);
+          setCardsDataGroupBy(() => data.groupedData);
           setTotalCardsAndToBePrinted({
             totalCards: data.totalCards,
             toBePrinted: data.totalPrintedCards,
@@ -284,7 +286,7 @@ const Cards = () => {
             totalShowing: data.totalShowing,
           });
         } else {
-          setTotalCardsData(data.groupedData);
+          setTotalCardsData(() => data.groupedData);
         }
 
         setTotalCardsAndToBePrinted({
@@ -301,6 +303,7 @@ const Cards = () => {
         }, 10);
       } else {
         setCardsDataGroupBy([]);
+        setPageCount(0);
         setIsPageLoading(false);
       }
     }
@@ -317,6 +320,9 @@ const Cards = () => {
     } else {
       getTableData({});
     }
+    console.log("type", type);
+
+    addDataToURL({ sortType: type === "des" ? "des" : "" });
   };
 
   const handleMenuSelect = async (item, selectedCard) => {
@@ -372,7 +378,6 @@ const Cards = () => {
       markAsPending[key] = true;
     });
     setMarkAsPrintPending((pre) => ({ ...pre, ...markAsPending }));
-
     downloadCards.downloadMultipleLevelCardData({
       Element: ArogyamComponent,
       cardData: cardsToDownload,
@@ -381,6 +386,7 @@ const Cards = () => {
         setIsDownloadCompleted(_isDownloadCompleted);
       },
       images: images,
+      secondaryImage: imageRef.current,
     });
     setIsPaginationEnabled(true);
     setDownloadCardMaps({});
@@ -390,7 +396,6 @@ const Cards = () => {
   useEffect(() => {
     // if (!isEmpty(cardsDataGroupedBy)) {
     getUsersList();
-
     // }
   }, []);
 
@@ -447,7 +452,13 @@ const Cards = () => {
   );
 
   return (
-    <Grid component="main" sx={{ width: "96%" }}>
+    <Grid component="main" sx={{ width: "96%", overflowX: "hidden" }}>
+      <img
+        src="/health-card-back.jpeg"
+        ref={imageRef}
+        alt="health back"
+        style={{ display: "none" }}
+      />
       <Grid item sx={{ mb: 2 }}>
         {isCardDownloading && <LoadingScreen />}
         <Header
@@ -599,35 +610,46 @@ const Cards = () => {
             )}
           </>
         )}
-        <Grid item xs={12} sx={{ height: "39px" }}>
-          <Card
-            sx={{
-              position: "fixed",
-              bottom: "5px",
-              width: "50%",
-              right: "1px",
+
+        <Card
+          sx={{
+            position: "fixed",
+            bottom: "5px",
+            mx: 2,
+            width: {
+              lg: "50%",
+              md: "60%",
+              sm: "100%",
+              xs: "100%",
+            },
+            right: "1px",
+            // {
+            //   lg: "1px",
+            //   md: "1px",
+            //   sm: "5px",
+            //   xs: "5px",
+            // },
+          }}
+        >
+          <TablePagination
+            component="div"
+            count={pageCount || 0}
+            page={page || 0}
+            disabled={Object.keys(markAsPrintPending)?.length}
+            rowsPerPage={100}
+            onPageChange={(e, newPage) => {
+              addDataToURL({ page: newPage });
+              setPage(newPage);
             }}
-          >
-            <TablePagination
-              component="div"
-              count={pageCount}
-              page={page}
-              disabled={Object.keys(markAsPrintPending).length}
-              rowsPerPage={100}
-              onPageChange={(e, newPage) => {
-                addDataToURL({ page: newPage });
-                setPage(newPage);
-              }}
-              onRowsPerPageChange={() => {}}
-              slots={{
-                actions: {
-                  nextButton: customNextButton,
-                  previousButton: customPrevioudButton,
-                },
-              }}
-            />
-          </Card>
-        </Grid>
+            onRowsPerPageChange={() => {}}
+            slots={{
+              actions: {
+                nextButton: customNextButton,
+                previousButton: customPrevioudButton,
+              },
+            }}
+          />
+        </Card>
       </Box>
     </Grid>
   );

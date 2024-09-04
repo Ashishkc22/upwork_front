@@ -55,18 +55,19 @@
 .card-container {
   position: relative;
   width: 455px;
-  /* height: 281px; */
   height: 286px;
   /* margin: 1px; */
   background-color: white;
   /* border: 1px solid whitesmoke; */
-  overflow: hidden;
+  overflow: visible;
+  /* transform: scale(0.8); */
   /* background-color: rgb(170, 255, 255); */
 }
 .emergence-contact{
   position: absolute;
   left: 39px;
     bottom: 33px;
+    overflow: hidden;
 }
 
 .support-header {
@@ -77,6 +78,7 @@
   align-items: center;
   top: 8px;
     left: 15px;
+    overflow: hidden; 
 }
 
 /* .support-image{
@@ -164,8 +166,8 @@
   width: 221px;
   /* background: red; */
   height: fit-content;
-  top: -34px;
-  left: 63px;
+  top: -21px;
+  left: 76px;
 }
 
 .user-details-container {
@@ -175,7 +177,7 @@
 
 .text-container {
   position: absolute;
-  top: 78px;
+  top: 83px;
   right: 160px;
 }
 
@@ -198,14 +200,14 @@
   height: 53px;
   font-size: 8px;
   font-weight: 700;
-  width: 120px;
-  top: 146px;
+  width: 273px;
+  top: 156px;
     left: 149px;
 }
 
 .user-loc {
   position: absolute;
-  left: 19px
+  left: 19px;
 }
 
 .user-loc-2 {
@@ -218,6 +220,7 @@
   position: absolute;
   right: 41px;
   top: 101px;
+  overflow: hidden;
 }
 
 .gender-blood-info {
@@ -226,6 +229,7 @@
   right: 1px;
   top: 112px;
   z-index: 5;
+  overflow: hidden;
 }
 
 .footer {
@@ -244,7 +248,7 @@
 
 .barcode-container{
   position: absolute;
-  bottom: 0px;
+  bottom: 16px;
   right: -21px;
   text-align: center;
 }

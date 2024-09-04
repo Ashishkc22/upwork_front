@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Grid, Typography, Button, Box, Link } from "@mui/material";
 import DownloadIcon from "@mui/icons-material/Download";
 import Checkbox from "@mui/material/Checkbox";
 import CustomTable from "../../components/CustomTable";
 
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import ArogyamComponent from "../../components/ArogyaCard_v2";
 
 import downloadCards from "../../utils/downloadCards";
@@ -76,6 +76,8 @@ const TableWithCheckBox = ({
   const navigate = useNavigate();
   const [isDownloadCompleted, setIsDownloadCompleted] = useState(false);
   const [pageCount, setPageCount] = useState(1);
+  const imageRef = useRef(null);
+  let [urlDateType, setUrlDateType] = useSearchParams();
 
   const handleRowClick = (row) => {
     storageUtil.setStorageData(row._id, "highlightedRow");
@@ -100,6 +102,12 @@ const TableWithCheckBox = ({
   }, [isCheckBoxChecked]);
   return (
     <Grid container>
+      <img
+        src="/health-card-back.jpeg"
+        ref={imageRef}
+        alt="health back"
+        style={{ display: "none" }}
+      />
       <Grid item xs={12}>
         <Button
           sx={{
@@ -186,6 +194,7 @@ const TableWithCheckBox = ({
                     images: images,
                     agentDetails: { name: agentName, id },
                     tlDetails: tlDetails,
+                    secondaryImage: imageRef.current,
                   });
                   setMarkAsPrintPending((pre) => ({ ...pre, [id]: true }));
                 }}
@@ -253,6 +262,7 @@ const TableWithCheckBox = ({
             handleMenuSelect={handleMenuSelect}
             highlightedRow={highlightedRow}
             handleSort={handleSort}
+            // sortType={urlDateType.get("sortType") === "des" ? "des" : null}
           />
         </Grid>
       )}

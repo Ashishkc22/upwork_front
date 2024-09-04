@@ -50,7 +50,7 @@ import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 import PhoneIcon from "@mui/icons-material/Phone";
 import WhatsAppIcon from "@mui/icons-material/WhatsApp";
 import AddIcon from "@mui/icons-material/Add";
-import domtoimage from "dom-to-image";
+import domtoimage from "dom-to-image-more";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import TransparentLoadingScreen from "../../components/LaodingScreenWithWhiteBG";
 import { enqueueSnackbar } from "notistack";
@@ -338,10 +338,14 @@ const CardComponent = () => {
       const imageDataUrl = canvas.toDataURL("image/jpeg");
       setIscardLoadtion(true);
       await downloadCards.downloadSingleCard({
-        Element: <ArogyamComponent cardData={cardData} images={images} />,
+        Element: (
+          <ArogyamComponent isPrint cardData={cardData} images={images} />
+        ),
         secondaryImage: imageDataUrl,
         cardData,
-        fileName: `${cardData.unique_number}_${cardData.name}_${cardData?.area}`,
+        fileName: `${TLDetails.name}_${cardData.name}#1_${moment().format(
+          "DD_MMM_YYYY_HH_MM"
+        )}.pdf`,
       });
       setIscardLoadtion(false);
     }
@@ -632,9 +636,7 @@ const CardComponent = () => {
                 <IconButton
                   sx={{ color: "#23e223", ml: 2 }}
                   onClick={() =>
-                    window.open(
-                      `https://wa.me/+91${cardData.phone}?text=token no. ${cardData.s_no}`
-                    )
+                    window.open(`https://wa.me/+91${cardData.phone}`)
                   }
                 >
                   <WhatsAppIcon />
@@ -680,14 +682,15 @@ const CardComponent = () => {
                   <Grid item xs={6}>
                     <Box>
                       <TextElement label="Status" value={cardData.status} />
-                      {cardData.discard_reason && (
-                        <span
-                          label=""
-                          style={{ fontSize: 12, color: "#00000075" }}
-                        >
-                          {cardData.discard_reason}
-                        </span>
-                      )}
+                      {cardData.discard_reason &&
+                        cardData?.status === "DISCARDED" && (
+                          <span
+                            label=""
+                            style={{ fontSize: 12, color: "#00000075" }}
+                          >
+                            {cardData.discard_reason}
+                          </span>
+                        )}
                       {cardData.status_updated_at && (
                         <div style={{ fontSize: 12, color: "#00000075" }}>
                           {moment(cardData.status_updated_at).format(
@@ -729,6 +732,41 @@ const CardComponent = () => {
                   }
                 />
               </Box>
+
+              <Grid item container xs={12} alignItems="center">
+                <Grid item xs={6}>
+                  <Grid item>
+                    {/* `/field-executives/${cardData.created_by_uid}` */}
+                    <TextElement
+                      label="Created By"
+                      value={FEDetails.name}
+                      path={`/field-executives/${cardData.created_by_uid}`}
+                      subText={`UID: ${FEDetails.uid}`}
+                    />
+                  </Grid>
+                </Grid>
+                <Grid item xs={6} display="flex">
+                  <Grid item>
+                    <IconButton>
+                      <PhoneIcon
+                        onClick={() => window.open(`tel:${FEDetails.phone}`)}
+                      />
+                    </IconButton>
+                  </Grid>
+                  <Grid item>
+                    <IconButton
+                      sx={{ color: "#23e223" }}
+                      onClick={() =>
+                        window.open(
+                          `https://wa.me/+91${FEDetails.phone}?text=token no. ${cardData.s_no}`
+                        )
+                      }
+                    >
+                      <WhatsAppIcon />
+                    </IconButton>
+                  </Grid>
+                </Grid>
+              </Grid>
             </Grid>
 
             <Grid item xs={12} md={7} sm={12} sx={{ ml: 0 }}>
@@ -767,6 +805,7 @@ const CardComponent = () => {
                   <IconButton
                     onClick={copyImageToClipboard}
                     aria-label="copy image"
+                    sx={{ mr: 3 }}
                   >
                     <ContentCopyIcon />
                   </IconButton>
@@ -854,89 +893,49 @@ const CardComponent = () => {
                         Renew
                       </Button>
                     </Grid>
-                    <Grid item xs={6}>
-                      <Grid
-                        container
-                        alignItems="end"
-                        columnSpacing={1}
-                        sx={{ my: 1 }}
-                      >
-                        <Grid item>
-                          {/* `/field-executives/${cardData.created_by_uid}` */}
-                          <TextElement
-                            label="TL Name"
-                            value={TLDetails.name}
-                            path={`/field-executives/${TLDetails.tl_id}?isTL=true`}
-                            subText={`UID: ${TLDetails.tl_id}`}
-                          />
-                        </Grid>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Grid
+                      container
+                      alignItems="end"
+                      columnSpacing={1}
+                      sx={{ my: 1 }}
+                    >
+                      <Grid item>
+                        {/* `/field-executives/${cardData.created_by_uid}` */}
+                        <TextElement
+                          label="TL Name"
+                          value={TLDetails.name}
+                          path={`/field-executives/${TLDetails.tl_id}?isTL=true`}
+                          subText={`UID: ${TLDetails.tl_id}`}
+                        />
+                      </Grid>
 
-                        <Grid item>
-                          <IconButton>
-                            <PhoneIcon
-                              onClick={() =>
-                                window.open(`tel:${TLDetails.phone}`)
-                              }
-                            />
-                          </IconButton>
-                        </Grid>
-
-                        <Grid item>
-                          <IconButton
-                            sx={{ color: "#23e223" }}
+                      <Grid item>
+                        <IconButton>
+                          <PhoneIcon
                             onClick={() =>
-                              window.open(
-                                `https://wa.me/+91${TLDetails.phone}?text=token no. ${cardData.s_no}`
-                              )
+                              window.open(`tel:${TLDetails.phone}`)
                             }
-                          >
-                            <WhatsAppIcon />
-                          </IconButton>
-                        </Grid>
+                          />
+                        </IconButton>
+                      </Grid>
+
+                      <Grid item>
+                        <IconButton
+                          sx={{ color: "#23e223" }}
+                          onClick={() =>
+                            window.open(
+                              `https://wa.me/+91${TLDetails.phone}?text=token no. ${cardData.s_no}`
+                            )
+                          }
+                        >
+                          <WhatsAppIcon />
+                        </IconButton>
                       </Grid>
                     </Grid>
                   </Grid>
                 </Box>
-              </Grid>
-            </Grid>
-
-            <Grid item container xs={12} alignItems="center">
-              <Grid item xs={6}>
-                <Grid
-                  container
-                  alignItems="end"
-                  columnSpacing={1}
-                  sx={{ my: 1 }}
-                >
-                  <Grid item>
-                    {/* `/field-executives/${cardData.created_by_uid}` */}
-                    <TextElement
-                      label="Created By"
-                      value={FEDetails.name}
-                      path={`/field-executives/${cardData.created_by_uid}`}
-                      subText={`UID: ${FEDetails.uid}`}
-                    />
-                  </Grid>
-                  <Grid item>
-                    <IconButton>
-                      <PhoneIcon
-                        onClick={() => window.open(`tel:${FEDetails.phone}`)}
-                      />
-                    </IconButton>
-                  </Grid>
-                  <Grid item>
-                    <IconButton
-                      sx={{ color: "#23e223" }}
-                      onClick={() =>
-                        window.open(
-                          `https://wa.me/+91${FEDetails.phone}?text=token no. ${cardData.s_no}`
-                        )
-                      }
-                    >
-                      <WhatsAppIcon />
-                    </IconButton>
-                  </Grid>
-                </Grid>
               </Grid>
             </Grid>
           </Grid>
@@ -1039,9 +1038,9 @@ const CardComponent = () => {
                 >
                   Reprint
                 </Button>
-                <Box>
+                {/* <Box>
                   <TextElement label="" value={cardData._id} />
-                </Box>
+                </Box> */}
               </Box>
             </Box>
           </CardActions>
@@ -1064,17 +1063,19 @@ const CardComponent = () => {
           <ChevronRightIcon />
         </IconButton>
       )}
-      <EditCardDialog
-        open={isEditDialogOpened}
-        cardData={cardData}
-        onClose={(callApi = false) => {
-          if (callApi) {
-            fetchCardData();
-          }
-          setIsEditDialogOpened(false);
-        }}
-        setIscardLoadtion={setIscardLoadtion}
-      />
+      {isEditDialogOpened && (
+        <EditCardDialog
+          open={isEditDialogOpened}
+          cardData={cardData}
+          onClose={(callApi = false) => {
+            if (callApi) {
+              fetchCardData();
+            }
+            setIsEditDialogOpened(false);
+          }}
+          setIscardLoadtion={setIscardLoadtion}
+        />
+      )}
       {Boolean(isTimeLineData.length) && (
         <TimeLineDialog
           open={isTimeLineOpened}

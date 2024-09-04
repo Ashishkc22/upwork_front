@@ -20,8 +20,8 @@ function isLocalEnvironment() {
   // Regex pattern for local IP address ranges
   const localIPRegex = /^(127\.0\.0\.1|::1|localhost|192\.168\.|10\.|172\.)/;
 
-  return localIPRegex.test(ipAddress);
-  // return false;
+  // return localIPRegex.test(ipAddress);
+  return false;
 }
 
 function protocol() {

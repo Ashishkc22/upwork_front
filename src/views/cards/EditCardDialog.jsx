@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   Dialog,
   DialogActions,
@@ -23,8 +23,7 @@ import {
   Autocomplete,
 } from "@mui/material";
 import { tokens } from "../../theme";
-import RotateLeftIcon from "@mui/icons-material/RotateLeft";
-import RotateRightIcon from "@mui/icons-material/RotateRight";
+import UploadFileIcon from "@mui/icons-material/UploadFile";
 import cardsService from "../../services/cards";
 import commonService from "../../services/common";
 import ImageCropDialog from "../hospitals/ImageCropDialog";
@@ -43,6 +42,7 @@ const EditDialog = ({ open, onClose, cardData, setIscardLoadtion }) => {
   const [isCropDialogOpened, setIsCropDialogOpened] = useState(false);
   const [selectedImage, setSelectedImage] = useState("");
   const [isImageUpdated, setIsImageUpdated] = useState(false);
+  const fileInputRef = useRef(null);
 
   const [rotation, setRotation] = useState(0);
 
@@ -164,6 +164,23 @@ const EditDialog = ({ open, onClose, cardData, setIscardLoadtion }) => {
     setIsImageUpdated(true);
   }
 
+  const handleFileChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.addEventListener("load", () => {
+        // if (selectedImageIndex === "Profile") {
+        //   setProfilePic(reader.result);
+        // } else if (selectedImageIndex === "aFront") {
+        //   setAadhaarFront(reader.result);
+        // } else {
+        //   setSadhaarBack(reader.result);
+        // }
+      });
+      reader.readAsDataURL(file);
+    }
+  };
+
   return (
     <Box>
       <ImageCropDialog
@@ -211,6 +228,18 @@ const EditDialog = ({ open, onClose, cardData, setIscardLoadtion }) => {
                       setIsCropDialogOpened(true);
                     }}
                   />
+                  <IconButton>
+                    <UploadFileIcon
+                      onClick={() => fileInputRef.current.click()}
+                    />
+                    <input
+                      type="file"
+                      accept="image/*"
+                      style={{ display: "none" }} // Hide the input
+                      ref={fileInputRef} // Reference to programmatically trigger it
+                      onChange={handleFileChange} // Handle the file change event
+                    />
+                  </IconButton>
                 </Box>
               </Box>
             </Grid>
@@ -327,12 +356,10 @@ const EditDialog = ({ open, onClose, cardData, setIscardLoadtion }) => {
             /> */}
 
                 <FormControl fullWidth>
-                  <InputLabel id="demo-simple-select-helper-label">
-                    State
-                  </InputLabel>
+                  <InputLabel id="state-helper-label">State</InputLabel>
                   <Select
-                    labelId="demo-simple-select-helper-label"
-                    id="demo-simple-select-helper"
+                    labelId="state-helper-label"
+                    id="state-dropdown"
                     label="state"
                     name="State"
                     defaultValue={formData?.state}
@@ -424,12 +451,10 @@ const EditDialog = ({ open, onClose, cardData, setIscardLoadtion }) => {
               onChange={handleChange}
             /> */}
                 <FormControl fullWidth>
-                  <InputLabel id="demo-simple-select-helper-label">
-                    Tehsil
-                  </InputLabel>
+                  <InputLabel id="tehsil-helper-label">Tehsil</InputLabel>
                   <Select
-                    labelId="demo-simple-select-helper-label"
-                    id="demo-simple-select-helper"
+                    labelId="tehsil-helper-label"
+                    id="tehsil-dropdown"
                     label="Tehsil"
                     name="tehsil"
                     defaultValue={formData?.tehsil}

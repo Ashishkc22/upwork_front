@@ -931,6 +931,8 @@ const Header = ({
               onClick={() => {
                 Object.keys(stateMap).forEach((key) => stateMap[key]());
                 seFilterDate([]);
+                setTehsilOption([]);
+                setGramOption([]);
               }}
             >
               Clear
