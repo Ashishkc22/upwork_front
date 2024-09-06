@@ -424,7 +424,10 @@ const Cards = () => {
       );
     };
     window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    return () => {
+      storageUtil.setStorageData(false, "firstHeaderRender");
+      window.removeEventListener("scroll", handleScroll);
+    };
   }, [selectedCard, page]);
 
   const customPrevioudButton = (porps) => (

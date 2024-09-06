@@ -53,7 +53,7 @@ const Dashboard = () => {
 
   const handleFilterChange = (event) => {
     setFilter(event.target.value);
-    if (["CUSTOM", "CUSTOM DATE"].includes(event.target.value)) {
+    if (["CUSTOM", "CUSTOM DATE"]?.includes(event.target.value)) {
       handleOpenDialog();
     }
   };
@@ -72,8 +72,12 @@ const Dashboard = () => {
     }
     if (filter === "CUSTOM") {
       data = {
-        duration: moment(date?.split("-")?.[0], "DD/MM/YYYY").valueOf(),
-        till_duration: moment(date?.split("-")?.[1], "DD/MM/YYYY").valueOf(),
+        duration: moment(date?.split("-")?.[0], "DD/MM/YYYY")
+          .startOf("day")
+          .valueOf(),
+        till_duration: moment(date?.split("-")?.[1], "DD/MM/YYYY")
+          .endOf("day")
+          .valueOf(),
       };
     }
 
@@ -314,7 +318,7 @@ const Dashboard = () => {
           >
             {getCardStack({
               value: filter?.includes("CUSTOM") ? date : filter,
-              setFilter,
+              setFilter: () => setFilter(null),
             })}
             {!isEmpty(dashboardData) && (
               <>
@@ -389,7 +393,7 @@ const Dashboard = () => {
                   <DashboardCard
                     total={dashboardData.rejected_users}
                     title="Rejected"
-                    percentageChange={cardPercentage.suspendedUsersPercentage}
+                    percentageChange={cardPercentage.rejectedUsersPercentage}
                     bgcolor="#f44336"
                     handleCardClick={() =>
                       nav("/field-executives?status=Rejected")

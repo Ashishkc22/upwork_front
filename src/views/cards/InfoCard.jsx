@@ -545,7 +545,7 @@ const CardComponent = () => {
                           Wrong Mobile No.
                         </ToggleButton>
                         <ToggleButton value="Wrong Name/TOB">
-                          Wrong Name/TOB
+                          Wrong Name/YOB
                         </ToggleButton>
                       </ToggleButtonGroup>
                     </Box>
@@ -572,7 +572,7 @@ const CardComponent = () => {
                   }}
                   autoFocus
                 >
-                  {dialogType === "renew" ? "Renew" : "Save"}
+                  {dialogType === "renew" ? "Renew" : "Submit"}
                 </Button>
               </DialogActions>
             </Dialog>
