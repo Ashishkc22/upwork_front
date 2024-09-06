@@ -499,6 +499,7 @@ const Cards = () => {
             setDownloadCardMaps({});
             setDownloadCardCount(0);
             setSelectedCard(n);
+            storageUtil.setStorageData(true, "firstHeaderRender");
           }}
           isImageMode={isImageMode}
           handleViewChange={() => setIsImageMode(!isImageMode)}

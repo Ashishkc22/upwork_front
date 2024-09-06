@@ -396,7 +396,6 @@ const Header = memo(
       }
       apiCallBack(payload);
     };
-    useEffect(() => storageUtil.setStorageData(false, "firstHeaderRender"));
     useEffect(() => {
       storageUtil.setStorageData(true, "firstHeaderRender");
     }, []);

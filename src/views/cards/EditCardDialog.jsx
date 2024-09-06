@@ -29,7 +29,7 @@ import cardsService from "../../services/cards";
 import commonService from "../../services/common";
 import ImageCropDialog from "../hospitals/ImageCropDialog";
 import { isEmpty } from "lodash";
-import { createFilterOptions } from "@mui/material/Autocomplete";
+import CircularProgress from "@mui/material/CircularProgress";
 
 import moment from "moment";
 
@@ -44,6 +44,8 @@ const EditDialog = ({ open, onClose, cardData, setIscardLoadtion }) => {
   const [selectedImage, setSelectedImage] = useState("");
   const [isImageUpdated, setIsImageUpdated] = useState(false);
   const fileInputRef = useRef(null);
+
+  const [isDistrictLoading, setIsDistrictLoading] = useState(false);
 
   const [rotation, setRotation] = useState(0);
 
@@ -66,11 +68,15 @@ const EditDialog = ({ open, onClose, cardData, setIscardLoadtion }) => {
   };
 
   function getAddressData(payload) {
+    if (payload?.type == "district") {
+      setIsDistrictLoading(true);
+    }
     commonService.getAddressData(payload).then((data) => {
       if (payload?.type == "tehsil") {
         setTehsilOption(data || []);
       } else if (payload?.type == "district") {
         setDistrictOption(data || []);
+        setIsDistrictLoading(false);
       } else if (payload?.type == "gram") {
         console.log("data >>>>", data);
 
@@ -433,7 +439,25 @@ const EditDialog = ({ open, onClose, cardData, setIscardLoadtion }) => {
                   );
                 }}
                 renderInput={(params) => (
-                  <TextField {...params} label="District" variant="outlined" />
+                  <>
+                    {isDistrictLoading ? (
+                      <CircularProgress
+                        size={24}
+                        sx={{
+                          position: "absolute",
+                          top: "50%",
+                          left: "50%",
+                          marginTop: "-12px",
+                          marginLeft: "-12px",
+                        }}
+                      />
+                    ) : null}
+                    <TextField
+                      {...params}
+                      label="District"
+                      variant="outlined"
+                    />
+                  </>
                 )}
               />
               {/* </FormControl> */}
