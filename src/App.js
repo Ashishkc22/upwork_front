@@ -1,5 +1,5 @@
 import { CssBaseline, ThemeProvider } from "@mui/material";
-// import { useEffect } from "react";
+import { useEffect } from "react";
 import { ColorModeContext, useMode } from "./theme";
 import { Routes, Route } from "react-router-dom";
 import { Blank } from "./views/layout/blank.layout";
@@ -64,6 +64,23 @@ function App() {
   //   // loadGoogleFonts();
   //   // loadFonts();
   // }, []);
+
+  useEffect(() => {
+    const handleBeforeUnload = (event) => {
+      event.preventDefault();
+      // For most modern browsers, a string needs to be assigned to event.returnValue
+      event.returnValue = ""; // This triggers the browser's default confirmation dialog
+    };
+
+    // Add the beforeunload event listener
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    // Cleanup function to remove the event listener when the component is unmounted
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, []);
+
   const [theme, colorMode] = useMode();
   return (
     <ColorModeContext.Provider value={colorMode}>

@@ -4,8 +4,8 @@ const DataCard = ({
   title,
   todayScore,
   todayPercentage,
-  yesterdayScore,
-  yesterdayPercentage,
+  yesterdayScore = "",
+  yesterdayPercentage = "",
 }) => {
   return (
     <Card
@@ -37,20 +37,20 @@ const DataCard = ({
             </Typography>
           </Box>
 
-          {/* <Box>
-              <Typography variant="body2" color="textSecondary">
-                Yesterday's Score
-              </Typography>
-              <Typography variant="h4" color="primary">
-                {yesterdayScore}
-              </Typography>
-              <Typography
-                variant="body2"
-                color={yesterdayPercentage >= 0 ? "green" : "red"}
-              >
-                {yesterdayPercentage}%
-              </Typography>
-            </Box> */}
+          <Box>
+            <Typography variant="body2" color="textSecondary">
+              Yesterday's Score
+            </Typography>
+            <Typography variant="h4" color="primary">
+              {yesterdayScore || "5.23"}
+            </Typography>
+            <Typography
+              variant="body2"
+              color={yesterdayPercentage >= 0 ? "green" : "red"}
+            >
+              {yesterdayPercentage || 53}%
+            </Typography>
+          </Box>
         </Box>
       </CardContent>
     </Card>

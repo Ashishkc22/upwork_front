@@ -36,7 +36,7 @@ const DashboardCard = ({
         {/* Colored Bottom covering 20% of the card area */}
         <Box
           sx={{
-            ...(bgcolor.includes("linear")
+            ...(bgcolor?.includes("linear")
               ? {
                   backgroundImage: bgcolor,
                 }

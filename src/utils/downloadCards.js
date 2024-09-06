@@ -49,14 +49,15 @@ async function downloadSingleCard({
       observer.disconnect(); // Stop observing once rendering is detected
       // Wait for the component to be rendered
       await new Promise((resolve) => setTimeout(resolve, 500));
-      var node = document.getElementById(cardData._id);
+      var node = document.getElementById(`${cardData._id}-download`);
       const offsetHeight = node?.offsetHeight;
       const offsetWidth = node?.offsetWidth;
 
       const scale = 2;
-
+      const fontPromise = document.fonts.ready;
+      await fontPromise;
       // Convert the container to an image
-      const dataUrl = await domtoimage.toPng(node, {
+      const dataUrl = await domtoimage.toJpeg(node, {
         height: offsetHeight * scale,
         style: {
           transform: `scale(${scale}) translate(${offsetWidth / 2 / scale}px, ${
@@ -70,8 +71,8 @@ async function downloadSingleCard({
 
       // const width = doc.internal.pageSize.getWidth() * 0.4;
       // const height = doc.internal.pageSize.getHeight() * 0.3;
-      const width = 85.6;
-      const height = 54;
+      const width = 87.6;
+      const height = 57.6;
 
       const backImageWidth = 85.6;
       const backImageheight = 54;
@@ -79,6 +80,8 @@ async function downloadSingleCard({
       // doc.addImage(dataUrl, "PNG", 10, 10, width, height, "", "MEDIUM"); // Adjust position and size as needed
 
       doc.addImage(dataUrl, "PNG", 10, 10, width, height); // Adjust position and size as needed
+      // doc.addImage(dataUrl, "PNG", 10, 80, width, height); // Adjust position and size as needed
+      // doc.rect(10, 12, 85.6, 54);
       doc.addImage(
         secondaryImage,
         "JPEG",
@@ -91,6 +94,7 @@ async function downloadSingleCard({
       ); // Adjust position and size as needed
 
       doc.save(fileName);
+      // preview({ pdfBlob: doc.output("blob") });
       // Clean up
       ReactDOM?.unmountComponentAtNode(container);
       root.unmount();
@@ -125,7 +129,12 @@ function getImageData({ Element, cardData = [], images }) {
         root = createRoot(container);
 
         root.render(
-          <Element showCardTag cardData={cardData[i]} images={images} />
+          <Element
+            isPrint={true}
+            showCardTag
+            cardData={cardData[i]}
+            images={images}
+          />
         );
         console.time("exampleFunctionTime", cardData[i]._id);
         const observer = new MutationObserver(async (mutationsList) => {
@@ -134,12 +143,12 @@ function getImageData({ Element, cardData = [], images }) {
           // Wait for the component to be rendered'
           await new Promise((resolve) => setTimeout(resolve, 500));
 
-          var node = document.getElementById(cardData[i]._id);
+          var node = document.getElementById(`${cardData[i]._id}-download`);
           const offsetHeight = node?.offsetHeight;
           const offsetWidth = node?.offsetWidth;
           const scale = 2;
           // Convert the container to an image
-          const dataUrl = await domtoimage.toPng(node, {
+          const dataUrl = await domtoimage.toJpeg(node, {
             height: offsetHeight * scale,
             style: {
               transform: `scale(${scale}) translate(${
@@ -147,7 +156,9 @@ function getImageData({ Element, cardData = [], images }) {
               }px, ${offsetHeight / 2 / scale}px)`,
             },
             width: offsetWidth * scale,
+            copyDefaultStyles: true,
           });
+
           elementData.push(dataUrl);
           console.timeEnd("exampleFunctionTime", cardData[i]._id);
           // Clean up
@@ -172,7 +183,7 @@ function addBackSideImage({
   imgUrl,
   count = 10,
   skipBackSide = [],
-  xposition = 10,
+  xposition = 7,
 }) {
   doc.addPage();
   const backImageWidth = 85.6;
@@ -194,8 +205,30 @@ function addBackSideImage({
     if (xposition === 110) {
       yposition = yposition + 57;
     }
-    xposition = xposition === 10 ? 110 : 10;
+    xposition = xposition === 7 ? 110 : 7;
   }
+}
+
+function preview({ pdfBlob }) {
+  // Create a new div element
+  var a4Div = document.createElement("iframe");
+
+  // Set the styles to match the size of an A4 paper
+  a4Div.style.width = "793.7px"; // A4 width in pixels (210mm)
+  a4Div.style.height = "100%"; // A4 height in pixels (297mm)
+  a4Div.style.backgroundColor = "white";
+  a4Div.style.boxShadow = "0 0 10px rgba(0, 0, 0, 0.5)";
+  a4Div.style.margin = "20px auto";
+  a4Div.style.position = "fixed";
+  a4Div.style["z-index"] = "5";
+  a4Div.style.top = "0%";
+  a4Div.style.left = "21%";
+
+  const pdfUrl = URL.createObjectURL(pdfBlob);
+  a4Div.src = pdfUrl;
+
+  // Append the new div to the body
+  document.body.appendChild(a4Div);
 }
 
 async function downloadMultipleCard({
@@ -210,9 +243,9 @@ async function downloadMultipleCard({
   const imageBackSideUrl = getImageDataURLFromRef(secondaryImage);
 
   const doc = new jsPDF("p", "mm", "", true);
-  const width = 85.6;
-  const height = 54;
-  let xposition = 10;
+  const width = 87.6;
+  const height = 57.6;
+  let xposition = 7;
   let yposition = 5;
   let count = 0;
   const cardCount = cardData.length;
@@ -228,7 +261,7 @@ async function downloadMultipleCard({
     startX: xposition,
     startY: yposition,
   });
-  xposition = xposition === 10 ? 110 : 10;
+  xposition = xposition === 7 ? 110 : 7;
   count += 1;
 
   imageData.forEach((dataUrl, index) => {
@@ -247,7 +280,7 @@ async function downloadMultipleCard({
     // ADD CARD COUNT TEXT
     doc.setFontSize(12);
     doc.setFont("helvetica", "bold");
-    doc.text(`${index + 1}`, xposition + 95 - 3, yposition + 35, {
+    doc.text(`${index + 1}`, xposition + 90, yposition + 30, {
       angle: 90,
       rotationDirection: 1,
     });
@@ -259,8 +292,7 @@ async function downloadMultipleCard({
       addBackSideImage({
         doc,
         imgUrl: imageBackSideUrl,
-        count: pageCardLimit === 9 ? count : count + 1,
-        ...(pageCardLimit === 9 && { xposition }),
+        count: count + 1,
       });
     }
     // ADD NEW PAGE
@@ -268,17 +300,17 @@ async function downloadMultipleCard({
       addBackSideImage({
         doc,
         imgUrl: imageBackSideUrl,
-        count: pageCardLimit === 9 ? count : count + 1,
-        ...(pageCardLimit === 9 && { xposition }),
+        count: count + 1,
+        ...(pageCardLimit === 9 && { skipBackSide: [1] }),
       });
-      xposition = 10;
+      xposition = 7;
       yposition = 5;
       doc.addPage();
       count = 0;
       pageCardLimit = 10;
     } else {
       count += 1;
-      xposition = xposition === 10 ? 110 : 10;
+      xposition = xposition === 7 ? 110 : 7;
     }
 
     if (index == cardData.length - 1) {
@@ -289,6 +321,7 @@ async function downloadMultipleCard({
             : agentDetails.id
         }#${cardCount}_${moment().format("DD_MMM_YYYY_HH_MM")}.pdf`
       );
+      // preview({ pdfBlob: doc.output("blob") });
       handleDownloadCompleted();
     }
   });
@@ -327,8 +360,8 @@ async function downloadMultipleCardWithMultipleAgent({
   const imageBackSideUrl = getImageDataURLFromRef(secondaryImage);
   const doc = new jsPDF("p", "mm", "", true);
 
-  const width = 85.6;
-  const height = 54;
+  const width = 87.6;
+  const height = 57.6;
 
   let cardCount = 0;
   let count = 0;

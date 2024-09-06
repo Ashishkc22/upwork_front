@@ -364,7 +364,7 @@ const Header = ({
     const payload = {
       ...(state?.name && { state: state.name }),
       ...(district?.name && { district: district.name }),
-      ...(createdBy?.name && { created_by: createdBy.name }),
+      ...(createdBy?.name && { created_by: createdBy.uid }),
       ...(status?.label && { _status: status?.label }),
       ...(tehsil?.name && { tehsil: tehsil?.name }),
       ...(gram?.label && { gram_p: gram?.label }),
@@ -383,8 +383,12 @@ const Header = ({
       payload.duration = dateType;
     } else if (duration) {
       const [startDate = "", endDate = ""] = duration.split("-");
-      payload.duration = moment(startDate, "DD/MM/YYYY").valueOf();
-      payload.till_duration = moment(startDate, "DD/MM/YYYY").valueOf();
+      payload.duration = moment(startDate, "DD/MM/YYYY")
+        .startOf("day")
+        .valueOf();
+      payload.till_duration = moment(startDate, "DD/MM/YYYY")
+        .endOf("day")
+        .valueOf();
       if (endDate) {
         payload.till_duration = moment(endDate, "DD/MM/YYYY").valueOf();
       }

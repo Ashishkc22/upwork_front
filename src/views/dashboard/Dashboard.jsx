@@ -16,6 +16,7 @@ import CustomDatePicker from "../../components/CustomDatePicker";
 import moment from "moment";
 import { isEmpty } from "lodash";
 import DashboardCard from "./StatsCard";
+import PreDashboardCard from "./StatsCardWithPreviousData";
 import getCardStack from "../../components/ChipStack";
 import { useNavigate } from "react-router-dom";
 import ImageComponent from "../../components/ImageComponent";
@@ -317,6 +318,17 @@ const Dashboard = () => {
             })}
             {!isEmpty(dashboardData) && (
               <>
+                {/* <Grid item xs={12} sm={4} md={3} lg={2}>
+                  <PreDashboardCard
+                    title="Total FE"
+                    todayScore={dashboardData.total_users}
+                    todayPercentage={
+                      cardPercentage?.totalUsersCombinedPercentage || "0.0"
+                    }
+                    yesterdayScore=""
+                    yesterdayPercentage=""
+                  />
+                </Grid> */}
                 <Grid item xs={12} sm={4} md={3} lg={2}>
                   <DashboardCard
                     total={dashboardData.total_users}
