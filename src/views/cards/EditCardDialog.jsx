@@ -206,7 +206,7 @@ const EditDialog = ({ open, onClose, cardData, setIscardLoadtion }) => {
                 fullWidth
                 label="Name"
                 name="name"
-                defaultValue={formData?.name}
+                value={formData?.name}
                 onChange={handleChange}
               />
             </Grid>
