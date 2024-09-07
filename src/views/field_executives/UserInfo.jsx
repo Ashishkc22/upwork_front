@@ -117,16 +117,12 @@ const UserInfoCard = () => {
   const handleUserSuspension = async () => {
     const _formData = {
       status: userData.status === "Verified" ? "Suspended" : "Verified",
-      // suspension_reason: suspensionReason,
+      ...(suspensionReason && { suspension_reason: suspensionReason }),
     };
     if (userData.status === "Verification Pending") {
       _formData.status = "Verified";
     }
-    await fieldExecutives.saveFieldExecutiveForm(
-      _formData,
-      "STATSUPDATE",
-      userData._id
-    );
+    await fieldExecutives.changeUserStatus(_formData, userData._id);
     fetchCardData();
     setIsSuspensionDialogOpened(false);
   };

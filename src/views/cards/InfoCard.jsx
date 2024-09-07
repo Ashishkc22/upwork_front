@@ -684,14 +684,15 @@ const CardComponent = () => {
 
                   <Box>
                     <Grid container>
-                      {cardData.blood_group && (
-                        <Grid item xs={6}>
-                          <TextElement
-                            label="Blood Group"
-                            value={cardData?.blood_group || ""}
-                          />
-                        </Grid>
-                      )}
+                      {cardData.blood_group &&
+                        cardData.blood_group != "null" && (
+                          <Grid item xs={6}>
+                            <TextElement
+                              label="Blood Group"
+                              value={cardData?.blood_group || ""}
+                            />
+                          </Grid>
+                        )}
                       {cardData.emergency_contact && (
                         <Grid item xs={6} sx={{ display: "flex" }}>
                           <IconButton

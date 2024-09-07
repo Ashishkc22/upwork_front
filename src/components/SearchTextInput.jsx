@@ -5,6 +5,8 @@ import SearchIcon from "@mui/icons-material/Search";
 import { styled } from "@mui/material/styles";
 import ClearIcon from "@mui/icons-material/Clear";
 import { IconButton } from "@mui/material";
+import { useSearchParams } from "react-router-dom";
+
 import storageUtil from "../utils/storage.util";
 
 const CustomTextField = styled(TextField)(({ theme }) => ({
@@ -28,7 +30,10 @@ const CustomTextField = styled(TextField)(({ theme }) => ({
 const SearchInput = memo(
   ({ emitSearchChange, onLoadFocus = false, value }) => {
     const isFirstRender = storageUtil.getStorageData("firstHeaderRender");
-    const [inputValue, setInputValue] = useState("");
+    let [urlDateType, setUrlDateType] = useSearchParams();
+    const [inputValue, setInputValue] = useState(
+      urlDateType.get("search") || ""
+    );
     const searchRef = useRef("");
     return (
       <CustomTextField

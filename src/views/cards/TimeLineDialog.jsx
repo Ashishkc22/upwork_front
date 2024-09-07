@@ -11,6 +11,11 @@ const StatusDialog = ({ open, onClose, data }) => {
       open={open}
       fullWidth
       maxWidth="md"
+      sx={{
+        ".css-rnmm7m-MuiPaper-root-MuiDialog-paper": {
+          overflowX: "hidden",
+        },
+      }}
       onClick={(e) => e.stopPropagation()}
     >
       <DialogTitle>

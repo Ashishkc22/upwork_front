@@ -1,7 +1,7 @@
 import tokenUtil from "../utils/token.util";
 import axiosUtil from "../utils/api.util";
 import { groupBy, isEmpty } from "lodash";
-import moment from "moment";
+import { enqueueSnackbar } from "notistack";
 import common from "./common";
 
 async function getCardsData({
@@ -468,8 +468,16 @@ async function markAsPrint(ids) {
       body: { uids: ids },
     });
     if (status === "failed") {
+      enqueueSnackbar("Failed change card status.", {
+        variant: "error",
+        autoHideDuration: 2000,
+      });
       return { status, error: error || message };
-    } else if (!isEmpty(data)) {
+    } else {
+      enqueueSnackbar("Changed card status successfully.", {
+        variant: "success",
+        autoHideDuration: 2000,
+      });
       return data;
     }
   } catch (error) {

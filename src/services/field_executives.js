@@ -171,6 +171,21 @@ async function saveFieldExecutiveForm(formData, mode = "EDIT", id) {
   }
 }
 
+async function changeUserStatus(formData, id) {
+  let path = `auth/user/suspend/${id}`;
+  const data = await axiosUtil.patch({
+    path,
+    params: {
+      token: tokenUtil.getAuthToken(),
+    },
+    body: formData,
+  });
+  if (data.status === "failed") {
+    return {};
+  } else if (!isEmpty(data)) {
+    return data;
+  }
+}
 export default {
   getUsers,
   getUserById,
@@ -178,4 +193,5 @@ export default {
   updateUserRole,
   saveFieldExecutiveForm,
   getTLById,
+  changeUserStatus,
 };

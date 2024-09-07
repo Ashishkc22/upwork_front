@@ -13,6 +13,7 @@ import LocalPostOfficeIcon from "@mui/icons-material/LocalPostOffice";
 import { Typography, Box, Paper } from "@mui/material";
 import TimelineDot from "@mui/lab/TimelineDot";
 import moment from "moment";
+import { List, ListItem, ListItemText } from "@mui/material";
 
 const statusIcons = {
   SUBMITTED: <CheckCircleIcon />,
@@ -25,44 +26,44 @@ const statusIcons = {
 
 const StatusTimeline = ({ data }) => {
   return (
-    <Timeline position="alternate" sx={{ padding: 2 }}>
-      {data.map((item, index) => (
-        <TimelineItem key={index}>
-          <TimelineOppositeContent
-            sx={{ m: "auto 0", fontWeight: "bold", color: "text.primary" }}
-            align="right"
-            variant="body2"
-          >
-            {/* Placeholder time - you may want to include actual timestamp data */}
-            {item.created_at &&
-              moment(item.created_at).format("DD-MM-YYYY HH:mm")}
-          </TimelineOppositeContent>
-          <TimelineSeparator>
-            <TimelineConnector sx={{ bgcolor: "primary.main" }} />
-            <TimelineDot color="primary" variant="filled" sx={{ boxShadow: 3 }}>
-              {statusIcons[item.updated_status] || <CheckCircleIcon />}
-            </TimelineDot>
-            <TimelineConnector sx={{ bgcolor: "primary.main" }} />
-          </TimelineSeparator>
-          <TimelineContent sx={{ py: "12px", px: 2 }}>
-            <Paper elevation={3} sx={{ padding: 2, borderRadius: 2 }}>
+    <Timeline sx={{ padding: 2 }}>
+      <List>
+        {data.map((item, index) => (
+          <ListItem key={index} divider>
+            <Box display="flex" justifyContent="space-between" width="100%">
+              {/* Status */}
               <Typography
-                variant="h6"
-                component="span"
-                sx={{ fontWeight: "bold", color: "primary.main" }}
+                variant="body1"
+                sx={{ fontWeight: "bold", minWidth: "100px" }}
               >
-                {item.updated_status}
+                Status: {item.updated_status}
               </Typography>
-              <Typography sx={{ mt: 1, color: "text.secondary" }}>
-                Previous Status: <strong>{item.previous_status}</strong>
+
+              {/* Reason */}
+              {item?.reason && (
+                <Typography variant="body1" sx={{ minWidth: "200px" }}>
+                  Reason: {item.reason}
+                </Typography>
+              )}
+
+              {/* Updated By */}
+              <Typography variant="body1" sx={{ minWidth: "150px" }}>
+                Updated By: {item.updated_by.name}
               </Typography>
-              <Typography sx={{ mt: 1, color: "text.secondary" }}>
-                Updated By: <strong>{item.updated_by.name}</strong>
+
+              {/* Timestamp */}
+              <Typography
+                variant="body2"
+                color="textSecondary"
+                sx={{ minWidth: "150px" }}
+              >
+                {item.created_at &&
+                  moment(item.created_at).format("DD-MM-YYYY HH:mm")}
               </Typography>
-            </Paper>
-          </TimelineContent>
-        </TimelineItem>
-      ))}
+            </Box>
+          </ListItem>
+        ))}
+      </List>
     </Timeline>
   );
 };

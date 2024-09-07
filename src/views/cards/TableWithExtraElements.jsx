@@ -181,13 +181,12 @@ const TableWithExtraElements = ({
               e.stopPropagation();
               let ids = [];
               let keys = [];
-              Object.keys(groupedData).forEach((key) => {
-                keys.push(key);
-                if (isDownloadCompleted[groupName]) {
-                  const data = groupedData[key];
-                  console.log("key", key);
-                  ids = [...ids, ...data.map((a) => a._id)];
-                }
+              const [firsttableData] = groupedData;
+              keys.push(firsttableData._id.location);
+              groupedData.forEach((data) => {
+                keys.push(data.userDetails.uid);
+                const cards = data.cards;
+                ids = [...ids, ...cards.map((a) => a._id)];
               });
               setMarkAsPrintPending((pre) => {
                 keys.forEach((id) => {

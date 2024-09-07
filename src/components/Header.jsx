@@ -428,7 +428,7 @@ const Header = memo(
           const findDis = data?.find((d) => d._id === urlsParams?.districtId);
           if (findDis) {
             setDistrict(findDis);
-            addInChipList(findDis.name, district);
+            addInChipList(findDis.name, "district");
           }
         } else if (payload?.type == "state" && !data?.error) {
           setStateOption(data);
@@ -480,64 +480,64 @@ const Header = memo(
     // }, [headerData.selectedState]);
 
     useEffect(() => {
-      // if (urlDateType.get("districtId")) {
-      //   getAddressData({
-      //     type: "district",
-      //     params: { stateId: urlDateType.get("stateId") },
-      //   });
-      // }
-      // if (urlDateType?.get("tehsilId") && urlDateType?.get("districtId")) {
-      //   getAddressData({
-      //     type: "tehsil",
-      //     params: { districtId: urlDateType?.get("districtId") },
-      //   });
-      // }
+      if (urlDateType.get("districtId")) {
+        getAddressData({
+          type: "district",
+          params: { stateId: urlDateType.get("stateId") },
+        });
+      }
+      if (urlDateType?.get("tehsilId") && urlDateType?.get("districtId")) {
+        getAddressData({
+          type: "tehsil",
+          params: { districtId: urlDateType?.get("districtId") },
+        });
+      }
 
-      // if (urlDateType?.get("gramId") && urlDateType?.get("tehsilId")) {
-      //   getAddressData({
-      //     type: "gram",
-      //     params: {
-      //       tehsilId: urlDateType?.get("tehsilId"),
-      //       showHidden: true,
-      //       display: "Gram",
-      //     },
-      //   });
-      // }
+      if (urlDateType?.get("gramId") && urlDateType?.get("tehsilId")) {
+        getAddressData({
+          type: "gram",
+          params: {
+            tehsilId: urlDateType?.get("tehsilId"),
+            showHidden: true,
+            display: "Gram",
+          },
+        });
+      }
       if (urlDateType?.get("tab")) {
         setSelectedCard(urlDateType?.get("tab"));
         emitCardSelect(urlDateType?.get("tab"));
       }
-      // if (urlDateType?.get("status")) {
-      //   addInChipList(urlDateType?.get("status"), "status");
-      //   setStatus({ label: urlDateType?.get("status") });
-      // }
-      // if (urlDateType?.get("durationType")) {
-      //   setDateType(urlDateType?.get("durationType"));
-      //   if (
-      //     urlDateType?.get("durationType") != "CUSTOM" &&
-      //     urlDateType?.get("durationType") != "CUSTOM DATE"
-      //   ) {
-      //     emitDurationChange({ value: urlDateType?.get("durationType") });
-      //   }
-      //   if (urlDateType?.get("duration")) {
-      //     let dateFormat = moment(urlDateType?.get("duration"), "DD/MM/YYYY");
-      //     if (urlDateType?.get("duration") === "CUSTOM") {
-      //       dateFormat = [
-      //         {
-      //           startDate: moment(
-      //             urlDateType?.get("duration").split("-")[0],
-      //             "DD/MM/YYYY"
-      //           ),
-      //           endDate: moment(
-      //             urlDateType?.get("duration").split("-")[1],
-      //             "DD/MM/YYYY"
-      //           ),
-      //         },
-      //       ];
-      //     }
-      //     handleApply(dateFormat, false);
-      //   }
-      // }
+      if (urlDateType?.get("status")) {
+        addInChipList(urlDateType?.get("status"), "status");
+        setStatus({ label: urlDateType?.get("status") });
+      }
+      if (urlDateType?.get("durationType")) {
+        setDateType(urlDateType?.get("durationType"));
+        if (
+          urlDateType?.get("durationType") != "CUSTOM" &&
+          urlDateType?.get("durationType") != "CUSTOM DATE"
+        ) {
+          emitDurationChange({ value: urlDateType?.get("durationType") });
+        }
+        if (urlDateType?.get("duration")) {
+          let dateFormat = moment(urlDateType?.get("duration"), "DD/MM/YYYY");
+          if (urlDateType?.get("duration") === "CUSTOM") {
+            dateFormat = [
+              {
+                startDate: moment(
+                  urlDateType?.get("duration").split("-")[0],
+                  "DD/MM/YYYY"
+                ),
+                endDate: moment(
+                  urlDateType?.get("duration").split("-")[1],
+                  "DD/MM/YYYY"
+                ),
+              },
+            ];
+          }
+          handleApply(dateFormat, false);
+        }
+      }
     }, [urlsParams]);
 
     useEffect(() => {

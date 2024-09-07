@@ -46,6 +46,9 @@ const EditDialog = ({ open, onClose, cardData, setIscardLoadtion }) => {
   const fileInputRef = useRef(null);
 
   const [isDistrictLoading, setIsDistrictLoading] = useState(false);
+  const [isStateLoading, setIsStateLoading] = useState(false);
+  const [isTehsilLoading, setIsTehsilLoading] = useState(false);
+  const [isGramLoading, setIsGramLoading] = useState(false);
 
   const [rotation, setRotation] = useState(0);
 
@@ -71,9 +74,19 @@ const EditDialog = ({ open, onClose, cardData, setIscardLoadtion }) => {
     if (payload?.type == "district") {
       setIsDistrictLoading(true);
     }
+    if (!payload?.type) {
+      setIsStateLoading(true);
+    }
+    if (payload?.type == "tehsil") {
+      setIsTehsilLoading(true);
+    }
+    if (payload?.type == "gram") {
+      setIsGramLoading(true);
+    }
     commonService.getAddressData(payload).then((data) => {
       if (payload?.type == "tehsil") {
         setTehsilOption(data || []);
+        setIsTehsilLoading(false);
       } else if (payload?.type == "district") {
         setDistrictOption(data || []);
         setIsDistrictLoading(false);
@@ -81,8 +94,10 @@ const EditDialog = ({ open, onClose, cardData, setIscardLoadtion }) => {
         console.log("data >>>>", data);
 
         setGramOption(data || []);
+        setIsGramLoading(false);
       } else {
         setStateOption(data || []);
+        setIsStateLoading(false);
       }
     });
   }
@@ -219,38 +234,6 @@ const EditDialog = ({ open, onClose, cardData, setIscardLoadtion }) => {
                 onChange={handleChange}
               />
             </Grid>
-            <Grid item xs={6}>
-              {Boolean(Object.keys(formData?.id_proof || {}).length) && (
-                <FormControl sx={{ minWidth: 120 }}>
-                  <InputLabel id="demo-simple-select-helper-label">
-                    Id Proof
-                  </InputLabel>
-                  <Select
-                    labelId="demo-simple-select-helper-label"
-                    id="demo-simple-select-helper"
-                    label="Id Proof"
-                    defaultValue={formData?.id_proof?.type}
-                    // onChange={handleChange}
-                  >
-                    {/* {Object.keys(formData?.id_proof).map((key) => {
-                    return <MenuItem value={key}>{key}</MenuItem>;
-                  })} */}
-                    <MenuItem value={formData?.id_proof?.type}>
-                      {formData?.id_proof?.type}
-                    </MenuItem>
-                  </Select>
-                </FormControl>
-              )}
-            </Grid>
-            <Grid item xs={6} alignContent="center">
-              <TextField
-                fullWidth
-                label="ID Proof"
-                name="idProof"
-                value={formData?.id_proof?.value}
-                onChange={handleChange}
-              />
-            </Grid>
             <Grid item xs={6} sm={6}>
               <FormControl>
                 <FormLabel id="demo-radio-buttons-group-label">
@@ -277,12 +260,55 @@ const EditDialog = ({ open, onClose, cardData, setIscardLoadtion }) => {
                 </RadioGroup>
               </FormControl>
             </Grid>
+
+            <Grid item xs={4}>
+              {Boolean(Object.keys(formData?.id_proof || {}).length) && (
+                <FormControl sx={{ minWidth: 120 }}>
+                  <InputLabel id="demo-simple-select-helper-label">
+                    Id Proof
+                  </InputLabel>
+                  <Select
+                    labelId="demo-simple-select-helper-label"
+                    id="demo-simple-select-helper"
+                    label="Id Proof"
+                    defaultValue={formData?.id_proof?.type}
+                    // onChange={handleChange}
+                  >
+                    {/* {Object.keys(formData?.id_proof).map((key) => {
+                    return <MenuItem value={key}>{key}</MenuItem>;
+                  })} */}
+                    <MenuItem value={formData?.id_proof?.type}>
+                      {formData?.id_proof?.type}
+                    </MenuItem>
+                  </Select>
+                </FormControl>
+              )}
+            </Grid>
+
+            <Grid item xs={8} alignContent="center">
+              <TextField
+                fullWidth
+                label="ID Proof"
+                name="idProof"
+                value={formData?.id_proof?.value}
+                onChange={handleChange}
+              />
+            </Grid>
             <Grid item xs={12}>
               <TextField
                 fullWidth
                 label="Father/Husband's Name"
                 name="father_husband_name"
                 value={formData?.father_husband_name}
+                onChange={handleChange}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="Phone"
+                name="phone"
+                value={formData?.phone}
                 onChange={handleChange}
               />
             </Grid>
@@ -343,13 +369,21 @@ const EditDialog = ({ open, onClose, cardData, setIscardLoadtion }) => {
               </Box>
             </Grid>
           </Grid>
-
-          <Grid item xs={12}>
+          <Grid item xs={6}>
             <TextField
               fullWidth
               label="Blood Group"
               name="blood_group"
               value={formData?.blood_group}
+              onChange={handleChange}
+            />
+          </Grid>
+          <Grid item xs={6}>
+            <TextField
+              fullWidth
+              label="Emergency Contact"
+              name="emergency_contact"
+              value={formData?.emergency_contact}
               onChange={handleChange}
             />
           </Grid>
@@ -370,6 +404,7 @@ const EditDialog = ({ open, onClose, cardData, setIscardLoadtion }) => {
                   id="state-dropdown"
                   label="state"
                   name="State"
+                  disabled={isStateLoading}
                   defaultValue={formData?.state}
                   onChange={handleChange}
                 >
@@ -381,6 +416,18 @@ const EditDialog = ({ open, onClose, cardData, setIscardLoadtion }) => {
                     );
                   })}
                 </Select>
+                {isStateLoading && (
+                  <CircularProgress
+                    size={24}
+                    sx={{
+                      position: "absolute",
+                      top: "50%",
+                      left: "50%",
+                      marginTop: "-12px",
+                      marginLeft: "-12px",
+                    }}
+                  />
+                )}
               </FormControl>
             </Grid>
           )}
@@ -403,6 +450,7 @@ const EditDialog = ({ open, onClose, cardData, setIscardLoadtion }) => {
                 //   matchFrom: "start", // Options are filtered from the start of the string
                 //   stringify: (option) => option.name, // Specifies which part of the option to match against
                 // })}
+                disabled={isDistrictLoading}
                 defaultValue={formData?.district}
                 {...(!isEmpty(formData?.district)
                   ? { value: formData?.district }
@@ -439,7 +487,7 @@ const EditDialog = ({ open, onClose, cardData, setIscardLoadtion }) => {
                   );
                 }}
                 renderInput={(params) => (
-                  <>
+                  <Box sx={{ position: "relative" }}>
                     {isDistrictLoading ? (
                       <CircularProgress
                         size={24}
@@ -457,7 +505,7 @@ const EditDialog = ({ open, onClose, cardData, setIscardLoadtion }) => {
                       label="District"
                       variant="outlined"
                     />
-                  </>
+                  </Box>
                 )}
               />
               {/* </FormControl> */}
@@ -479,6 +527,7 @@ const EditDialog = ({ open, onClose, cardData, setIscardLoadtion }) => {
                   id="tehsil-dropdown"
                   label="Tehsil"
                   name="tehsil"
+                  disabled={isTehsilLoading}
                   defaultValue={formData?.tehsil}
                   onChange={handleChange}
                 >
@@ -490,6 +539,18 @@ const EditDialog = ({ open, onClose, cardData, setIscardLoadtion }) => {
                     );
                   })}
                 </Select>
+                {isTehsilLoading ? (
+                  <CircularProgress
+                    size={24}
+                    sx={{
+                      position: "absolute",
+                      top: "50%",
+                      left: "50%",
+                      marginTop: "-12px",
+                      marginLeft: "-12px",
+                    }}
+                  />
+                ) : null}
               </FormControl>
             </Grid>
           )}
@@ -504,6 +565,7 @@ const EditDialog = ({ open, onClose, cardData, setIscardLoadtion }) => {
                       label: `${gram.name}, ${gram.grampanchayat_name}`,
                     };
                   })}
+                  disabled={isGramLoading}
                   // filterOptions={createFilterOptions({
                   //   matchFrom: "start", // Options are filtered from the start of the string
                   //   stringify: (option) => option.label, // Specifies which part of the option to match against
@@ -542,34 +604,30 @@ const EditDialog = ({ open, onClose, cardData, setIscardLoadtion }) => {
                     );
                   }}
                   renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="Gram Panchayat"
-                      variant="outlined"
-                    />
+                    <Box>
+                      {isGramLoading ? (
+                        <CircularProgress
+                          size={24}
+                          sx={{
+                            position: "absolute",
+                            top: "50%",
+                            left: "50%",
+                            marginTop: "-12px",
+                            marginLeft: "-12px",
+                          }}
+                        />
+                      ) : null}
+                      <TextField
+                        {...params}
+                        label="Gram Panchayat"
+                        variant="outlined"
+                      />
+                    </Box>
                   )}
                 />
               </FormControl>
             </Grid>
           )}
-          <Grid item xs={6} sm={6}>
-            <TextField
-              fullWidth
-              label="Phone"
-              name="phone"
-              value={formData?.phone}
-              onChange={handleChange}
-            />
-          </Grid>
-          <Grid item xs={6}>
-            <TextField
-              fullWidth
-              label="Emergency Contact"
-              name="emergency_contact"
-              value={formData?.emergency_contact}
-              onChange={handleChange}
-            />
-          </Grid>
         </Grid>
         {/* </DialogContent> */}
         <DialogActions>

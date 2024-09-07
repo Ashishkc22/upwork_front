@@ -48,6 +48,10 @@ const ArogyamComponent = ({
     }
   }, [divRef]);
 
+  const getGramAddress = (address = "") => {
+    return address?.split(",")?.[0] || "";
+  };
+
   return (
     <div
       id={isPrint ? `${cardData._id}-download` : cardData._id}
@@ -201,7 +205,7 @@ const ArogyamComponent = ({
             />
 
             <div className="user-loc">
-              {`${cardData?.area}, ${cardData?.tehsil}`}
+              {`${getGramAddress(cardData?.area)}, ${cardData?.tehsil}`}
             </div>
             <div className="user-loc-2">
               {`${cardData?.district}, ${cardData?.state}`}
@@ -294,7 +298,7 @@ const ArogyamComponent = ({
                 dangerouslySetInnerHTML={{
                   __html: DrawBarcode_Code39(
                     cardData.unique_number,
-                    1,
+                    0,
                     "no",
                     "cm",
                     0.02,
