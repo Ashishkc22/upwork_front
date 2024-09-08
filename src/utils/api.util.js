@@ -36,6 +36,7 @@ function request({
     url: url || getApiUrl({ path }),
     // url: `https://asia-south1-arogyam-super.cloudfunctions.net/${path}`,
     headers: {
+      "ngrok-skip-browser-warning": "69420",
       "Content-Type": isFormData ? "multipart/form-data" : "application/json",
       ...(options?.headers && options.headers),
       ..._getAuthToken(isFormData),

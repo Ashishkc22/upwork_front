@@ -333,7 +333,7 @@ function createAFENameTLName({ doc, feName, tlName, count, startX, startY }) {
   const boxHeight = pxToPt(72); // 210.75 pt
   doc.rect(startX, startY, boxWidth, boxHeight);
   doc.setFontSize(20);
-  const combinedText = `${feName}\n${tlName}\n${count}`;
+  const combinedText = `${tlName}\n${feName}\n${count}`;
   const textWidth = doc.getTextWidth(
     combinedText.split("\n").reduce((a, b) => (a.length > b.length ? a : b))
   );
@@ -431,7 +431,7 @@ async function downloadMultipleCardWithMultipleAgent({
           startX: xposition,
           startY: yposition,
         });
-        skipBackSide.push(count);
+        skipBackSide.push(xposition === 10 ? count + 1 : count - 1);
         if (count === 9) {
           xposition = 10;
           yposition = 5;
@@ -474,6 +474,7 @@ async function downloadMultipleCardWithMultipleAgent({
         j === dataUrl.length - 1 &&
         i === imageDataKeys.length - 1
       ) {
+        debugger;
         console.log("adding back side");
         addBackSideImage({
           doc,

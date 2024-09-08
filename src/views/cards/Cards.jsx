@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useContext } from "react";
 import Header from "../../components/Header";
 import { Grid, Typography, useTheme, Box, Card, Button } from "@mui/material";
 import CustomTable from "../../components/CustomTable";
@@ -23,6 +23,7 @@ import LoadingScreen from "../../components/LaodingScreenWithWhiteBG";
 import TableWithExtraElements from "./TableWithExtraElements";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import { UNSAFE_NavigationContext as NavigationContext } from "react-router-dom";
 
 import waterMarkImg from "../../v1cardImages/waterMark.png";
 import supportImg from "../../v1cardImages/support.png";
@@ -103,6 +104,7 @@ const Cards = () => {
   const [isPageLoading, setIsPageLoading] = useState(false);
   const [isCardDownloading, setIsCardDownload] = useState(false);
   const imageRef = useRef(null);
+  const { navigator } = useContext(NavigationContext);
 
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
@@ -197,13 +199,12 @@ const Cards = () => {
     const scrollValue = storageUtil.getStorageData(
       `${location.pathname}-${searchParams}`
     );
-    console.log("scrollValue", scrollValue);
-    console.log("name", name);
 
     if (scrollValue) {
+      console.log("scrollValue", scrollValue);
+      console.log("name", name);
       window.scrollTo({
         top: scrollValue,
-        // behavior: "smooth",
       });
     }
   };
@@ -298,14 +299,14 @@ const Cards = () => {
         setPageCount(data?.totalShowing);
         setTehsilCounts(data.tehsilCounts || {});
         setIsPageLoading(false);
-        setTimeout(() => {
-          restoreScroll();
-        }, 10);
       } else {
         setCardsDataGroupBy([]);
         setPageCount(0);
         setIsPageLoading(false);
       }
+      setTimeout(() => {
+        restoreScroll();
+      }, 10);
     }
   };
 
@@ -397,6 +398,19 @@ const Cards = () => {
     // if (!isEmpty(cardsDataGroupedBy)) {
     getUsersList();
     // }
+    const searchParams = new URLSearchParams(window.location.search).get("tab");
+    const handleScroll = () => {
+      if (window.scrollY > 0) {
+        storageUtil.setStorageData(
+          window.scrollY,
+          `${location.pathname}-${searchParams}`
+        );
+      }
+    };
+    return () => {
+      storageUtil.setStorageData(false, "firstHeaderRender");
+      window.removeEventListener("scroll", handleScroll);
+    };
   }, []);
 
   // useEffect(() => {
@@ -413,21 +427,9 @@ const Cards = () => {
   // }, []);
 
   useEffect(() => {
-    getTableData();
-    const searchParams = new URLSearchParams(window.location.search).get("tab");
-    console.log("searchParams", searchParams);
-
-    const handleScroll = () => {
-      storageUtil.setStorageData(
-        window.scrollY,
-        `${location.pathname}-${searchParams}`
-      );
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => {
-      storageUtil.setStorageData(false, "firstHeaderRender");
-      window.removeEventListener("scroll", handleScroll);
-    };
+    const _search = urlDateType.get("search");
+    const sortType = urlDateType.get("sortType");
+    getTableData({ search: _search, sortBy: sortType ? "status" : null });
   }, [selectedCard, page]);
 
   const customPrevioudButton = (porps) => (
@@ -581,6 +583,7 @@ const Cards = () => {
                       />
                     );
                   })}
+                  <Box sx={{ height: "40px" }}></Box>
                 </Grid>
               )
             ) : isImageMode ? (
@@ -593,6 +596,7 @@ const Cards = () => {
                         cardData={cardData}
                         enableClick={true}
                         images={images}
+                        handleClick={handleRowClick}
                       />
                     </div>
                   );
@@ -608,8 +612,9 @@ const Cards = () => {
                   handleMenuSelect={handleMenuSelect}
                   highlightedRow={highlightedRow}
                   handleSort={handleSort}
+                  showActionMenu
                 />
-                <Box sx={{ height: "20px" }}></Box>
+                <Box sx={{ height: "60px" }}></Box>
               </Grid>
             )}
           </>
@@ -633,6 +638,7 @@ const Cards = () => {
             //   sm: "5px",
             //   xs: "5px",
             // },
+            zIndex: 10,
           }}
         >
           <TablePagination
@@ -642,6 +648,13 @@ const Cards = () => {
             disabled={Object.keys(markAsPrintPending)?.length}
             rowsPerPage={100}
             onPageChange={(e, newPage) => {
+              const searchParams = new URLSearchParams(
+                window.location.search
+              ).get("tab");
+              storageUtil.setStorageData(
+                0,
+                `${location.pathname}-${searchParams}`
+              );
               addDataToURL({ page: newPage });
               setPage(newPage);
             }}

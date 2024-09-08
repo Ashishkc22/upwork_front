@@ -1,5 +1,5 @@
 import Header from "../../components/Header";
-import { Grid, Card, TablePagination, Button } from "@mui/material";
+import { Grid, Card, TablePagination, Button, Box } from "@mui/material";
 import hospitals from "../../services/hospitals";
 import { isEmpty } from "lodash";
 import { useEffect, useState } from "react";
@@ -214,6 +214,8 @@ const HospitalPage = () => {
               rowClick={handleRowClick}
               showPagiantion
             />
+            <Box sx={{ height: "30px" }}></Box>
+
             {/* )} */}
           </Grid>
         </>

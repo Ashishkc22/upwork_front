@@ -412,14 +412,14 @@ const Cards = () => {
     const searchParams = new URLSearchParams(window.location.search).get("tab");
     console.log("searchParams", searchParams);
 
-    const handleScroll = () => {
-      storageUtil.setStorageData(
-        window.scrollY,
-        `${location.pathname}-${searchParams}`
-      );
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    // const handleScroll = () => {
+    //   storageUtil.setStorageData(
+    //     window.scrollY,
+    //     `${location.pathname}-${searchParams}`
+    //   );
+    // };
+    // window.addEventListener("scroll", handleScroll);
+    // return () => window.removeEventListener("scroll", handleScroll);
   }, [selectedCard, page]);
 
   return (

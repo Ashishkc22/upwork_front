@@ -1,5 +1,14 @@
 import Header from "../../components/Header";
-import { Grid, Card, TablePagination, Box, Button } from "@mui/material";
+import {
+  Grid,
+  Card,
+  TablePagination,
+  Box,
+  Button,
+  Typography,
+} from "@mui/material";
+import { useTheme } from "@mui/material/styles";
+import AppBar from "@mui/material/AppBar";
 import field_executives from "../../services/field_executives";
 import { isEmpty } from "lodash";
 import { useEffect, useState } from "react";
@@ -8,9 +17,12 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import LinearIndeterminate from "../../components/LinearProgress";
 import RestoreIcon from "@mui/icons-material/Restore";
 import bin from "../../services/bin";
-
+import Tabs from "@mui/material/Tabs";
+import Tab from "@mui/material/Tab";
+import { tokens } from "../../theme";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import CardBin from "./CardBin";
 
 let typingTimer;
 
@@ -35,11 +47,15 @@ const headers = [
 
 const Bin = () => {
   const navigate = useNavigate();
+  const theme = useTheme();
+  const colors = tokens(theme.palette.mode);
   // Hospital Table Data
   const [binData, setBinData] = useState([]);
 
   const [pageCount, setPageCount] = useState(0);
   const [page, setPage] = useState(0);
+
+  const [tab, setTab] = useState(0);
 
   let [urlDateType, setUrlDateType] = useSearchParams();
   const [isPageLoading, setIsPageLoading] = useState(false);
@@ -79,6 +95,26 @@ const Bin = () => {
     getBinData();
   }, []);
 
+  function TabPanel(props) {
+    const { children, value, index, ...other } = props;
+
+    return (
+      <div
+        role="tabpanel"
+        hidden={value !== index}
+        id={`full-width-tabpanel-${index}`}
+        aria-labelledby={`full-width-tab-${index}`}
+        {...other}
+      >
+        {value === index && (
+          <Box>
+            <Typography>{children}</Typography>
+          </Box>
+        )}
+      </div>
+    );
+  }
+
   const customPrevioudButton = (porps) => (
     <Button
       {...porps}
@@ -117,30 +153,44 @@ const Bin = () => {
       }}
       rowSpacing={3}
     >
+      <Grid item xs={12}>
+        <Tabs
+          value={tab}
+          onChange={(e, value) => {
+            console.log("tabe", value);
+
+            setTab(value);
+          }}
+          sx={{
+            ".css-1042ldp-MuiButtonBase-root-MuiTab-root.Mui-selected": {
+              color: colors.primary[500],
+            },
+            ".css-1aquho2-MuiTabs-indicator": {
+              backgroundColor: colors.primary[500],
+            },
+          }}
+        >
+          <Tab label="Cards Bin" />
+          {/* <Tab label="Item Two" />
+          <Tab label="Item Three" /> */}
+        </Tabs>
+      </Grid>
       {isPageLoading ? (
-        <LinearIndeterminate />
+        <Grid item xs={12}>
+          <LinearIndeterminate />
+        </Grid>
       ) : (
         <Grid item xs={12}>
           {/* {!isEmpty(hospitalList) && ( */}
-          <CustomTable
-            headers={headers}
-            rows={binData}
-            dataForSmallScreen={{
-              use: true,
-              title: { keys: ["name", "created_by_uid", "deleted_at"] },
-            }}
-            showPagiantion
-            showActionMenu={false}
-            actions={[
-              {
-                label: "Restore",
-                smallIcon: <RestoreIcon size="small" />,
-                icon: <RestoreIcon />,
-                handler: handleDataRestore,
-              },
-            ]}
-          />
-          <Box sx={{ height: "20px" }}></Box>
+          <TabPanel value={tab} index={0} dir={theme.direction}>
+            <CardBin
+              setPageCount={setPageCount}
+              setIsPageLoading={setIsPageLoading}
+              binData={binData}
+              handleDataRestore={handleDataRestore}
+            />
+            <Box sx={{ height: "20px" }}></Box>
+          </TabPanel>
 
           {/* )} */}
           <Grid item xs={12} sx={{ height: "39px" }}>

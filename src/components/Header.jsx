@@ -43,7 +43,7 @@ const ScoreCard = ({
         borderRadius: 3,
       }}
     >
-      <CardActionArea onClick={() => emitCardSelect(name)}>
+      <CardActionArea onClick={() => emitCardSelect && emitCardSelect(name)}>
         <Box sx={{ p: 1 }} textAlign="center">
           <Typography fontSize={25} fontWeight={600}>
             {secondValue != value && isCardSelected
@@ -69,7 +69,7 @@ const OtherScoreCard = ({ value, secondValue, text, emitCardSelect, name }) => {
         borderRadius: 3,
       }}
     >
-      <CardActionArea onClick={() => emitCardSelect(name)}>
+      <CardActionArea onClick={() => emitCardSelect && emitCardSelect(name)}>
         <Box sx={{ p: 1 }} textAlign="center">
           <Typography fontSize={25} fontWeight={600}>
             {secondValue != value ? `${secondValue}/${value}` : value}
@@ -193,13 +193,13 @@ const Header = memo(
     }
 
     const emitCardSelect = (name) => {
-      setSelectedCard(name);
       const tab = urlDateType.get("tab");
       if (tab != name) {
         addDataToURL({ page: null });
       }
       addDataToURL({ tab: name });
       handleSelectCard(name);
+      setSelectedCard(name);
     };
 
     const emitStateChange = (e, data) => {
@@ -617,7 +617,10 @@ const Header = memo(
                 text={toTalScoreDetails.text}
                 name={toTalScoreDetails.name}
                 bgcolor="#ffeee8"
-                emitCardSelect={emitCardSelect}
+                emitCardSelect={(e) => {
+                  addDataToURL({ sortType: "" });
+                  emitCardSelect(e);
+                }}
                 isCardSelected={selectedCard === toTalScoreDetails.name}
               />
             )}
@@ -639,7 +642,10 @@ const Header = memo(
                   bgcolor="#ffeee8"
                   name={secondaryTotalDetails.name}
                   isCardSelected={selectedCard === secondaryTotalDetails.name}
-                  emitCardSelect={emitCardSelect}
+                  emitCardSelect={(e) => {
+                    addDataToURL({ sortType: "" });
+                    emitCardSelect(e);
+                  }}
                 />
               </>
             )}
@@ -675,7 +681,10 @@ const Header = memo(
                   options={stateOption}
                   value={state}
                   getOptionLabel={(option) => option.name}
-                  onChange={emitStateChange}
+                  onChange={() => {
+                    addDataToURL({ sortType: "" });
+                    emitStateChange();
+                  }}
                   renderInput={(params) => (
                     <TextField {...params} label="State" variant="standard" />
                   )}
@@ -837,6 +846,13 @@ const Header = memo(
                             </Typography>
                           )}
                         </Grid>
+                        {option?.count && (
+                          <Typography fontSize={12} fontWeight={500}>
+                            {" ("}
+                            {option.count}
+                            {")"}
+                          </Typography>
+                        )}
                       </Box>
                     );
                   }}

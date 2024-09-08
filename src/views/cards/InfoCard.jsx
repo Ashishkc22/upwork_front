@@ -374,10 +374,7 @@ const CardComponent = () => {
       sx={{
         display: "flex",
         width: "100%",
-        // justifyContent: "center",
-        // alignItems: "center",
-        // height: "100vh", // This makes the box take the full viewport height
-        // width: "100vw",
+        height: "100vh", // This makes the box take the full viewport height
       }}
       onClick={(e) => {
         e.stopPropagation();
@@ -391,37 +388,40 @@ const CardComponent = () => {
         <IconButton
           sx={{
             borderRadius: 0,
-            color: "#ff5722",
+            color: isArrowButtonDisable() ? "gray" : "#ff5722",
           }}
           onClick={(e) => {
             e.stopPropagation();
-            handleKeyPress({ key: "ArrowLeft" });
+            if (!isArrowButtonDisable()) {
+              handleKeyPress({ key: "ArrowLeft" });
+            }
           }}
-          disabled={isArrowButtonDisable()}
         >
           <KeyboardArrowLeftIcon />
         </IconButton>
       )}
+
       <img
         src="/health-card-back.jpeg"
         ref={imageRef}
         alt="health back"
         style={{ display: "none" }}
       />
+
       <Grid
         container
         alignItems="center"
         justifyContent="center"
         columnSpacing={3}
       >
-        <Grid item sx={{ mx: 2 }}>
+        <Grid item sx={{ mx: 2, my: 1 }}>
           <Avatar
             src={cardData.image}
             alt="Profile Pic"
             sx={{
               display: "flex",
               width: 300,
-              height: 300,
+              height: 400,
               borderRadius: 2,
             }}
           />
@@ -1010,7 +1010,11 @@ const CardComponent = () => {
                         size="large"
                         startIcon={<RestoreIcon />}
                         disabled={cardData?.status !== "DISCARDED"}
-                        sx={{ display: "inline-flex", color: "#ff5722", p: 1 }}
+                        sx={{
+                          display: "inline-flex",
+                          color: "#ff5722",
+                          p: 1,
+                        }}
                         onClick={() => {
                           if (cardData.status === "DISCARDED") {
                             // setIsDialogOpen(true);
@@ -1074,7 +1078,9 @@ const CardComponent = () => {
                       onClick={() => {
                         setAnchorEl(null);
                         setIsMenuOpened(false);
-                        handleStatusChange({ payload: { status: "REPRINT" } });
+                        handleStatusChange({
+                          payload: { status: "REPRINT" },
+                        });
                       }}
                     >
                       Reprint
@@ -1096,13 +1102,14 @@ const CardComponent = () => {
             position: "relative",
             right: 0,
             borderRadius: 0,
-            color: "#ff5722",
+            color: isArrowButtonDisable("f") ? "gray" : "#ff5722",
           }}
           onClick={(e) => {
             e.stopPropagation();
-            handleKeyPress({ key: "ArrowRight" });
+            if (!isArrowButtonDisable("f")) {
+              handleKeyPress({ key: "ArrowRight" });
+            }
           }}
-          disabled={isArrowButtonDisable("f")}
         >
           <ChevronRightIcon />
         </IconButton>

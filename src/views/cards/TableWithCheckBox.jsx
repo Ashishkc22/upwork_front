@@ -262,6 +262,7 @@ const TableWithCheckBox = ({
             handleMenuSelect={handleMenuSelect}
             highlightedRow={highlightedRow}
             handleSort={handleSort}
+            showActionMenu
             // sortType={urlDateType.get("sortType") === "des" ? "des" : null}
           />
         </Grid>

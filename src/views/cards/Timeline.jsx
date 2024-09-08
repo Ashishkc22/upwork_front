@@ -30,32 +30,47 @@ const StatusTimeline = ({ data }) => {
       <List>
         {data.map((item, index) => (
           <ListItem key={index} divider>
-            <Box display="flex" justifyContent="space-between" width="100%">
+            <Box display="flex" justifyContent="space-around" width="100%">
               {/* Status */}
               <Typography
                 variant="body1"
-                sx={{ fontWeight: "bold", minWidth: "100px" }}
+                sx={{ fontWeight: "bold", width: "100px" }}
               >
-                Status: {item.updated_status}
+                {item.updated_status}
               </Typography>
 
               {/* Reason */}
-              {item?.reason && (
-                <Typography variant="body1" sx={{ minWidth: "200px" }}>
-                  Reason: {item.reason}
-                </Typography>
-              )}
+              <Box display="block" sx={{ width: "177px" }}>
+                {item?.reason && (
+                  <>
+                    <Typography
+                      variant="body1"
+                      sx={{ minWidth: "100px", fontWeight: "bold" }}
+                    >
+                      Reason:
+                    </Typography>
+                    <Typography variant="body1" sx={{ minWidth: "100px" }}>
+                      {item.reason}
+                    </Typography>
+                  </>
+                )}
+              </Box>
 
               {/* Updated By */}
-              <Typography variant="body1" sx={{ minWidth: "150px" }}>
-                Updated By: {item.updated_by.name}
-              </Typography>
+              <Box display="flex">
+                Updated By :
+                <Typography
+                  variant="body1"
+                  sx={{ fontWeight: "bold", minWidth: "150px" }}
+                >
+                  {item.updated_by.name}
+                </Typography>
+              </Box>
 
               {/* Timestamp */}
               <Typography
                 variant="body2"
-                color="textSecondary"
-                sx={{ minWidth: "150px" }}
+                sx={{ minWidth: "150px", fontWeight: "bold" }}
               >
                 {item.created_at &&
                   moment(item.created_at).format("DD-MM-YYYY HH:mm")}

@@ -37,7 +37,7 @@ const DynamicTable = ({
   handleMenuSelect,
   highlightedRow = "",
   handleSort,
-  showActionMenu = true,
+  showActionMenu = false,
   sortType = "acc",
 }) => {
   const theme = useTheme();
@@ -159,32 +159,32 @@ const DynamicTable = ({
                       md: 0,
                       sm: 0,
                     },
+                    ...(keymap.sort && { ":hover": { cursor: "pointer" } }),
                   }}
+                  {...(keymap.sort && {
+                    onClick: () => {
+                      if (handleSort) {
+                        handleSort({
+                          colName: keymap.key,
+                          type:
+                            urlDateType.get("sortType") === "acc" ||
+                            urlDateType.get("sortType") === null
+                              ? "des"
+                              : "acc",
+                        });
+                      }
+                    },
+                  })}
                 >
-                  {keymap.label}
-                  {keymap.sort && (
-                    <IconButton
-                      size="small"
-                      onClick={() => {
-                        if (handleSort) {
-                          handleSort({
-                            colName: keymap.key,
-                            type:
-                              urlDateType.get("sortType") === "acc" ||
-                              urlDateType.get("sortType") === null
-                                ? "des"
-                                : "acc",
-                          });
-                        }
-                      }}
-                    >
-                      {urlDateType.get("sortType") === "des" ? (
-                        <ArrowDownwardIcon />
+                  <Box display="flex" alignItems="center">
+                    {keymap.label}
+                    {keymap.sort &&
+                      (urlDateType.get("sortType") === "des" ? (
+                        <ArrowDownwardIcon sx={{ mx: 1 }} />
                       ) : (
-                        <ArrowUpwardIcon />
-                      )}
-                    </IconButton>
-                  )}
+                        <ArrowUpwardIcon sx={{ mx: 1 }} />
+                      ))}
+                  </Box>
                 </TableCell>
               ))}
             </TableRow>

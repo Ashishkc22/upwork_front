@@ -6,7 +6,7 @@ const apiInfo = {
   },
   pro: {
     protocol: "https",
-    url: "new-repo-upwork.onrender.com",
+    url: "5e4d-103-249-89-222.ngrok-free.app",
   },
 };
 
