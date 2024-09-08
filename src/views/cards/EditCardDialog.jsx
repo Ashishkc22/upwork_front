@@ -343,8 +343,8 @@ const EditDialog = ({ open, onClose, cardData, setIscardLoadtion }) => {
                     src={profilePic}
                     alt="Profile Pic"
                     sx={{
-                      width: 300,
-                      height: 300,
+                      width: 360,
+                      height: 360,
                       borderRadius: 2,
                     }}
                     onClick={(e) => {
