@@ -109,7 +109,7 @@ const Header = memo(
   }) => {
     const navigate = useNavigate();
     const [selectedCard, setSelectedCard] = useState(defaultSelectedCard);
-    const [searchTerm, setSearchTerm] = useState();
+    const [searchTerm, setSearchTerm] = useState(null);
 
     // values store
     const [state, setState] = useState(null);
@@ -397,7 +397,15 @@ const Header = memo(
       apiCallBack(payload);
     };
     useEffect(() => {
+      if (storageUtil.getStorageData("firstHeaderRender")) {
+        storageUtil.setStorageData(false, "firstHeaderRender");
+      }
+    });
+    useEffect(() => {
       storageUtil.setStorageData(true, "firstHeaderRender");
+      return () => {
+        storageUtil.setStorageData(false, "firstHeaderRender");
+      };
     }, []);
     const handleSearch = (e) => {
       const term = e?.target?.value || "";
@@ -485,6 +493,9 @@ const Header = memo(
           type: "district",
           params: { stateId: urlDateType.get("stateId") },
         });
+      }
+      if (urlDateType.get("search")) {
+        setSearchTerm(urlDateType.get("search"));
       }
       if (urlDateType?.get("tehsilId") && urlDateType?.get("districtId")) {
         getAddressData({
@@ -619,6 +630,11 @@ const Header = memo(
                 bgcolor="#ffeee8"
                 emitCardSelect={(e) => {
                   addDataToURL({ sortType: "" });
+                  addDataToURL({ search: "" });
+                  setSearchTerm("");
+                  if (!storageUtil.getStorageData("firstHeaderRender")) {
+                    storageUtil.setStorageData(true, "firstHeaderRender");
+                  }
                   emitCardSelect(e);
                 }}
                 isCardSelected={selectedCard === toTalScoreDetails.name}
@@ -644,6 +660,8 @@ const Header = memo(
                   isCardSelected={selectedCard === secondaryTotalDetails.name}
                   emitCardSelect={(e) => {
                     addDataToURL({ sortType: "" });
+                    addDataToURL({ search: "" });
+                    setSearchTerm("");
                     emitCardSelect(e);
                   }}
                 />
@@ -670,6 +688,8 @@ const Header = memo(
                 onLoadFocus={
                   showSecondaryScoreCard && selectedCard === "totalCards"
                 }
+                value={searchTerm}
+                setSearchTerm={setSearchTerm}
                 emitSearchChange={handleSearch}
               />
             </Box>

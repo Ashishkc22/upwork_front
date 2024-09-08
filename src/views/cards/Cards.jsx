@@ -232,10 +232,18 @@ const Cards = () => {
       _page = page;
     }
     if (selectedCard) {
+      const s = urlDateType.get("status");
+      if (!_status && s) {
+        _status = s;
+      }
       setIsPageLoading(true);
       let data;
       if (selectedCard === "toBePrinted") {
         data = await cards.getToBePrintedCards({
+          ...(_status && { _status }),
+          ...(urlDateType.get("status") && {
+            _status: urlDateType.get("status"),
+          }),
           ...(selectedCard === "totalCards" && {
             _status: _status,
           }),
@@ -409,7 +417,6 @@ const Cards = () => {
     };
     window.addEventListener("scroll", handleScroll);
     return () => {
-      storageUtil.setStorageData(false, "firstHeaderRender");
       window.removeEventListener("scroll", handleScroll);
     };
   }, []);
@@ -430,7 +437,8 @@ const Cards = () => {
   useEffect(() => {
     const _search = urlDateType.get("search");
     const sortType = urlDateType.get("sortType");
-    getTableData({ search: _search, sortBy: sortType ? "status" : null });
+    const tab = urlDateType.get("tab");
+    getTableData({ search: _search, sortBy: sortType ? "status" : null, tab });
   }, [selectedCard, page]);
 
   const customPrevioudButton = (porps) => (
@@ -503,9 +511,10 @@ const Cards = () => {
             setDownloadCardCount(0);
             if (n != urlDateType.get("tab")) {
               setMarkAsPrintPending({});
+              addDataToURL({ search: "" });
             }
             setSelectedCard(n);
-            storageUtil.setStorageData(true, "firstHeaderRender");
+            // storageUtil.setStorageData(true, "firstHeaderRender");
           }}
           isImageMode={isImageMode}
           handleViewChange={() => setIsImageMode(!isImageMode)}

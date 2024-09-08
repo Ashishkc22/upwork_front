@@ -1,4 +1,4 @@
-import React, { useState, memo, useRef } from "react";
+import React, { useState, memo, useRef, useEffect } from "react";
 import TextField from "@mui/material/TextField";
 import InputAdornment from "@mui/material/InputAdornment";
 import SearchIcon from "@mui/icons-material/Search";
@@ -27,57 +27,55 @@ const CustomTextField = styled(TextField)(({ theme }) => ({
   },
 }));
 
-const SearchInput = memo(
-  ({ emitSearchChange, onLoadFocus = false, value }) => {
-    const isFirstRender = storageUtil.getStorageData("firstHeaderRender");
-    let [urlDateType, setUrlDateType] = useSearchParams();
-    const [inputValue, setInputValue] = useState(
-      urlDateType.get("search") || ""
-    );
-    const searchRef = useRef("");
-    return (
-      <CustomTextField
-        ref={searchRef}
-        variant="outlined"
-        placeholder="Search..."
-        fullWidth
-        value={inputValue}
-        inputRef={
-          onLoadFocus && isFirstRender
-            ? (input) => input && input.focus()
-            : null
-        }
-        onChange={(e) => {
-          setInputValue(e?.target?.value || "");
-          emitSearchChange(e);
-        }}
-        InputProps={{
-          startAdornment: (
-            <InputAdornment position="start">
-              <SearchIcon />
-            </InputAdornment>
-          ),
-          endAdornment: (
-            <IconButton
-              position="start"
-              onClick={(e) => {
-                if (inputValue != "") {
-                  setInputValue("");
-                  emitSearchChange("");
-                }
-              }}
-            >
-              <ClearIcon />
-            </IconButton>
-          ),
-        }}
-      />
-    );
-  },
-  (prevProps, nextProps) => {
-    // Only re-render if the count prop has changed
-    return false;
-  }
-);
+const SearchInput = ({
+  emitSearchChange,
+  onLoadFocus = false,
+  value,
+  setSearchTerm,
+}) => {
+  const isFirstRender = storageUtil.getStorageData("firstHeaderRender");
+  let [urlDateType, setUrlDateType] = useSearchParams();
+  // const [inputValue, setInputValue] = useState(null);
+  // useEffect(() => {
+  //   setInputValue(value);
+  // }, [value]);
+  const searchRef = useRef("");
+  return (
+    <CustomTextField
+      ref={searchRef}
+      variant="outlined"
+      placeholder="Search..."
+      fullWidth
+      value={value}
+      inputRef={
+        onLoadFocus && isFirstRender ? (input) => input && input.focus() : null
+      }
+      onChange={(e) => {
+        // setInputValue(e?.target?.value || "");
+        emitSearchChange(e);
+      }}
+      InputProps={{
+        startAdornment: (
+          <InputAdornment position="start">
+            <SearchIcon />
+          </InputAdornment>
+        ),
+        endAdornment: (
+          <IconButton
+            position="start"
+            onClick={(e) => {
+              if (value != "") {
+                setSearchTerm();
+                emitSearchChange("");
+              }
+            }}
+          >
+            <ClearIcon />
+          </IconButton>
+        ),
+      }}
+    />
+  );
+};
 
 export default SearchInput;
