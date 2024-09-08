@@ -422,8 +422,8 @@ const CardComponent = () => {
             alt="Profile Pic"
             sx={{
               display: "flex",
-              width: 300,
-              height: 400,
+              width: 400,
+              height: 500,
               borderRadius: 2,
             }}
           />

@@ -166,6 +166,7 @@
   position: absolute;
   left: 34px;
   top: 79px;
+  border-radius: 6px; 
 }
 
 .opp_vertical-text {

@@ -339,7 +339,8 @@ const Cards = () => {
       { status: item },
       selectedCard._id
     );
-    getTableData({ _status: status });
+    const search = urlDateType.get("search");
+    getTableData({ _status: status, search: search || null });
   };
 
   function addDataToURL(data) {
