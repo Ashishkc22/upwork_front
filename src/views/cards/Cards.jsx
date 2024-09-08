@@ -407,6 +407,7 @@ const Cards = () => {
         );
       }
     };
+    window.addEventListener("scroll", handleScroll);
     return () => {
       storageUtil.setStorageData(false, "firstHeaderRender");
       window.removeEventListener("scroll", handleScroll);

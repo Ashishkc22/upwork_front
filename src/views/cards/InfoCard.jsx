@@ -387,6 +387,8 @@ const CardComponent = () => {
       {Boolean(idList?.length || false) && (
         <IconButton
           sx={{
+            position: "fixed",
+            height: "100%",
             borderRadius: 0,
             color: isArrowButtonDisable() ? "gray" : "#ff5722",
           }}
@@ -1099,9 +1101,10 @@ const CardComponent = () => {
       {Boolean(idList?.length) && (
         <IconButton
           sx={{
-            position: "relative",
-            right: 0,
+            position: "fixed",
+            height: "100%",
             borderRadius: 0,
+            right: 1,
             color: isArrowButtonDisable("f") ? "gray" : "#ff5722",
           }}
           onClick={(e) => {
