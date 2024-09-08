@@ -501,6 +501,9 @@ const Cards = () => {
             setPage(0);
             setDownloadCardMaps({});
             setDownloadCardCount(0);
+            if (n != urlDateType.get("tab")) {
+              setMarkAsPrintPending({});
+            }
             setSelectedCard(n);
             storageUtil.setStorageData(true, "firstHeaderRender");
           }}
