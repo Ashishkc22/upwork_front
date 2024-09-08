@@ -628,15 +628,29 @@ const CardComponent = () => {
                         navigate(-1);
                       }}
                       aria-label="back"
-                      sx={{ mr: 5 }}
+                      sx={{ mr: 1 }}
                     >
                       <ArrowBackIcon sx={{ fontSize: 30 }} />
                     </IconButton>
-                    <Box>
-                      <TextElement
-                        label="Unique Number"
-                        value={cardData.unique_number}
-                      />
+                    <Box display="flex" alignItems="center">
+                      <Typography
+                        component="div"
+                        sx={{
+                          mr: 1,
+                          fontSize: "13px",
+                          fontWeight: 600,
+                        }}
+                      >
+                        UID
+                      </Typography>
+                      <Typography
+                        variant="h6"
+                        component="div"
+                        sx={{ fontWeight: 500 }}
+                      >
+                        {cardData.unique_number}
+                      </Typography>
+                      {/* <TextElement label="UID" value={cardData.unique_number} /> */}
                     </Box>
                   </Box>
                   <Box>
