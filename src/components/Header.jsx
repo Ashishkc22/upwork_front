@@ -106,6 +106,8 @@ const Header = memo(
     showState = false,
     showDistrict = true,
     showOtherCard = false,
+    isNavAllowed = () => true,
+    pSelectedCard,
   }) => {
     const navigate = useNavigate();
     const [selectedCard, setSelectedCard] = useState(defaultSelectedCard);
@@ -197,9 +199,11 @@ const Header = memo(
       if (tab != name) {
         addDataToURL({ page: null });
       }
+      if (isNavAllowed()) {
+        setSelectedCard(name);
+      }
       addDataToURL({ tab: name });
       handleSelectCard(name);
-      setSelectedCard(name);
     };
 
     const emitStateChange = (e, data) => {
@@ -400,6 +404,7 @@ const Header = memo(
       if (storageUtil.getStorageData("firstHeaderRender")) {
         storageUtil.setStorageData(false, "firstHeaderRender");
       }
+      setSelectedCard(pSelectedCard);
     });
     useEffect(() => {
       storageUtil.setStorageData(true, "firstHeaderRender");

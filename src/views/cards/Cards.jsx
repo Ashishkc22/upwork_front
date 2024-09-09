@@ -24,6 +24,7 @@ import TableWithExtraElements from "./TableWithExtraElements";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import { UNSAFE_NavigationContext as NavigationContext } from "react-router-dom";
+import LeavePageDialog from "./LeaveDialog";
 
 import waterMarkImg from "../../v1cardImages/waterMark.png";
 import supportImg from "../../v1cardImages/support.png";
@@ -105,6 +106,8 @@ const Cards = () => {
   const [isCardDownloading, setIsCardDownload] = useState(false);
   const imageRef = useRef(null);
   const { navigator } = useContext(NavigationContext);
+  const [isLeaveDialogOpned, setIsLeaveDialogOpned] = useState(false);
+  const [navData, setNavData] = useState({});
 
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
@@ -124,8 +127,6 @@ const Cards = () => {
   };
 
   const handleMultipleCheckBox = (data) => {
-    console.log("CheckBox data ALL", data);
-
     if (data.type == "all") {
       setDownloadCardMaps((pre) => {
         if (!data.value.length) {
@@ -283,9 +284,6 @@ const Cards = () => {
         if (data.idList) {
           storageUtil.setStorageData(data.idList, "cards_ids");
         }
-        console.log("selectedCard", selectedCard);
-        console.log("data", data);
-
         if (selectedCard === "toBePrinted") {
           setCardsDataGroupBy(() => data.groupedData);
           setTotalCardsAndToBePrinted({
@@ -466,6 +464,29 @@ const Cards = () => {
     </Button>
   );
 
+  const handleCardSelect = (n, byPass = false) => {
+    if (!isEmpty(markAsPrintPending) && !byPass) {
+      setIsLeaveDialogOpned(true);
+      setNavData(n);
+    } else {
+      addDataToURL({ page: "" });
+      setPage(0);
+      setDownloadCardMaps({});
+      setDownloadCardCount(0);
+      if (n != urlDateType.get("tab")) {
+        setMarkAsPrintPending({});
+        addDataToURL({ search: "" });
+      }
+      setSelectedCard(n);
+    }
+    // storageUtil.setStorageData(true, "firstHeaderRender");
+  };
+
+  const handlePageLeave = () => {
+    handleCardSelect(navData, true);
+    setIsLeaveDialogOpned(false);
+  };
+
   return (
     <Grid component="main" sx={{ width: "96%", overflowX: "hidden" }}>
       <img
@@ -473,6 +494,11 @@ const Cards = () => {
         ref={imageRef}
         alt="health back"
         style={{ display: "none" }}
+      />
+      <LeavePageDialog
+        open={isLeaveDialogOpned}
+        handleClose={() => setIsLeaveDialogOpned(false)}
+        handleLeave={handlePageLeave}
       />
       <Grid item sx={{ mb: 2 }}>
         {isCardDownloading && <LoadingScreen />}
@@ -501,21 +527,14 @@ const Cards = () => {
             ],
           })}
           defaultSelectedCard="toBePrinted"
+          pSelectedCard={selectedCard}
           showSecondaryScoreCard
           createdByOptions={userDropdownOptions || []}
           createdByKeyMap={{ labelKey: "name", codeKey: "uid" }}
           tehsilCounts={tehsilCounts}
-          handleSelectCard={(n) => {
-            addDataToURL({ page: "" });
-            setPage(0);
-            setDownloadCardMaps({});
-            setDownloadCardCount(0);
-            if (n != urlDateType.get("tab")) {
-              setMarkAsPrintPending({});
-              addDataToURL({ search: "" });
-            }
-            setSelectedCard(n);
-            // storageUtil.setStorageData(true, "firstHeaderRender");
+          handleSelectCard={handleCardSelect}
+          isNavAllowed={() => {
+            return isEmpty(markAsPrintPending);
           }}
           isImageMode={isImageMode}
           handleViewChange={() => setIsImageMode(!isImageMode)}

@@ -6,7 +6,7 @@ import CustomTable from "../../components/CustomTable";
 
 import { useNavigate, useSearchParams } from "react-router-dom";
 import ArogyamComponent from "../../components/ArogyaCard_v2";
-
+import LeavePageDialog from "./LeaveDialog";
 import downloadCards from "../../utils/downloadCards";
 
 import CheckIcon from "@mui/icons-material/Check";
@@ -18,6 +18,7 @@ import supportImg from "../../v1cardImages/support.png";
 import locImg from "../../v1cardImages/loc.png";
 import phoneImg from "../../v1cardImages/phone.png";
 import cardLogoImg from "../../v1cardImages/cardLogo.png";
+import { isEmpty } from "lodash";
 
 // Storing all memoized components in an object
 const images = {
@@ -70,6 +71,7 @@ const TableWithCheckBox = ({
   handleSort,
   setIsCardDownload,
   tlDetails,
+  markAsPrintPending,
   // highlightedRow,
 }) => {
   const [checkBox, setCheckBox] = useState(false);
@@ -78,10 +80,17 @@ const TableWithCheckBox = ({
   const [pageCount, setPageCount] = useState(1);
   const imageRef = useRef(null);
   let [urlDateType, setUrlDateType] = useSearchParams();
+  const [isLeaveDialogOpned, setIsLeaveDialogOpned] = useState(false);
+  const [navData, setNavData] = useState({});
 
-  const handleRowClick = (row) => {
-    storageUtil.setStorageData(row._id, "highlightedRow");
-    navigate(`${row._id}`);
+  const handleRowClick = (row, byPass = false) => {
+    if (!isEmpty(markAsPrintPending) && !byPass) {
+      setNavData(row);
+      setIsLeaveDialogOpned(true);
+    } else {
+      storageUtil.setStorageData(row._id, "highlightedRow");
+      navigate(`${row._id}`);
+    }
   };
 
   const highlightedRow = storageUtil.getStorageData("highlightedRow");
@@ -96,6 +105,11 @@ const TableWithCheckBox = ({
     }
   };
 
+  const handleLeaveDialog = () => {
+    handleRowClick(navData, true);
+    setNavData({});
+  };
+
   useEffect(() => {
     setCheckBox(isCheckBoxChecked);
     setPageCount(getPageCount(groupedData.length));
@@ -107,6 +121,11 @@ const TableWithCheckBox = ({
         ref={imageRef}
         alt="health back"
         style={{ display: "none" }}
+      />
+      <LeavePageDialog
+        open={isLeaveDialogOpned}
+        handleClose={() => setIsLeaveDialogOpned(false)}
+        handleLeave={handleLeaveDialog}
       />
       <Grid item xs={12}>
         <Button
