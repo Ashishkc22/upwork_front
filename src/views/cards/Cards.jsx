@@ -405,19 +405,6 @@ const Cards = () => {
     // if (!isEmpty(cardsDataGroupedBy)) {
     getUsersList();
     // }
-    const searchParams = new URLSearchParams(window.location.search).get("tab");
-    const handleScroll = () => {
-      if (window.scrollY > 0) {
-        storageUtil.setStorageData(
-          window.scrollY,
-          `${location.pathname}-${searchParams}`
-        );
-      }
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-    };
   }, []);
 
   // useEffect(() => {
@@ -438,6 +425,19 @@ const Cards = () => {
     const sortType = urlDateType.get("sortType");
     const tab = urlDateType.get("tab");
     getTableData({ search: _search, sortBy: sortType ? "status" : null, tab });
+    const searchParams = new URLSearchParams(window.location.search).get("tab");
+    const handleScroll = () => {
+      if (window.scrollY > 0) {
+        storageUtil.setStorageData(
+          window.scrollY,
+          `${location.pathname}-${searchParams}`
+        );
+      }
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
   }, [selectedCard, page]);
 
   const customPrevioudButton = (porps) => (
