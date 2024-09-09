@@ -90,7 +90,7 @@ const Header = memo(
     secondaryTotalDetails = {},
     showSecondaryScoreCard = false,
     apiCallBack,
-    tehsilCounts = {},
+    // tehsilCounts = {},
     showStatusDropDown = true,
     statusOption = [],
     createdByOptions,
@@ -743,10 +743,10 @@ const Header = memo(
                   value={tehsil}
                   options={tehsilOption.map((option) => {
                     let label = option.name;
-                    if (!isEmpty(tehsilCounts)) {
-                      const obKey = tehsilCounts || {};
-                      label = `${option.name}(${obKey?.[option?.name] || 0})`;
-                    }
+                    // if (!isEmpty(tehsilCounts)) {
+                    // const obKey = tehsilCounts || {};
+                    label = `${option.name}(${option?.count || 0})`;
+                    // }
                     return {
                       ...option,
                       label,

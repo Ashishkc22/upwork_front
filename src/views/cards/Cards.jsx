@@ -303,7 +303,7 @@ const Cards = () => {
           totalShowing: data.totalShowing,
         });
         setPageCount(data?.totalShowing);
-        setTehsilCounts(data.tehsilCounts || {});
+        // setTehsilCounts(data.tehsilCounts || {});
         setIsPageLoading(false);
       } else {
         setCardsDataGroupBy([]);
@@ -470,11 +470,17 @@ const Cards = () => {
       setNavData(n);
     } else {
       addDataToURL({ page: "" });
+
       setPage(0);
       setDownloadCardMaps({});
       setDownloadCardCount(0);
       if (n != urlDateType.get("tab")) {
         setMarkAsPrintPending({});
+        addDataToURL({ districtId: "" });
+        addDataToURL({ status: "" });
+        addDataToURL({ createdById: "" });
+        addDataToURL({ durationType: "" });
+        addDataToURL({ tehsilId: "" });
         addDataToURL({ search: "" });
       }
       setSelectedCard(n);
@@ -531,7 +537,7 @@ const Cards = () => {
           showSecondaryScoreCard
           createdByOptions={userDropdownOptions || []}
           createdByKeyMap={{ labelKey: "name", codeKey: "uid" }}
-          tehsilCounts={tehsilCounts}
+          // tehsilCounts={tehsilCounts}
           handleSelectCard={handleCardSelect}
           isNavAllowed={() => {
             return isEmpty(markAsPrintPending);

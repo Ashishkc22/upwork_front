@@ -54,14 +54,14 @@ async function getCardsData({
   if (status === "failed") {
     return { status, error: error || message };
   } else if (!isEmpty(data)) {
-    const tehsilCounts = {};
+    // const tehsilCounts = {};
 
     let idList = data.map((data) => {
-      if (tehsilCounts[data.tehsil]) {
-        tehsilCounts[data.tehsil] = tehsilCounts[data.tehsil] + 1;
-      } else {
-        tehsilCounts[data.tehsil] = 1;
-      }
+      // if (tehsilCounts[data.tehsil]) {
+      //   tehsilCounts[data.tehsil] = tehsilCounts[data.tehsil] + 1;
+      // } else {
+      //   tehsilCounts[data.tehsil] = 1;
+      // }
       return data._id;
     });
 
@@ -73,7 +73,7 @@ async function getCardsData({
         totalPrintCardsShowing: total_print_card_showing,
         totalShowing: total_showing,
         idList,
-        tehsilCounts,
+        // tehsilCounts,
       };
     }
     idList = [];
@@ -173,7 +173,7 @@ async function getCardsData({
       totalShowing: total_showing,
       totalCards: total,
       idList,
-      tehsilCounts,
+      // tehsilCounts,
     };
   } else {
     return {
