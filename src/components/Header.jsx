@@ -201,9 +201,14 @@ const Header = memo(
       }
       if (isNavAllowed()) {
         setSelectedCard(name);
+        addDataToURL({ tab: name });
       }
-      addDataToURL({ tab: name });
-      handleSelectCard(name);
+      handleSelectCard(name, false, {
+        seFilterDate,
+        setTehsilOption,
+        setGramOption,
+        stateMap,
+      });
     };
 
     const emitStateChange = (e, data) => {
@@ -640,6 +645,10 @@ const Header = memo(
                   if (!storageUtil.getStorageData("firstHeaderRender")) {
                     storageUtil.setStorageData(true, "firstHeaderRender");
                   }
+                  // Object.keys(stateMap).forEach((key) => stateMap[key]());
+                  // seFilterDate([]);
+                  // setTehsilOption([]);
+                  // setGramOption([]);
                   emitCardSelect(e);
                 }}
                 isCardSelected={selectedCard === toTalScoreDetails.name}

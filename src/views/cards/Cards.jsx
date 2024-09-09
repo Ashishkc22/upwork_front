@@ -464,17 +464,16 @@ const Cards = () => {
     </Button>
   );
 
-  const handleCardSelect = (n, byPass = false) => {
+  const handleCardSelect = (n, byPass = false, filterObjects) => {
     if (!isEmpty(markAsPrintPending) && !byPass) {
       setIsLeaveDialogOpned(true);
-      setNavData(n);
+      setNavData({ value: n, filterObjects });
     } else {
       addDataToURL({ page: "" });
-
       setPage(0);
       setDownloadCardMaps({});
       setDownloadCardCount(0);
-      if (n != urlDateType.get("tab")) {
+      if (n != urlDateType.get("tab") || byPass) {
         setMarkAsPrintPending({});
         addDataToURL({ districtId: "" });
         addDataToURL({ status: "" });
@@ -489,7 +488,13 @@ const Cards = () => {
   };
 
   const handlePageLeave = () => {
-    handleCardSelect(navData, true);
+    navData.filterObjects?.seFilterDate([]);
+    navData.filterObjects?.setGramOption([]);
+    navData.filterObjects?.setTehsilOption([]);
+    Object.keys(navData.filterObjects?.stateMap)?.forEach((key) =>
+      navData.filterObjects.stateMap[key]()
+    );
+    handleCardSelect(navData.value, true, navData.filterObjects);
     setIsLeaveDialogOpned(false);
   };
 

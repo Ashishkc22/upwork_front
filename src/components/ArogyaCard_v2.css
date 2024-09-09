@@ -181,7 +181,7 @@
   /* background: red; */
   height: fit-content;
   top: -21px;
-  left: 56px;
+  left: 61px;
 }
 
 .user-details-container {
@@ -192,7 +192,7 @@
 .text-container {
   position: absolute;
   top: 83px;
-  right: 160px;
+  right: 140px;
 }
 
 .text-group {
@@ -202,7 +202,7 @@
   font-weight: 600;
   font-size: 11px;
   margin-bottom: 6px;
-  width: 146px;
+  width: 166px;
 }
 
 .gender-text-group {

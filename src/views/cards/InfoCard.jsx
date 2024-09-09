@@ -417,14 +417,14 @@ const CardComponent = () => {
         columnSpacing={3}
       >
         <Grid item sx={{ mx: 2, my: 1 }}>
-          <Avatar
+          <img
             src={cardData.image}
             alt="Profile Pic"
-            sx={{
+            style={{
               display: "flex",
               width: 400,
               height: 500,
-              borderRadius: 2,
+              borderRadius: 3,
             }}
           />
         </Grid>
@@ -823,7 +823,7 @@ const CardComponent = () => {
                 </Grid>
 
                 <Grid item xs={12} md={7} sm={12} sx={{ ml: 0 }}>
-                  <Grid item xs={12}>
+                  <Grid item container xs={12}>
                     <Box sx={{ display: "flex", justifyContent: "end" }}>
                       <Box>
                         <Button
@@ -877,6 +877,7 @@ const CardComponent = () => {
                         <FileDownloadIcon />
                       </IconButton>
                     </Box>
+                    {/* card component */}
                     <Box>
                       <ArogyamComponent
                         cardData={cardData}

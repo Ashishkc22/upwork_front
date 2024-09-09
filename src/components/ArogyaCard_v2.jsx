@@ -236,7 +236,7 @@ const ArogyamComponent = ({
               calculateAge({ birthYear: cardData?.birth_year }) + "Yrs"
             }`}</div>
           </div>
-          {cardData?.blood_group && (
+          {cardData?.blood_group && cardData?.blood_group != "null" && (
             <div className="gender-text-group">
               <div style={{ color: "#666666", fontSize: "9px" }}>
                 Blood group
