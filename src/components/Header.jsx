@@ -207,6 +207,7 @@ const Header = memo(
         seFilterDate,
         setTehsilOption,
         setGramOption,
+        setCreatedBy,
         stateMap,
       });
     };
@@ -247,7 +248,6 @@ const Header = memo(
     };
 
     const emitDistrictChange = (e, data) => {
-      console.log("data", data);
       addDataToURL({ districtId: data?._id });
       if (data?.name) {
         getAddressData({
@@ -353,7 +353,7 @@ const Header = memo(
 
     const emitCreatedByChange = (e, data) => {
       setCreatedBy(data || null);
-      addDataToURL({ createdById: data?._id || null });
+      addDataToURL({ createdById: data?.uid || null });
       addInChipList(data?.name, "createdBy");
     };
 
@@ -371,11 +371,15 @@ const Header = memo(
     };
 
     const triggerAPICallback = ({ search = "" } = {}) => {
+      let trimedStatus;
+      if (status?.label) {
+        trimedStatus = status?.label?.split(" ")?.[0]?.trim();
+      }
       const payload = {
         ...(state?.name && { state: state.name }),
         ...(district?.name && { district: district.name }),
         ...(createdBy?.name && { created_by: createdBy.uid }),
-        ...(status?.label && { _status: status?.label }),
+        ...(status?.label && { _status: trimedStatus }),
         ...(tehsil?.name && { tehsil: tehsil?.name }),
         ...(gram?.label && { gram_p: gram?.label }),
         ...(category && { type: category.name }),
@@ -564,7 +568,7 @@ const Header = memo(
     useEffect(() => {
       if (urlDateType?.get("createdById")) {
         const createdByOption = createdByOptions.find(
-          (a) => a._id == urlDateType?.get("createdById")
+          (a) => a.uid == urlDateType?.get("createdById")
         );
         if (createdByOption) {
           setCreatedBy({ ...createdByOption, label: createdByOption.name });

@@ -43,6 +43,8 @@ async function getCardsData({
     data,
     message,
     error = "",
+    page_number = "0",
+    statusCount = {},
     total_print_card = 0,
     total = 0,
     total_showing = 0,
@@ -73,6 +75,8 @@ async function getCardsData({
         totalPrintCardsShowing: total_print_card_showing,
         totalShowing: total_showing,
         idList,
+        statusCount,
+        page_number,
         // tehsilCounts,
       };
     }
@@ -173,6 +177,8 @@ async function getCardsData({
       totalShowing: total_showing,
       totalCards: total,
       idList,
+      page_number,
+      statusCount,
       // tehsilCounts,
     };
   } else {
@@ -200,6 +206,7 @@ async function getToBePrintedCards({
   gram_p,
   till_duration,
   sortBy,
+  isPrintMode,
 } = {}) {
   const _payload = {
     token: tokenUtil.getAuthToken(),
@@ -217,6 +224,7 @@ async function getToBePrintedCards({
     ...(gram_p && { gram_p }),
     ...(till_duration && { till_duration }),
     ...(sortBy && { sortBy }),
+    isPrintMode,
     // duration: THIS WEEK
   };
   const {
@@ -225,6 +233,7 @@ async function getToBePrintedCards({
     message,
     error = "",
     cardIds,
+    page_number,
     tehsilCount,
     total_print_card = 0,
     total = 0,
@@ -254,6 +263,7 @@ async function getToBePrintedCards({
       totalCards: total,
       idList: cardIds,
       tehsilCounts: tehsilCount,
+      page_number,
     };
   }
 }

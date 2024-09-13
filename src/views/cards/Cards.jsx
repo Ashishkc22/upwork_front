@@ -25,6 +25,7 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import { UNSAFE_NavigationContext as NavigationContext } from "react-router-dom";
 import LeavePageDialog from "./LeaveDialog";
+import Backdrop from "@mui/material/Backdrop";
 
 import waterMarkImg from "../../v1cardImages/waterMark.png";
 import supportImg from "../../v1cardImages/support.png";
@@ -108,12 +109,18 @@ const Cards = () => {
   const { navigator } = useContext(NavigationContext);
   const [isLeaveDialogOpned, setIsLeaveDialogOpned] = useState(false);
   const [navData, setNavData] = useState({});
+  const [currentPage, setCurrentPage] = useState(0);
+  const [statusCount, setStatusCount] = useState({});
+  const [apiPayload, setApiPayload] = useState({});
 
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
 
   const highlightedRow = storageUtil.getStorageData("highlightedRow");
   let [urlDateType, setUrlDateType] = useSearchParams();
+  const [isPrintMode, setIsPrintMode] = useState(
+    urlDateType.get("isPrintMode") === "true" || false
+  );
 
   const location = useLocation();
   const params = useParams();
@@ -196,14 +203,10 @@ const Cards = () => {
 
   const restoreScroll = () => {
     const searchParams = new URLSearchParams(window.location.search).get("tab");
-    const name = `${location.pathname}-${searchParams}`;
     const scrollValue = storageUtil.getStorageData(
       `${location.pathname}-${searchParams}`
     );
-
     if (scrollValue) {
-      console.log("scrollValue", scrollValue);
-      console.log("name", name);
       window.scrollTo({
         top: scrollValue,
       });
@@ -235,8 +238,42 @@ const Cards = () => {
     if (selectedCard) {
       const s = urlDateType.get("status");
       if (!_status && s) {
-        _status = s;
+        let trimedStatus;
+        if (s) {
+          trimedStatus = s?.split(" ")?.[0]?.trim();
+        }
+        _status = trimedStatus;
       }
+      setApiPayload((pre) => {
+        const obj = {
+          ...pre,
+        };
+        if (search) obj.search = search;
+        else delete obj.search;
+        if (state) obj.state = state;
+        else delete obj.state;
+        if (district) obj.district = district;
+        else delete obj.district;
+        if (duration) obj.duration = duration;
+        else delete obj.duration;
+        if (created_by) obj.created_by = created_by;
+        else delete obj.created_by;
+        if (gram_p) obj.gram_p = gram_p;
+        else delete obj.gram_p;
+        if (tehsil) obj.tehsil = tehsil;
+        else delete obj.tehsil;
+        if (till_duration) obj.till_duration = till_duration;
+        else delete obj.till_duration;
+        if (_status) obj._status = _status;
+        else delete obj._status;
+        if (_page) obj._page = _page;
+        else delete obj._page;
+        if (sortBy) obj.sortBy = sortBy;
+        else delete obj.sortBy;
+        console.log("payload data obj", obj);
+
+        return obj;
+      });
       setIsPageLoading(true);
       let data;
       if (selectedCard === "toBePrinted") {
@@ -249,6 +286,7 @@ const Cards = () => {
             _status: _status,
           }),
           ...(selectedCard === "toBePrinted" && { _status: "SUBMITTED" }),
+          isPrintMode,
           page: _page,
           ...(search && { q: search }),
           ...(gram_p && { gram_p: gram_p }),
@@ -294,6 +332,7 @@ const Cards = () => {
           });
         } else {
           setTotalCardsData(() => data.groupedData);
+          setStatusCount(() => data.statusCount);
         }
 
         setTotalCardsAndToBePrinted({
@@ -303,11 +342,13 @@ const Cards = () => {
           totalShowing: data.totalShowing,
         });
         setPageCount(data?.totalShowing);
+        setCurrentPage(parseInt(data?.page_number || 0));
         // setTehsilCounts(data.tehsilCounts || {});
         setIsPageLoading(false);
       } else {
         setCardsDataGroupBy([]);
         setPageCount(0);
+        setCurrentPage(0);
         setIsPageLoading(false);
       }
       setTimeout(() => {
@@ -362,7 +403,6 @@ const Cards = () => {
     // setIsDownloadCompleted
 
     let keys = [];
-    console.log("cardsDataGroupedBy", cardsDataGroupedBy);
 
     Object.keys(downloadCardMaps).forEach((groupName) => {
       const selectedCardData = [];
@@ -424,7 +464,13 @@ const Cards = () => {
     const _search = urlDateType.get("search");
     const sortType = urlDateType.get("sortType");
     const tab = urlDateType.get("tab");
-    getTableData({ search: _search, sortBy: sortType ? "status" : null, tab });
+    getTableData({
+      ...apiPayload,
+      search: _search,
+      sortBy: sortType ? "status" : null,
+      tab,
+    });
+
     const searchParams = new URLSearchParams(window.location.search).get("tab");
     const handleScroll = () => {
       if (window.scrollY > 0) {
@@ -438,7 +484,7 @@ const Cards = () => {
     return () => {
       window.removeEventListener("scroll", handleScroll);
     };
-  }, [selectedCard, page]);
+  }, [selectedCard, page, isPrintMode]);
 
   const customPrevioudButton = (porps) => (
     <Button
@@ -469,11 +515,11 @@ const Cards = () => {
       setIsLeaveDialogOpned(true);
       setNavData({ value: n, filterObjects });
     } else {
-      addDataToURL({ page: "" });
       setPage(0);
       setDownloadCardMaps({});
       setDownloadCardCount(0);
       if (n != urlDateType.get("tab") || byPass) {
+        addDataToURL({ page: "" });
         setMarkAsPrintPending({});
         addDataToURL({ districtId: "" });
         addDataToURL({ status: "" });
@@ -481,6 +527,13 @@ const Cards = () => {
         addDataToURL({ durationType: "" });
         addDataToURL({ tehsilId: "" });
         addDataToURL({ search: "" });
+        filterObjects?.seFilterDate([]);
+        filterObjects?.setGramOption([]);
+        filterObjects?.setTehsilOption([]);
+        filterObjects?.setCreatedBy(null);
+        Object.keys(filterObjects?.stateMap)?.forEach((key) =>
+          filterObjects.stateMap[key]()
+        );
       }
       setSelectedCard(n);
     }
@@ -491,6 +544,7 @@ const Cards = () => {
     navData.filterObjects?.seFilterDate([]);
     navData.filterObjects?.setGramOption([]);
     navData.filterObjects?.setTehsilOption([]);
+    // navData?.filterObjects?.setCreatedBy(null);
     Object.keys(navData.filterObjects?.stateMap)?.forEach((key) =>
       navData.filterObjects.stateMap[key]()
     );
@@ -511,9 +565,11 @@ const Cards = () => {
         handleClose={() => setIsLeaveDialogOpned(false)}
         handleLeave={handlePageLeave}
       />
+
       <Grid item sx={{ mb: 2 }}>
         {isCardDownloading && <LoadingScreen />}
         <Header
+          statusCount={statusCount}
           toTalScoreDetails={{
             totalScore: totalCardsAndToBePrinted?.totalCards || 0,
             totalScoreToshow: totalCardsAndToBePrinted?.totalShowing || 0,
@@ -528,14 +584,18 @@ const Cards = () => {
             name: "toBePrinted",
           }}
           {...(selectedCard === "totalCards" && {
-            statusOption: [
-              { label: "SUBMITTED" },
-              { label: "PRINTED" },
-              { label: "UNDELIVERED" },
-              { label: "DELIVERED" },
-              { label: "DISCARDED" },
-              { label: "RTO" },
-            ],
+            statusOption: isEmpty(statusCount)
+              ? [
+                  { label: "SUBMITTED" },
+                  { label: "PRINTED" },
+                  { label: "UNDELIVERED" },
+                  { label: "DELIVERED" },
+                  { label: "DISCARDED" },
+                  { label: "RTO" },
+                ]
+              : Object.keys(statusCount).map((k) => ({
+                  label: `${k} (${statusCount[k]})`,
+                })),
           })}
           defaultSelectedCard="toBePrinted"
           pSelectedCard={selectedCard}
@@ -583,10 +643,38 @@ const Cards = () => {
           </Stack>
         )}
       </Grid>
+      {selectedCard === "toBePrinted" && (
+        <Box sx={{ m: 1 }} display="flex" flexDirection="row-reverse">
+          <Button
+            variant="contained"
+            sx={{
+              backgroundColor: isPrintMode ? "#FFA500" : "#FFFFFF", // Orange for active, Gray for inactive
+              color: isPrintMode ? "#FFFFFF" : "#FFA500", // Adjust text color based on the state
+              "&:hover": {
+                backgroundColor: isPrintMode ? "#e59400" : "#f0f0f0", // Slightly darker shade for hover effect
+              },
+            }}
+            onClick={() => {
+              addDataToURL({ isPrintMode: !isPrintMode });
+              setIsPrintMode((p) => !p);
+            }}
+          >
+            {isPrintMode ? "Exit Print Mode" : "Enter Print Mode"}
+          </Button>
+        </Box>
+      )}
       <Box>
-        {isPageLoading ? (
-          <LinearIndeterminate />
-        ) : (
+        <Backdrop
+          sx={(theme) => ({
+            background: "white",
+            zIndex: theme.zIndex.drawer + 1,
+            opacity: "0.4 !important",
+          })}
+          open={isPageLoading}
+        />
+        {isPageLoading && <LinearIndeterminate />}
+
+        {totalCardsData && (
           <>
             {selectedCard === "toBePrinted" ? (
               isEmpty(cardsDataGroupedBy) ? (
@@ -676,19 +764,13 @@ const Cards = () => {
               xs: "100%",
             },
             right: "1px",
-            // {
-            //   lg: "1px",
-            //   md: "1px",
-            //   sm: "5px",
-            //   xs: "5px",
-            // },
             zIndex: 10,
           }}
         >
           <TablePagination
             component="div"
             count={pageCount || 0}
-            page={page || 0}
+            page={currentPage || 0}
             disabled={Object.keys(markAsPrintPending)?.length}
             rowsPerPage={100}
             onPageChange={(e, newPage) => {
@@ -700,6 +782,10 @@ const Cards = () => {
                 `${location.pathname}-${searchParams}`
               );
               addDataToURL({ page: newPage });
+              console.log("newPage >>>>", newPage);
+              console.log("currentPage >>>>", currentPage);
+
+              // getTableData({ _page: newPage });
               setPage(newPage);
             }}
             onRowsPerPageChange={() => {}}

@@ -3,7 +3,7 @@ import moment from "moment";
 import React, { useEffect } from "react";
 import clsx from "clsx";
 import { useRef } from "react";
-import { DrawBarcode_Code39 } from "../utils/barcode.util";
+import Barcode from "react-barcode";
 
 const ArogyamComponent = ({
   cardData,
@@ -21,7 +21,6 @@ const ArogyamComponent = ({
     return birthYearNumber ? currentYear - birthYearNumber : null; // Calculate and return age, or null if birth year is invalid
   }
   const divRef = useRef(null);
-  console.log("date", cardData.issue_date);
 
   function formatNumberWithSpaces(number = 0) {
     // Convert the number to a string
@@ -72,13 +71,12 @@ const ArogyamComponent = ({
             id={`${cardData._id}-support`}
             src={images?.support || "/v1cardImages/support.png"}
             alt="support"
-            style={{ width: "54px", height: "54px" }}
+            style={{ width: "40px", height: "40px" }}
             className="support-image"
           />
           <div className="header-text">
-            <div>कोई भी जानकारी, सलाह या</div>
-            <div>समस्या के लिए संपर्क करें ।</div>
-            <div className="header-phone">81 81 81 9718</div>
+            <div style={{ marginLeft: "6px" }}>हेल्पलाइन नंबर (10 AM-6PM)</div>
+            <div className="header-phone">011-69290540, 8181819718</div>
           </div>
         </div>
 
@@ -288,31 +286,41 @@ const ArogyamComponent = ({
               fontFamily: "Inter",
               fontSize: "11px",
               fontWeight: "600",
+              position: "absolute",
+              right: "83px",
+              bottom: "45px",
             }}
           >
             {formatNumberWithSpaces(cardData.unique_number)}
           </div>
           <div>
             {cardData?.unique_number && (
-              <div
-                dangerouslySetInnerHTML={{
-                  __html: DrawBarcode_Code39(
-                    cardData.unique_number,
-                    0,
-                    "no",
-                    "cm",
-                    0.02,
-                    3,
-                    0.5,
-                    4,
-                    "bottom",
-                    "center",
-                    "",
-                    "black",
-                    "white",
-                    "html"
-                  ),
-                }}
+              // <div
+              //   dangerouslySetInnerHTML={{
+              //     __html: DrawBarcode_Code39(
+              //       cardData.unique_number,
+              //       0,
+              //       "no",
+              //       "cm",
+              //       0.02,
+              //       4,
+              //       0.6,
+              //       5,
+              //       "bottom",
+              //       "center",
+              //       "",
+              //       "black",
+              //       "white",
+              //       "html"
+              //     ),
+              //   }}
+              // />
+              <Barcode
+                value={cardData.unique_number}
+                displayValue={false}
+                width={1.5}
+                height={25}
+                margin={0}
               />
             )}
             <div className="opp_vertical-text">{cardData.s_no}</div>

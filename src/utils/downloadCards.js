@@ -159,7 +159,7 @@ function getImageData({ Element, cardData = [], images }) {
             copyDefaultStyles: true,
           });
 
-          elementData.push(dataUrl);
+          elementData[i] = dataUrl;
           console.timeEnd("exampleFunctionTime", cardData[i]._id);
           // Clean up
           root.unmount();
@@ -349,6 +349,7 @@ function createAFENameTLName({ doc, feName, tlName, count, startX, startY }) {
   const boxWidth = pxToPt(111.8); // 340.5 pt
   const boxHeight = pxToPt(72); // 210.75 pt
   doc.rect(startX, startY, boxWidth, boxHeight);
+  doc.setFont("helvetica", "Normal");
   doc.setFontSize(20);
   const combinedText = `${tlName}\n${feName}\n${count}`;
   const textWidth = doc.getTextWidth(

@@ -30,7 +30,7 @@ import commonService from "../../services/common";
 import ImageCropDialog from "../hospitals/ImageCropDialog";
 import { isEmpty } from "lodash";
 import CircularProgress from "@mui/material/CircularProgress";
-
+import { createFilterOptions } from "@mui/material/Autocomplete";
 import moment from "moment";
 
 const EditDialog = ({ open, onClose, cardData, setIscardLoadtion }) => {
@@ -106,7 +106,7 @@ const EditDialog = ({ open, onClose, cardData, setIscardLoadtion }) => {
     getAddressData();
     // getAddressData({ type: "tehsil" });
     // getAddressData({ type: "gram" });
-  }, [formData]);
+  }, [formData?.state, formData?.district, formData?.tehsil]);
   useEffect(() => {
     if (stateOption || formData.state) {
       const selectedState = stateOption.find(
@@ -446,10 +446,10 @@ const EditDialog = ({ open, onClose, cardData, setIscardLoadtion }) => {
                   </InputLabel> */}
               <Autocomplete
                 options={districtOption}
-                // filterOptions={createFilterOptions({
-                //   matchFrom: "start", // Options are filtered from the start of the string
-                //   stringify: (option) => option.name, // Specifies which part of the option to match against
-                // })}
+                filterOptions={createFilterOptions({
+                  matchFrom: "start", // Options are filtered from the start of the string
+                  stringify: (option) => option.name, // Specifies which part of the option to match against
+                })}
                 disabled={isDistrictLoading}
                 defaultValue={formData?.district}
                 {...(!isEmpty(formData?.district)
@@ -566,11 +566,11 @@ const EditDialog = ({ open, onClose, cardData, setIscardLoadtion }) => {
                     };
                   })}
                   disabled={isGramLoading}
-                  // filterOptions={createFilterOptions({
-                  //   matchFrom: "start", // Options are filtered from the start of the string
-                  //   stringify: (option) => option.label, // Specifies which part of the option to match against
-                  // })}
-                  defaultValue={formData?.area}
+                  filterOptions={createFilterOptions({
+                    matchFrom: "any", // Options are filtered from the start of the string
+                    stringify: (option) => option.label, // Specifies which part of the option to match against
+                  })}
+                  // defaultValue={formData?.area}
                   {...(!isEmpty(formData?.area)
                     ? { value: formData?.area }
                     : { value: "" })}
@@ -578,13 +578,15 @@ const EditDialog = ({ open, onClose, cardData, setIscardLoadtion }) => {
                     if (newValue) {
                       setFormData((prev) => ({
                         ...prev,
-                        gram: newValue.name,
+                        area: newValue.name,
                       }));
                     } else {
-                      setFormData((prev) => ({
-                        ...prev,
-                        gram: "",
-                      }));
+                      if (formData?.area != "") {
+                        setFormData((prev) => ({
+                          ...prev,
+                          area: "",
+                        }));
+                      }
                     }
                   }}
                   renderOption={(props, option) => {

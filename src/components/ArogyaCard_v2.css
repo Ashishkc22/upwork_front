@@ -87,11 +87,13 @@
   position: absolute;
   display: inline-flex;
   font-size: 9px;
-  width: 50%;
+  width: 100%;
   align-items: center;
-  top: 8px;
+  top: 2px;
   left: 15px;
   overflow: hidden;
+  height: 19%;
+  /* background: antiquewhite; */
 }
 
 /* .support-image{
@@ -99,16 +101,20 @@
 } */
 
 .header-text {
-  position: absolute;
-  font-family: "Poppins-light";
-  width: 50%;
+  /* position: absolute; */
+  font-family: "Poppins-regular";
+  font-weight: bolder;
+  font-size: 10px;
+  width: 50%; 
   left: 50px;
-  top: 7px;
+    top: 7px;
 }
 .header-phone {
   font-weight: 600;
   font-size: 14px !important;
   color: #1191d0;
+  position: absolute;
+  left: 33px;
 }
 
 .fill-container {
@@ -180,8 +186,8 @@
   width: 221px;
   /* background: red; */
   height: fit-content;
-  top: -21px;
-  left: 61px;
+  top: -25px;
+  left: 77px;
 }
 
 .user-details-container {
@@ -271,8 +277,8 @@
 
 .barcode-container {
   position: absolute;
-  bottom: 16px;
-  right: -21px;
+  bottom: 12px;
+  right: -8px;
   text-align: center;
 }
 
