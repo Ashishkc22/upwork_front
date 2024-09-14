@@ -281,7 +281,7 @@ async function getUsersByIds({ ids = [] } = {}) {
   }
 }
 
-async function getUsersList({ ids = [] } = {}) {
+async function getUsersList({ ids = [], _status } = {}) {
   const {
     status,
     data,
@@ -292,6 +292,7 @@ async function getUsersList({ ids = [] } = {}) {
     path: "cards/card-users",
     params: {
       token: tokenUtil.getAuthToken(),
+      ...(_status && { status: _status }),
     },
   });
   console.log("userList", userList);

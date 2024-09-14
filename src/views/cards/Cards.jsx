@@ -362,8 +362,14 @@ const Cards = () => {
     }
   };
 
-  const getUsersList = async () => {
-    const userList = await cardService.getUsersList();
+  const getUsersList = async ({ status } = {}) => {
+    let _status = status;
+    if (!_status) {
+      _status = urlDateType.get("tab");
+    }
+    const userList = await cardService.getUsersList({
+      ...(_status === "toBePrinted" && { _status: "SUBMITTED" }),
+    });
     setUserDropdownOptions(userList);
   };
 
@@ -540,6 +546,7 @@ const Cards = () => {
         Object.keys(filterObjects?.stateMap)?.forEach((key) =>
           filterObjects.stateMap[key]()
         );
+        getUsersList({ status: n });
       }
       setSelectedCard(n);
     }
