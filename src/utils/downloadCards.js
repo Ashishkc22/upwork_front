@@ -141,7 +141,6 @@ function getImageData({ Element, cardData = [], images }) {
           // If any mutations are observed, assume rendering is complete
           observer.disconnect(); // Stop observing once rendering is detected
           // Wait for the component to be rendered'
-          await new Promise((resolve) => setTimeout(resolve, 500));
 
           var node = document.getElementById(`${cardData[i]._id}-download`);
           const offsetHeight = node?.offsetHeight;
@@ -166,6 +165,7 @@ function getImageData({ Element, cardData = [], images }) {
           ReactDOM?.unmountComponentAtNode(container);
           document.body.removeChild(container);
           if (cardData.length === elementData.length) {
+            await new Promise((resolve) => setTimeout(resolve, 500));
             return myResolve(elementData);
           }
         });
@@ -404,6 +404,7 @@ async function downloadMultipleCardWithMultipleAgent({
   const imageData = {};
   for (let i = 0; i < cardData.length; i++) {
     const key = cardData[i]._id.createdBy;
+    console.log("cardData[i].cards", cardData[i].cards);
 
     imageData[key] = {
       feDetails: cardData[i].userDetails,
@@ -428,16 +429,7 @@ async function downloadMultipleCardWithMultipleAgent({
     const [tlDetails] = imageData[agentIdAndKey]?.tlDetails || [];
 
     let pageCardLimit = 9;
-
-    console.log("xposition", xposition);
-    console.log("xposition", yposition);
-    console.log("xposition count text", xposition + 95);
-    console.log("xposition count text", yposition + 35);
-    console.log("i -----------------------------", i);
-    console.log("pageCardLimit -----------------------------", pageCardLimit);
-    console.log("count -----------------------------", count);
     totalCardCount += dataUrl.length;
-    debugger;
     for (let j = 0; j < dataUrl.length; j++) {
       // ADD BOX WITH TLNAME/FENAME
       if (j === 0) {
@@ -493,9 +485,6 @@ async function downloadMultipleCardWithMultipleAgent({
         j === dataUrl.length - 1 &&
         i === imageDataKeys.length - 1
       ) {
-        debugger;
-        console.log("adding back side", skipBackSide);
-        console.log("count", count);
         if (count % 2 == 0) {
           skipBackSide.push(count);
         }
@@ -519,9 +508,6 @@ async function downloadMultipleCardWithMultipleAgent({
         skipBackSide = [];
         xposition = 10;
         yposition = 5;
-        console.log("&& i != imageDataKeys.length - 1", imageDataKeys.length);
-        console.log("j", j);
-        console.log("i", i);
         if (j + 1 < dataUrl.length || i + 1 < imageDataKeys.length) {
           doc.addPage();
         }
