@@ -547,6 +547,7 @@ const Cards = () => {
           filterObjects.stateMap[key]()
         );
         getUsersList({ status: n });
+        setRowPerPage(100);
       }
       setSelectedCard(n);
     }
@@ -785,6 +786,13 @@ const Cards = () => {
             count={pageCount || 0}
             page={currentPage || 0}
             disabled={Object.keys(markAsPrintPending)?.length}
+            rowsPerPageOptions={[
+              10,
+              25,
+              50,
+              100,
+              ...(rowPerPage != 100 ? [rowPerPage] : []),
+            ]}
             rowsPerPage={rowPerPage}
             labelDisplayedRows={({ from, to, count }) => {
               if (selectedCard === "toBePrinted") {
