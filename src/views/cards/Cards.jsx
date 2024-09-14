@@ -112,6 +112,7 @@ const Cards = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const [statusCount, setStatusCount] = useState({});
   const [apiPayload, setApiPayload] = useState({});
+  const [rowPerPage, setRowPerPage] = useState(100);
 
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
@@ -230,11 +231,14 @@ const Cards = () => {
     const cId = urlDateType.get("createdById");
     // const tab = urlDateType.get("tab");
     const page = Number(urlDateType.get("page"));
+    console.log("url page", page);
 
     if (page > 0) {
       setPage(page);
       _page = page;
     }
+    console.log("payload page", _page);
+
     if (selectedCard) {
       const s = urlDateType.get("status");
       if (!_status && s) {
@@ -330,6 +334,7 @@ const Cards = () => {
             totalPrintCardsShowing: data.totalPrintCardsShowing,
             totalShowing: data.totalShowing,
           });
+          setRowPerPage(data.total_documents_per_page);
         } else {
           setTotalCardsData(() => data.groupedData);
           setStatusCount(() => data.statusCount);
@@ -466,6 +471,7 @@ const Cards = () => {
     const tab = urlDateType.get("tab");
     getTableData({
       ...apiPayload,
+      _page: page,
       search: _search,
       sortBy: sortType ? "status" : null,
       tab,
@@ -773,6 +779,14 @@ const Cards = () => {
             page={currentPage || 0}
             disabled={Object.keys(markAsPrintPending)?.length}
             rowsPerPage={100}
+            labelDisplayedRows={({ from, to, count }) => {
+              if (selectedCard === "toBePrinted") {
+                return `${rowPerPage} of ${
+                  count !== -1 ? count : `more than ${to}`
+                }`;
+              }
+              return `${to} of ${count !== -1 ? count : `more than ${to}`}`;
+            }}
             onPageChange={(e, newPage) => {
               const searchParams = new URLSearchParams(
                 window.location.search

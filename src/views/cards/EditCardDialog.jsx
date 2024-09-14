@@ -235,30 +235,32 @@ const EditDialog = ({ open, onClose, cardData, setIscardLoadtion }) => {
               />
             </Grid>
             <Grid item xs={6} sm={6}>
-              <FormControl>
-                <FormLabel id="demo-radio-buttons-group-label">
-                  Gender
-                </FormLabel>
-                <RadioGroup
-                  row
-                  aria-labelledby="demo-radio-buttons-group-label"
-                  defaultValue={formData?.gender}
-                  name="gender"
-                  value={formData?.gender}
-                  onChange={handleChange}
-                >
-                  <FormControlLabel
-                    value="Female"
-                    control={<Radio />}
-                    label="Female"
-                  />
-                  <FormControlLabel
-                    value="Male"
-                    control={<Radio />}
-                    label="Male"
-                  />
-                </RadioGroup>
-              </FormControl>
+              {formData?.gender && (
+                <FormControl>
+                  <FormLabel id="demo-radio-buttons-group-label">
+                    Gender
+                  </FormLabel>
+                  <RadioGroup
+                    row
+                    aria-labelledby="demo-radio-buttons-group-label"
+                    defaultValue={formData?.gender}
+                    name="gender"
+                    value={formData.gender}
+                    onChange={handleChange}
+                  >
+                    <FormControlLabel
+                      value="Female"
+                      control={<Radio />}
+                      label="Female"
+                    />
+                    <FormControlLabel
+                      value="Male"
+                      control={<Radio />}
+                      label="Male"
+                    />
+                  </RadioGroup>
+                </FormControl>
+              )}
             </Grid>
 
             <Grid item xs={4}>

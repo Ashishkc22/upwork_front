@@ -239,6 +239,7 @@ async function getToBePrintedCards({
     total = 0,
     total_showing = 0,
     total_print_card_showing = 0,
+    total_documents_per_page,
   } = await axiosUtil.get({
     path: "cards/to-be-printed",
     params: _payload,
@@ -246,15 +247,6 @@ async function getToBePrintedCards({
   if (status === "failed") {
     return { status, error: error || message };
   } else if (!isEmpty(data)) {
-    console.log("new data format", {
-      groupedData: data,
-      totalPrintedCards: total_print_card,
-      totalPrintCardsShowing: total_print_card_showing,
-      totalShowing: total_showing,
-      totalCards: total,
-      idList: cardIds,
-      tehsilCounts: tehsilCount,
-    });
     return {
       groupedData: data,
       totalPrintedCards: total_print_card,
@@ -264,6 +256,7 @@ async function getToBePrintedCards({
       idList: cardIds,
       tehsilCounts: tehsilCount,
       page_number,
+      total_documents_per_page,
     };
   }
 }
