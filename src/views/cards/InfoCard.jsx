@@ -369,6 +369,11 @@ const CardComponent = () => {
     }
   };
 
+  function capitalizeFirstLetter(str) {
+    if (!str) return str; // Handle empty or undefined string
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  }
+
   return (
     <Box
       sx={{
@@ -654,7 +659,10 @@ const CardComponent = () => {
                     </Box>
                   </Box>
                   <Box>
-                    <TextElement label="Name" value={cardData.name} />
+                    <TextElement
+                      label="Name"
+                      value={capitalizeFirstLetter(cardData?.name || "")}
+                    />
                   </Box>
 
                   <Box>
