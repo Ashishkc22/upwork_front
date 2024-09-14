@@ -785,7 +785,7 @@ const Cards = () => {
             count={pageCount || 0}
             page={currentPage || 0}
             disabled={Object.keys(markAsPrintPending)?.length}
-            rowsPerPage={100}
+            rowsPerPage={rowPerPage}
             labelDisplayedRows={({ from, to, count }) => {
               if (selectedCard === "toBePrinted") {
                 return `${rowPerPage} of ${
