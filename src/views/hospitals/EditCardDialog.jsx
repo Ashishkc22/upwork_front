@@ -210,7 +210,7 @@ const EditCardDialog = ({ open, onClose, data, mode = "Edit" }) => {
   return (
     <Dialog
       open={open}
-      // onClose={onClose}
+      onClose={(e) => e.stopPropagation()}
       maxWidth="sm"
       fullWidth
     >

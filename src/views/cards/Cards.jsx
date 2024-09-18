@@ -57,7 +57,7 @@ const tableHeaders = [
   // { label: "BLOOD", key: "blood_group" },
   { label: "CREATED BY", key: "created_by_name" },
   { label: "CREATED ON", key: "created_at" },
-  // { label: "EXPIRY", key: "expiry_date" },
+  // { label: "STATUS_UPDATE_DATE", key: "status_updated_at" },
   { label: "STATUS", key: "status", sort: true },
   { label: "", key: "ACTION" },
 ];
@@ -119,9 +119,9 @@ const Cards = () => {
 
   const highlightedRow = storageUtil.getStorageData("highlightedRow");
   let [urlDateType, setUrlDateType] = useSearchParams();
-  const [isPrintMode, setIsPrintMode] = useState(
-    urlDateType.get("isPrintMode") === "true" || false
-  );
+  // const [isPrintMode, setIsPrintMode] = useState(
+  //   urlDateType.get("isPrintMode") === "true" || false
+  // );
 
   const location = useLocation();
   const params = useParams();
@@ -226,16 +226,23 @@ const Cards = () => {
     _status,
     _page,
     sortBy,
+    _isPrintMode,
   } = {}) => {
     // fetch cards data
     const cId = urlDateType.get("createdById");
     // const tab = urlDateType.get("tab");
     const page = Number(urlDateType.get("page"));
     console.log("url page", page);
+    // if (urlDateType.get("sortType") && !sortBy) {
+    //   sortBy = "status";
+    // }
 
     if (page > 0) {
       setPage(page);
       _page = page;
+    }
+    if (!_isPrintMode) {
+      _isPrintMode = urlDateType.get("printMode");
     }
     console.log("payload page", _page);
 
@@ -274,8 +281,8 @@ const Cards = () => {
         else delete obj._page;
         if (sortBy) obj.sortBy = sortBy;
         else delete obj.sortBy;
-        console.log("payload data obj", obj);
-
+        if (_isPrintMode) obj._isPrintMode = _isPrintMode;
+        else delete obj._isPrintMode;
         return obj;
       });
       setIsPageLoading(true);
@@ -290,7 +297,7 @@ const Cards = () => {
             _status: _status,
           }),
           ...(selectedCard === "toBePrinted" && { _status: "SUBMITTED" }),
-          isPrintMode,
+          ...(_isPrintMode && { isPrintMode: _isPrintMode }),
           page: _page,
           ...(search && { q: search }),
           ...(gram_p && { gram_p: gram_p }),
@@ -327,6 +334,8 @@ const Cards = () => {
           storageUtil.setStorageData(data.idList, "cards_ids");
         }
         if (selectedCard === "toBePrinted") {
+          console.log("data.groupedData", data.groupedData);
+
           setCardsDataGroupBy(() => data.groupedData);
           setTotalCardsAndToBePrinted({
             totalCards: data.totalCards,
@@ -370,6 +379,8 @@ const Cards = () => {
     const userList = await cardService.getUsersList({
       ...(_status === "toBePrinted" && { _status: "SUBMITTED" }),
     });
+    console.log("userList", userList);
+
     setUserDropdownOptions(userList);
   };
 
@@ -414,18 +425,28 @@ const Cards = () => {
     // setIsDownloadCompleted
 
     let keys = [];
+    console.log("downloadCardMaps", downloadCardMaps);
 
     Object.keys(downloadCardMaps).forEach((groupName) => {
       const selectedCardData = [];
       _isDownloadCompleted[groupName] = true;
       keys = downloadCardMaps[groupName].concat(keys);
-      cardsDataGroupedBy[groupName].forEach((cardData) => {
-        const key = cardData._id.createdBy;
+      const searchedData = cardsDataGroupedBy.find((d) => d._id === groupName);
+
+      searchedData.cards.forEach((FEData) => {
+        const key = FEData._id.createdBy;
         if (downloadCardMaps[groupName].includes(key)) {
           _isDownloadCompleted[key] = true;
-          selectedCardData.push(cardData);
+          selectedCardData.push(FEData);
         }
       });
+      // searchedData[groupName].forEach((cardData) => {
+
+      //   if (downloadCardMaps[groupName].includes(key)) {
+      //     _isDownloadCompleted[key] = true;
+      //     selectedCardData.push(cardData);
+      //   }
+      // });
       cardsToDownload[groupName] = selectedCardData;
     });
     console.log("cardsToDownload", cardsToDownload);
@@ -496,7 +517,7 @@ const Cards = () => {
     return () => {
       window.removeEventListener("scroll", handleScroll);
     };
-  }, [selectedCard, page, isPrintMode]);
+  }, [selectedCard, page]);
 
   const customPrevioudButton = (porps) => (
     <Button
@@ -597,6 +618,7 @@ const Cards = () => {
             text: "To Be Printed",
             name: "toBePrinted",
           }}
+          showPrintMode={selectedCard === "toBePrinted"}
           {...(selectedCard === "totalCards" && {
             statusOption: isEmpty(statusCount)
               ? [
@@ -657,7 +679,7 @@ const Cards = () => {
           </Stack>
         )}
       </Grid>
-      {selectedCard === "toBePrinted" && (
+      {/* {selectedCard === "toBePrinted" && (
         <Box sx={{ m: 1 }} display="flex" flexDirection="row-reverse">
           <Button
             variant="contained"
@@ -676,7 +698,7 @@ const Cards = () => {
             {isPrintMode ? "Exit Print Mode" : "Enter Print Mode"}
           </Button>
         </Box>
-      )}
+      )} */}
       <Box>
         <Backdrop
           sx={(theme) => ({
@@ -708,12 +730,12 @@ const Cards = () => {
                 </Box>
               ) : (
                 <Grid item sx={{ my: 1, mr: 2 }}>
-                  {Object.keys(cardsDataGroupedBy).map((key, index) => {
+                  {cardsDataGroupedBy.map((data, index) => {
                     return (
                       <TableWithExtraElements
-                        key={key + index}
-                        groupName={key}
-                        groupedData={cardsDataGroupedBy[key]}
+                        key={data._id + index}
+                        groupName={data._id}
+                        groupedData={data.cards}
                         isImageMode={isImageMode}
                         handleMultipleCheckBox={handleMultipleCheckBox}
                         isDownloadCompleted={isDownloadCompleted}

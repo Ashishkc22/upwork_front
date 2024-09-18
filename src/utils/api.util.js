@@ -47,6 +47,12 @@ function request({
     ...(isFormData && { data: body }),
   })
     .then((data) => {
+      if (
+        data?.data?.status === "failed" &&
+        data?.data?.message === "Invalid Token"
+      ) {
+        cookiesUtil.clearAllCookies();
+      }
       return data?.data || {};
     })
     .catch((error) => {

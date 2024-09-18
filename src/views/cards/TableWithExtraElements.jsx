@@ -226,7 +226,7 @@ const TableWithExtraElements = ({
         // const dataLength = groupedData[key].length;
         return (
           <TableWithCheckBox
-            key={feCards.uid + index + feCards.name}
+            key={feCards.uid + index + firtsData.created_by_uid}
             firtsData={firtsData}
             dataLength={feCards.cardCount}
             colors={colors}

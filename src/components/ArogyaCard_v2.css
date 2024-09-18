@@ -179,7 +179,7 @@
   font-family: "Inter";
   transform: rotate(90deg);
   margin: 0;
-  font-size: 9px;
+  font-size: 12px;
   /* right: -3px; */
   position: relative;
   color: #00000082;
@@ -236,6 +236,7 @@
   position: absolute;
   font-size: 73.5%;
   left: 19px;
+  width: 100%
 }
 
 .user-loc-2 {
@@ -243,6 +244,8 @@
   font-size: 73.5%;
   left: 19px;
   top: 33px;
+  width: 100%
+
 }
 
 .water-mark {
@@ -277,7 +280,7 @@
 
 .barcode-container {
   position: absolute;
-  bottom: 12px;
+  bottom: 8px;
   right: -8px;
   text-align: center;
 }

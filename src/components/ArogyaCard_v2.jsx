@@ -22,24 +22,11 @@ const ArogyamComponent = ({
   }
   const divRef = useRef(null);
 
-  function formatNumberWithSpaces(number = 0) {
+  const formatNumberWithSpaces = (number = 0) => {
     // Convert the number to a string
     const numberStr = number.toString();
-    const formattedStr = numberStr.replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1 ");
-
-    return formattedStr;
-  }
-
-  function limitCharacters(text, maxLength) {
-    // Check if the text length exceeds the maximum length
-    if (text.length > maxLength) {
-      // Truncate the text and append ellipsis
-      return text.slice(0, maxLength);
-    }
-
-    // Return the text as is if it doesn't exceed the maximum length
-    return text;
-  }
+    return numberStr.replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1 ");
+  };
 
   useEffect(() => {
     if (divRef.current && passRef) {
@@ -288,7 +275,7 @@ const ArogyamComponent = ({
               fontWeight: "600",
               position: "absolute",
               right: "83px",
-              bottom: "45px",
+              bottom: "49px",
             }}
           >
             {formatNumberWithSpaces(cardData.unique_number)}

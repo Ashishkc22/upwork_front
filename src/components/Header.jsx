@@ -23,6 +23,8 @@ import Autocomplete from "@mui/material/Autocomplete";
 import ClearIcon from "@mui/icons-material/Clear";
 import hospitals from "../services/hospitals";
 import storageUtil from "../utils/storage.util";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import Switch from "@mui/material/Switch";
 
 const ScoreCard = ({
   value,
@@ -84,6 +86,7 @@ const OtherScoreCard = ({ value, secondValue, text, emitCardSelect, name }) => {
 };
 
 let typingTimer;
+let useEffectTypingTimer;
 const Header = memo(
   ({
     toTalScoreDetails = {},
@@ -108,6 +111,7 @@ const Header = memo(
     showOtherCard = false,
     isNavAllowed = () => true,
     pSelectedCard,
+    showPrintMode = false,
   }) => {
     const navigate = useNavigate();
     const [selectedCard, setSelectedCard] = useState(defaultSelectedCard);
@@ -140,6 +144,9 @@ const Header = memo(
 
     let [urlDateType, setUrlDateType] = useSearchParams();
     const [category, setCategory] = useState(null);
+    const [printMode, setPrintMode] = useState(
+      urlDateType.get("printMode") || false
+    );
 
     const durationOptions = [
       "TODAY",
@@ -383,7 +390,9 @@ const Header = memo(
         ...(tehsil?.name && { tehsil: tehsil?.name }),
         ...(gram?.label && { gram_p: gram?.label }),
         ...(category && { type: category.name }),
+        ...(printMode && { _isPrintMode: printMode }),
       };
+
       if (searchTerm) {
         payload.search = searchTerm;
       }
@@ -508,10 +517,13 @@ const Header = memo(
           params: { stateId: urlDateType.get("stateId") },
         });
       }
+      // if (urlDateType.get("printMode")) {
+      //   setPrintMode(urlDateType.get("printMode"));
+      // }
       if (urlDateType.get("search")) {
         setSearchTerm(urlDateType.get("search"));
       }
-      if (urlDateType?.get("tehsilId") && urlDateType?.get("districtId")) {
+      if (urlDateType?.get("tehsilId") || urlDateType?.get("districtId")) {
         getAddressData({
           type: "tehsil",
           params: { districtId: urlDateType?.get("districtId") },
@@ -578,7 +590,11 @@ const Header = memo(
     }, [createdByOptions]);
 
     useEffect(() => {
-      triggerAPICallback();
+      clearTimeout(useEffectTypingTimer);
+      useEffectTypingTimer = setTimeout(function () {
+        // call API
+        triggerAPICallback();
+      }, 10);
     }, [
       state,
       district,
@@ -589,6 +605,7 @@ const Header = memo(
       duration,
       status,
       dateType,
+      printMode,
     ]);
 
     useEffect(() => {
@@ -684,6 +701,31 @@ const Header = memo(
                   }}
                 />
               </>
+            )}
+            {showPrintMode && (
+              <Grid item>
+                <FormControlLabel
+                  checked={Boolean(printMode)}
+                  control={<Switch color="primary" />}
+                  onChange={(e) => {
+                    if (e.target.checked) {
+                      const date = new Date().valueOf();
+                      setPrintMode(date);
+                      addDataToURL({ printMode: date });
+                    } else {
+                      setPrintMode(null);
+                      addDataToURL({ printMode: "" });
+                    }
+                  }}
+                  label="Print Mode"
+                  labelPlacement="top"
+                  sx={{
+                    ".css-17w9904-MuiTypography-root": {
+                      fontWeight: 600,
+                    },
+                  }}
+                />
+              </Grid>
             )}
           </Grid>
         </Grid>
@@ -866,7 +908,7 @@ const Header = memo(
                     const { key, ...optionProps } = props;
                     return (
                       <Box
-                        key={key}
+                        key={option._id}
                         sx={{ p: "3px", display: "block" }}
                         {...optionProps}
                       >

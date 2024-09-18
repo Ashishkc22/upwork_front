@@ -141,6 +141,7 @@ function getImageData({ Element, cardData = [], images }) {
           // If any mutations are observed, assume rendering is complete
           observer.disconnect(); // Stop observing once rendering is detected
           // Wait for the component to be rendered'
+          await new Promise((resolve) => setTimeout(resolve, 500));
 
           var node = document.getElementById(`${cardData[i]._id}-download`);
           const offsetHeight = node?.offsetHeight;
@@ -255,8 +256,7 @@ async function downloadMultipleCard({
   let yposition = 5;
   let count = 0;
   const cardCount = cardData.length;
-  const imageData = (await getImageData({ Element, cardData, images })) || [];
-
+  let imageData = (await getImageData({ Element, cardData, images })) || [];
   let pageCardLimit = 9;
 
   createAFENameTLName({
@@ -296,7 +296,7 @@ async function downloadMultipleCard({
     if (xposition === 113) {
       yposition = yposition + 57;
     }
-    if (index === imageData.length - 1) {
+    if (index === imageData.length - 1 && count != 9) {
       console.log("imageData.length", imageData.length);
       console.log("count", count);
       console.log("index", index);
@@ -305,6 +305,7 @@ async function downloadMultipleCard({
       if (index < 9) {
         skipBackSide.push(1);
       }
+      console.log("Adding Back side page");
       addBackSideImage({
         doc,
         imgUrl: imageBackSideUrl,
@@ -314,6 +315,8 @@ async function downloadMultipleCard({
     }
     // ADD NEW PAGE
     if (count === 9) {
+      console.log("Adding Back side page ---last");
+
       addBackSideImage({
         doc,
         imgUrl: imageBackSideUrl,
@@ -322,7 +325,10 @@ async function downloadMultipleCard({
       });
       xposition = 10;
       yposition = 5;
-      doc.addPage();
+      console.log("Adding page");
+      if (index != imageData.length - 1) {
+        doc.addPage();
+      }
       count = 0;
       pageCardLimit = 10;
     } else {
@@ -336,7 +342,7 @@ async function downloadMultipleCard({
           agentDetails?.name
             ? agentDetails.name.replaceAll(" ", "_")
             : agentDetails.id
-        }#${cardCount}_${moment().format("DD_MMM_YYYY_HH_MM")}.pdf`
+        }#${cardCount}_${moment().format("DD_MMM_YYYY_hh_mm")}.pdf`
       );
       // preview({ pdfBlob: doc.output("blob") });
       handleDownloadCompleted();
@@ -521,7 +527,7 @@ async function downloadMultipleCardWithMultipleAgent({
   }
   doc.save(
     `${districtName?.trim()}#${totalCardCount}_${moment().format(
-      "DD_MMM_YYYY_HH_MM"
+      "DD_MMM_YYYY_hh_mm"
     )}.pdf`
   );
   // preview({ pdfBlob: doc.output("blob") });

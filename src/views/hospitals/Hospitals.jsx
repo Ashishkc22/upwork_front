@@ -77,34 +77,19 @@ const HospitalPage = () => {
       })
       .then((response) => {
         if (!isEmpty(response)) {
-          setPageCount(response.total_results);
+          setPageCount(response?.total_results);
           if (!isEmpty(response.data)) {
             setHospitalList(response.data);
           }
           setTotalHospital(response?.total || 0);
           setTotalHospitalsToShow(response?.total_results || 0);
         } else {
+          setPageCount(0);
+          setTotalHospitalsToShow(0);
           setHospitalList([]);
         }
         setIsPageLoading(false);
       });
-  };
-
-  const handleSearchChanges = ({ data, payload }) => {
-    if (data === "") {
-      getHospitals({ search: "em" });
-    }
-    setSearchValue(data);
-    if (!/^\s*$/.test(data)) {
-      clearTimeout(typingTimer);
-      typingTimer = setTimeout(function () {
-        getHospitals({ search: data, ...payload });
-      }, 1500);
-    }
-  };
-
-  const handleRefresh = ({ payload }) => {
-    getHospitals({ ...payload });
   };
 
   const handleRowClick = (row) => {
@@ -112,7 +97,7 @@ const HospitalPage = () => {
   };
 
   useEffect(() => {
-    getHospitals();
+    // getHospitals();
   }, []);
 
   const customPrevioudButton = (porps) => (
