@@ -23,6 +23,9 @@ import ContactSettings from "./ContactSettings";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import settings from "../../services/settings";
+import { tokens } from "../../theme";
+
+import { useTheme } from "@mui/material/styles";
 
 const TabPanel = (props) => {
   const { children, value, index, ...other } = props;
@@ -66,6 +69,9 @@ const SettingsPage = () => {
   const [selectedGram, setSelectedGram] = useState({});
 
   const [showHidden, setShowHidden] = useState(false);
+
+  const theme = useTheme();
+  const colors = tokens(theme.palette.mode);
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
@@ -230,7 +236,15 @@ const SettingsPage = () => {
             value={value}
             onChange={handleChange}
             aria-label="settings tabs"
-            sx={{ flexGrow: 1 }}
+            sx={{
+              flexGrow: 1,
+              ".css-4dupt5-MuiButtonBase-root-MuiTab-root.Mui-selected": {
+                color: colors.primary[500],
+              },
+              ".css-1aquho2-MuiTabs-indicator": {
+                backgroundColor: colors.primary[500],
+              },
+            }}
           >
             <Tab icon={<LocationOnIcon />} label="Location Settings" />
             <Tab icon={<LocalHospitalIcon />} label="Hospital Settings" />
@@ -238,7 +252,7 @@ const SettingsPage = () => {
           </Tabs>
           <Button
             size="large"
-            color="primary"
+            sx={{ color: colors.primary[500] }}
             startIcon={showHidden ? <VisibilityIcon /> : <VisibilityOffIcon />}
             onClick={handleShowHidden}
           >
