@@ -72,6 +72,7 @@ const TableWithCheckBox = ({
   setIsCardDownload,
   tlDetails,
   markAsPrintPending,
+  groupName,
   // highlightedRow,
 }) => {
   const [checkBox, setCheckBox] = useState(false);
@@ -197,7 +198,13 @@ const TableWithCheckBox = ({
                   (Page {pageCount})
                 </Typography> */}
               <Button
-                sx={{ color: colors.primary[500] }}
+                sx={{
+                  ...(Object.keys(markAsPrintPending).includes(
+                    `${groupName}/${firtsData?.created_by_uid}`
+                  )
+                    ? { color: "white", background: colors.primary[500] }
+                    : { color: colors.primary[500], background: "white" }),
+                }}
                 startIcon={<DownloadIcon />}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -215,12 +222,18 @@ const TableWithCheckBox = ({
                     tlDetails: tlDetails,
                     secondaryImage: imageRef.current,
                   });
-                  setMarkAsPrintPending((pre) => ({ ...pre, [id]: true }));
+                  setMarkAsPrintPending((pre) => ({
+                    ...pre,
+                    [`${groupName}/${firtsData?.created_by_uid}`]: true,
+                  }));
                 }}
               >
                 Download
               </Button>
-              {isDownloadCompleted && (
+              {(isDownloadCompleted ||
+                Object.keys(markAsPrintPending).includes(
+                  `${groupName}/${firtsData?.created_by_uid}`
+                )) && (
                 <Button
                   sx={{
                     display: "inline-flex",
@@ -231,13 +244,25 @@ const TableWithCheckBox = ({
                   }}
                   onClick={(e) => {
                     e.stopPropagation();
+                    setMarkAsPrintPending((pre) => {
+                      const newObject = { ...pre };
+                      console.log("before delete", newObject);
+                      delete newObject[
+                        `${groupName}/${firtsData?.created_by_uid}`
+                      ];
+                      return newObject;
+                    });
                     markAsPrint({ ids: groupedData.map((gd) => gd._id) }).then(
                       () => {
                         setIsDownloadCompleted(false);
                         setMarkAsPrintPending((pre) => {
-                          delete pre[id];
+                          console.log("delete", pre);
+                          delete pre[
+                            `${groupName}/${firtsData?.created_by_uid}`
+                          ];
                           return pre;
                         });
+                        storageUtil.removeItem("markAsPrintedData");
                       }
                     );
                   }}

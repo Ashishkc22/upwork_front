@@ -725,6 +725,11 @@ const Header = memo(
                     },
                   }}
                 />
+                {printMode && (
+                  <Typography fontSize={10} sx={{ mx: 2 }}>
+                    {moment(parseInt(printMode)).format("DD/MM/YYYY hh:mm")}
+                  </Typography>
+                )}
               </Grid>
             )}
           </Grid>

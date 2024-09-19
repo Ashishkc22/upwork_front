@@ -32,10 +32,13 @@ import { isEmpty } from "lodash";
 import CircularProgress from "@mui/material/CircularProgress";
 import { createFilterOptions } from "@mui/material/Autocomplete";
 import moment from "moment";
+import NativeSelect from "@mui/material/NativeSelect";
+
+let useEffectTypingTimer;
 
 const EditDialog = ({ open, onClose, cardData, setIscardLoadtion }) => {
   const [profilePic, setProfilePic] = useState(null);
-  const [formData, setFormData] = useState({});
+  const [formData, setFormData] = useState({ blood_group: "" });
   const [stateOption, setStateOption] = useState([]);
   const [districtOption, setDistrictOption] = useState([]);
   const [tehsilOption, setTehsilOption] = useState([]);
@@ -103,7 +106,12 @@ const EditDialog = ({ open, onClose, cardData, setIscardLoadtion }) => {
   }
 
   useEffect(() => {
-    getAddressData();
+    clearTimeout(useEffectTypingTimer);
+    useEffectTypingTimer = setTimeout(function () {
+      // call API
+      getAddressData();
+    }, 10);
+
     // getAddressData({ type: "tehsil" });
     // getAddressData({ type: "gram" });
   }, [formData?.state, formData?.district, formData?.tehsil]);
@@ -372,13 +380,34 @@ const EditDialog = ({ open, onClose, cardData, setIscardLoadtion }) => {
             </Grid>
           </Grid>
           <Grid item xs={6}>
-            <TextField
+            <FormControl fullWidth>
+              <InputLabel id="blood_group-helper-label">Blood Group</InputLabel>
+              <Select
+                labelId="blood_group-helper-label"
+                id="blood_group-dropdown"
+                label="Blood Group"
+                name="blood_group"
+                fullWidth
+                onChange={handleChange}
+                defaultValue={formData?.blood_group}
+                value={formData?.blood_group}
+              >
+                <MenuItem value="A+">A+</MenuItem>
+                <MenuItem value="A-">A-</MenuItem>
+                <MenuItem value="B+">B+</MenuItem>
+                <MenuItem value="AB+">AB+</MenuItem>
+                <MenuItem value="AB-">AB-</MenuItem>
+                <MenuItem value="O+">O+</MenuItem>
+                <MenuItem value="O-">O-</MenuItem>
+              </Select>
+            </FormControl>
+            {/* <TextField
               fullWidth
               label="Blood Group"
               name="blood_group"
               value={formData?.blood_group}
               onChange={handleChange}
-            />
+            /> */}
           </Grid>
           <Grid item xs={6}>
             <TextField

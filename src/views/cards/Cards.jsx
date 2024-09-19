@@ -366,6 +366,11 @@ const Cards = () => {
         setIsPageLoading(false);
       }
       setTimeout(() => {
+        const markAsPrinted = storageUtil.getStorageData("markAsPrintedData");
+        console.log("local storage", markAsPrinted);
+        if (markAsPrinted) {
+          setMarkAsPrintPending(markAsPrinted);
+        }
         restoreScroll();
       }, 10);
     }
@@ -430,7 +435,9 @@ const Cards = () => {
     Object.keys(downloadCardMaps).forEach((groupName) => {
       const selectedCardData = [];
       _isDownloadCompleted[groupName] = true;
-      keys = downloadCardMaps[groupName].concat(keys);
+      keys = downloadCardMaps[groupName]
+        .map((a) => `${groupName}/${a}`)
+        .concat(keys);
       const searchedData = cardsDataGroupedBy.find((d) => d._id === groupName);
 
       searchedData.cards.forEach((FEData) => {
@@ -544,7 +551,11 @@ const Cards = () => {
   );
 
   const handleCardSelect = (n, byPass = false, filterObjects) => {
-    if (!isEmpty(markAsPrintPending) && !byPass) {
+    if (
+      !isEmpty(markAsPrintPending) &&
+      !byPass &&
+      selectedCard === "toBePrinted"
+    ) {
       setIsLeaveDialogOpned(true);
       setNavData({ value: n, filterObjects });
     } else {
@@ -586,6 +597,13 @@ const Cards = () => {
     handleCardSelect(navData.value, true, navData.filterObjects);
     setIsLeaveDialogOpned(false);
   };
+
+  useEffect(() => {
+    console.log("markAsPrintPending", markAsPrintPending);
+    if (!isEmpty(markAsPrintPending)) {
+      storageUtil.setStorageData(markAsPrintPending, "markAsPrintedData");
+    }
+  }, [markAsPrintPending]);
 
   return (
     <Grid component="main" sx={{ width: "96%", overflowX: "hidden" }}>

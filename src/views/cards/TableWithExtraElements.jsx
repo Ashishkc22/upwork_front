@@ -18,6 +18,7 @@ import supportImg from "../../v1cardImages/support.png";
 import locImg from "../../v1cardImages/loc.png";
 import phoneImg from "../../v1cardImages/phone.png";
 import cardLogoImg from "../../v1cardImages/cardLogo.png";
+import storageUtil from "../../utils/storage.util";
 
 // Storing all memoized components in an object
 const images = {
@@ -78,6 +79,7 @@ const TableWithExtraElements = ({
       groupedData.forEach(
         (cardData) => (newCheckedBox[cardData._id.createdBy] = false)
       );
+
       setTableCheckedBox(newCheckedBox);
     }
   }, []);
@@ -161,7 +163,7 @@ const TableWithExtraElements = ({
                 handleDownloadCompleted: () => {
                   const keys = {};
                   groupedData.forEach((cardData) => {
-                    keys[cardData._id.createdBy] = true;
+                    keys[`${groupName}/${cardData._id.createdBy}`] = true;
                   });
                   setIsCardDownload(false);
                   setIsDownloadCompleted({ [groupName]: true });
@@ -175,27 +177,37 @@ const TableWithExtraElements = ({
             <DownloadIcon />
           </IconButton>
         </Tooltip>
-        {isDownloadCompleted[groupName] && (
+        {/* {JSON.stringify(Object.keys(markAsPrintPending))}
+        {JSON.stringify(groupedData.map((feData) => feData.userDetails.uid))} */}
+        {groupedData.every((feData) =>
+          Object.keys(markAsPrintPending).includes(
+            `${groupName}/${feData.userDetails.uid}`
+          )
+        ) && (
           <Button
             onClick={(e) => {
               e.stopPropagation();
               let ids = [];
               let keys = [];
               const [firsttableData] = groupedData;
-              keys.push(firsttableData._id.location);
+              // keys.push(firsttableData._id.location);
               groupedData.forEach((data) => {
-                keys.push(data.userDetails.uid);
+                keys.push(
+                  `${firsttableData._id.location}/${data.userDetails.uid}`
+                );
                 const cards = data.cards;
                 ids = [...ids, ...cards.map((a) => a._id)];
               });
               setMarkAsPrintPending((pre) => {
+                const newObj = { ...pre };
                 keys.forEach((id) => {
-                  delete pre[id];
+                  delete newObj[id];
                 });
-                return pre;
+                return newObj;
               });
               markAsPrint({ ids }).then(() => {
                 setIsDownloadCompleted({});
+                storageUtil.removeItem("markAsPrintedData");
               });
             }}
           >
@@ -279,6 +291,7 @@ const TableWithExtraElements = ({
             markAsPrintPending={markAsPrintPending}
             handleSort={handleSort}
             setIsCardDownload={setIsCardDownload}
+            groupName={groupName}
           />
           // <>{feCards?._id?.location}</>
         );

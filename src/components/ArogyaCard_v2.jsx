@@ -62,7 +62,9 @@ const ArogyamComponent = ({
             className="support-image"
           />
           <div className="header-text">
-            <div style={{ marginLeft: "6px" }}>हेल्पलाइन नंबर (10 AM-6PM)</div>
+            <div style={{ marginLeft: "6px" }}>
+              हेल्पलाइन नंबर (10 AM - 6 PM)
+            </div>
             <div className="header-phone">011-69290540, 8181819718</div>
           </div>
         </div>
@@ -268,18 +270,20 @@ const ArogyamComponent = ({
 
         {/* barcode */}
         <div className="barcode-container">
-          <div
-            style={{
-              fontFamily: "Inter",
-              fontSize: "11px",
-              fontWeight: "600",
-              position: "absolute",
-              right: "83px",
-              bottom: "49px",
-            }}
-          >
-            {formatNumberWithSpaces(cardData.unique_number)}
-          </div>
+          {cardData?.unique_number && (
+            <div
+              style={{
+                fontFamily: "Inter",
+                fontSize: "11px",
+                fontWeight: "600",
+                position: "absolute",
+                right: "83px",
+                bottom: "49px",
+              }}
+            >
+              {formatNumberWithSpaces(cardData.unique_number)}
+            </div>
+          )}
           <div>
             {cardData?.unique_number && (
               // <div
