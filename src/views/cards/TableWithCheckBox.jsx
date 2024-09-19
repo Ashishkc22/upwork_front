@@ -73,6 +73,7 @@ const TableWithCheckBox = ({
   tlDetails,
   markAsPrintPending,
   groupName,
+  handleMarkAsPrintApiCall,
   // highlightedRow,
 }) => {
   const [checkBox, setCheckBox] = useState(false);
@@ -256,12 +257,12 @@ const TableWithCheckBox = ({
                       () => {
                         setIsDownloadCompleted(false);
                         setMarkAsPrintPending((pre) => {
-                          console.log("delete", pre);
                           delete pre[
                             `${groupName}/${firtsData?.created_by_uid}`
                           ];
                           return pre;
                         });
+                        handleMarkAsPrintApiCall();
                         storageUtil.removeItem("markAsPrintedData");
                       }
                     );

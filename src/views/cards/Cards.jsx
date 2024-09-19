@@ -499,6 +499,19 @@ const Cards = () => {
   //   });
   // }, []);
 
+  const handleMarkAsPrintApiCall = () => {
+    const _search = urlDateType.get("search");
+    const sortType = urlDateType.get("sortType");
+    const tab = urlDateType.get("tab");
+    getTableData({
+      ...apiPayload,
+      _page: page,
+      search: _search,
+      sortBy: sortType ? "status" : null,
+      tab,
+    });
+  };
+
   useEffect(() => {
     const _search = urlDateType.get("search");
     const sortType = urlDateType.get("sortType");
@@ -766,6 +779,7 @@ const Cards = () => {
                         markAsPrintPending={markAsPrintPending}
                         handleSort={handleSort}
                         setIsCardDownload={setIsCardDownload}
+                        handleMarkAsPrintApiCall={handleMarkAsPrintApiCall}
                       />
                     );
                   })}

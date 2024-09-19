@@ -49,6 +49,7 @@ const TableWithExtraElements = ({
   markAsPrintPending,
   handleSort,
   setIsCardDownload,
+  handleMarkAsPrintApiCall,
 }) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
@@ -207,6 +208,7 @@ const TableWithExtraElements = ({
               });
               markAsPrint({ ids }).then(() => {
                 setIsDownloadCompleted({});
+                handleMarkAsPrintApiCall();
                 storageUtil.removeItem("markAsPrintedData");
               });
             }}
@@ -292,6 +294,7 @@ const TableWithExtraElements = ({
             handleSort={handleSort}
             setIsCardDownload={setIsCardDownload}
             groupName={groupName}
+            handleMarkAsPrintApiCall={handleMarkAsPrintApiCall}
           />
           // <>{feCards?._id?.location}</>
         );
