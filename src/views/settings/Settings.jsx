@@ -236,14 +236,16 @@ const SettingsPage = () => {
             value={value}
             onChange={handleChange}
             aria-label="settings tabs"
+            indicatorColor="secondary"
+            textColor="secondary"
             sx={{
               flexGrow: 1,
-              ".css-4dupt5-MuiButtonBase-root-MuiTab-root.Mui-selected": {
-                color: colors.primary[500],
-              },
-              ".css-1aquho2-MuiTabs-indicator": {
-                backgroundColor: colors.primary[500],
-              },
+              // ".css-4dupt5-MuiButtonBase-root-MuiTab-root.Mui-selected": {
+              //   color: colors.primary[500],
+              // },
+              // ".css-1aquho2-MuiTabs-indicator": {
+              //   backgroundColor: colors.primary[500],
+              // },
             }}
           >
             <Tab icon={<LocationOnIcon />} label="Location Settings" />
