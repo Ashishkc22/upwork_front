@@ -258,7 +258,7 @@ async function downloadMultipleCard({
   const cardCount = cardData.length;
   let imageData = (await getImageData({ Element, cardData, images })) || [];
   let pageCardLimit = 9;
-
+  let skipBackSide = [];
   createAFENameTLName({
     doc,
     feName: agentDetails?.name,
@@ -267,6 +267,7 @@ async function downloadMultipleCard({
     startX: xposition,
     startY: yposition,
   });
+  skipBackSide.push(1);
   xposition = xposition === 10 ? 113 : 10;
   count += 1;
 
@@ -301,15 +302,12 @@ async function downloadMultipleCard({
       console.log("count", count);
       console.log("index", index);
 
-      let skipBackSide = [count];
-      if (index < 9) {
-        skipBackSide.push(1);
-      }
-      console.log("Adding Back side page");
+      // skipBackSide.unshift(count);
+      console.log("Adding Back side page", skipBackSide);
       addBackSideImage({
         doc,
         imgUrl: imageBackSideUrl,
-        count: count + 2,
+        count: count + 1,
         skipBackSide,
       });
     }
@@ -320,7 +318,7 @@ async function downloadMultipleCard({
       addBackSideImage({
         doc,
         imgUrl: imageBackSideUrl,
-        count: count + 2,
+        count: count + 1,
         ...(pageCardLimit === 9 && { skipBackSide: [1] }),
       });
       xposition = 10;
@@ -329,6 +327,7 @@ async function downloadMultipleCard({
       if (index != imageData.length - 1) {
         doc.addPage();
       }
+      skipBackSide = [];
       count = 0;
       pageCardLimit = 10;
     } else {
