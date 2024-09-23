@@ -672,6 +672,8 @@ const Cards = () => {
           // tehsilCounts={tehsilCounts}
           handleSelectCard={handleCardSelect}
           isNavAllowed={() => {
+            console.log("markAsPrintPending", markAsPrintPending);
+
             return isEmpty(markAsPrintPending);
           }}
           isImageMode={isImageMode}

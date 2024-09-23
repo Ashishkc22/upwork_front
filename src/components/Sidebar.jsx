@@ -27,7 +27,7 @@ import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import { isEmpty } from "lodash";
 
 const drawerWidth = 240;
-const drawerVersion = "v1.4.5";
+const drawerVersion = "v1.5.0";
 
 const openedMixin = (theme) => ({
   width: drawerWidth,
@@ -129,7 +129,12 @@ const Item = ({
 };
 
 const navList = [
-  { title: "Dashboard", icon: <HomeOutlinedIcon />, path: "dashboard" },
+  {
+    title: "Dashboard",
+    icon: <HomeOutlinedIcon />,
+    path: "dashboard",
+    allowedRole: ["ADMIN"],
+  },
   {
     title: "Cards",
     icon: <CreditCardIcon />,
@@ -137,6 +142,7 @@ const navList = [
     params: {
       tab: "toBePrinted",
     },
+    allowedRole: ["ADMIN"],
   },
   {
     title: "Hospitals",
@@ -145,19 +151,32 @@ const navList = [
     params: {
       status: "ENABLE",
     },
+    allowedRole: ["ADMIN", "SUBADMIN"],
   },
   {
     title: "Field Executives",
     icon: <SupervisedUserCircleOutlinedIcon />,
     path: "field-executives",
+    allowedRole: ["ADMIN"],
   },
   {
     title: "Bin",
     icon: <DeleteOutlineIcon sx={{ color: "red" }} />,
     path: "bin",
+    allowedRole: ["ADMIN"],
   },
-  { title: "Settings", icon: <SettingsOutlinedIcon />, path: "settings" },
-  { title: "Logout", icon: <LogoutOutlinedIcon />, path: "/" },
+  {
+    title: "Settings",
+    icon: <SettingsOutlinedIcon />,
+    path: "settings",
+    allowedRole: ["ADMIN"],
+  },
+  {
+    title: "Logout",
+    icon: <LogoutOutlinedIcon />,
+    path: "/",
+    allowedRole: ["ADMIN", "SUBADMIN"],
+  },
 ];
 
 export default function MiniDrawer() {
@@ -167,7 +186,7 @@ export default function MiniDrawer() {
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [selected, setSelected] = useState("Dashboard");
   const [open, setOpen] = React.useState(false);
-
+  const userRole = storageUtil.getStorageData("userRole");
   const location = useLocation();
   const currentPath = location.pathname;
 
@@ -199,30 +218,35 @@ export default function MiniDrawer() {
         </DrawerHeader>
         <Divider />
         <List>
-          {navList.map((data, index) => (
-            <ListItem
-              key={data.path}
-              disablePadding
-              sx={{
-                display: "block",
-                justifyContent: "center",
-                ml: 1,
-                my: 1,
-                width: open ? "200px" : "50px",
-              }}
-            >
-              <Item
-                title={data.title}
-                to={data.path}
-                icon={data.icon}
-                isSelected={Boolean(currentPath.startsWith(`/${data.path}`))}
-                setSelected={setSelected}
-                nav={nav}
-                params={data?.params}
-                isDrawerOpen={open}
-              />
-            </ListItem>
-          ))}
+          {navList.map(
+            (data, index) =>
+              data.allowedRole.includes(userRole) && (
+                <ListItem
+                  key={data.path}
+                  disablePadding
+                  sx={{
+                    display: "block",
+                    justifyContent: "center",
+                    ml: 1,
+                    my: 1,
+                    width: open ? "200px" : "50px",
+                  }}
+                >
+                  <Item
+                    title={data.title}
+                    to={data.path}
+                    icon={data.icon}
+                    isSelected={Boolean(
+                      currentPath.startsWith(`/${data.path}`)
+                    )}
+                    setSelected={setSelected}
+                    nav={nav}
+                    params={data?.params}
+                    isDrawerOpen={open}
+                  />
+                </ListItem>
+              )
+          )}
         </List>
         <Box
           sx={{

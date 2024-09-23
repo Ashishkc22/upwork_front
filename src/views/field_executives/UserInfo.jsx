@@ -134,199 +134,220 @@ const UserInfoCard = () => {
       alignItems="center"
       sx={{ width: "100%", p: 2 }}
     >
-      <Dialog
-        open={isSuspensionDialogOpened}
-        onClose={() => setIsSuspensionDialogOpened(false)}
-        aria-labelledby="alert-dialog-title"
-        aria-describedby="alert-dialog-description"
-      >
-        <Box alignItems="center" sx={{ m: 2 }}>
-          <TextField
-            id="standard-basic"
-            label="Discard Reason"
-            variant="standard"
-            value={suspensionReason}
-            placeholder="Discard Reason"
-            onChange={(e) => setSuspensionReason(e.target.value)}
-            sx={{ mt: 1, width: "250px" }}
-          />
-        </Box>
-        <Box display="flex" justifyContent="end">
-          <Button onClick={() => setIsSuspensionDialogOpened(false)}>
-            cancel
-          </Button>
-          <Button onClick={handleUserSuspension}>
-            {userData.status === "Verified" ? "suspend" : "unsuspend"}
-          </Button>
-        </Box>
-      </Dialog>
-      <EditCardDialog
-        open={isEditDialogOpened}
-        data={userData}
-        teamLeaderDetails={teamLeaderDetails}
-        onClose={(callApi) => {
-          if (callApi) {
-            fetchCardData();
-          }
-          setIsEditDialogOpened(false);
+      <Box
+        onClick={() => navigate(-1)}
+        sx={{
+          position: "absolute",
+          height: `100vh`,
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          zIndex: 1, // Lower than the content
         }}
       />
-      {(userData?.id_proof?.front || userData?.id_proof?.back) && (
-        <ImageDialog
-          open={imageListDialog}
-          onClose={() => setImageListDialog(false)}
-          images={[userData.id_proof.front, userData.id_proof.back]}
-        />
-      )}
 
-      <Card sx={{ maxWidth: 1000, width: "100%" }}>
-        <Box
-          sx={{
-            display: "flex",
-            position: "relative",
-            flexDirection: "row-reverse",
-            mt: 1,
-          }}
+      {/* Your content */}
+      <Box
+        sx={{
+          position: "relative",
+          zIndex: 2, // Higher z-index so this is clickable
+        }}
+      >
+        <Dialog
+          open={isSuspensionDialogOpened}
+          onClose={() => setIsSuspensionDialogOpened(false)}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
         >
-          <Button
+          <Box alignItems="center" sx={{ m: 2 }}>
+            <TextField
+              id="standard-basic"
+              label="Discard Reason"
+              variant="standard"
+              value={suspensionReason}
+              placeholder="Discard Reason"
+              onChange={(e) => setSuspensionReason(e.target.value)}
+              sx={{ mt: 1, width: "250px" }}
+            />
+          </Box>
+          <Box display="flex" justifyContent="end">
+            <Button onClick={() => setIsSuspensionDialogOpened(false)}>
+              cancel
+            </Button>
+            <Button onClick={handleUserSuspension}>
+              {userData.status === "Verified" ? "suspend" : "unsuspend"}
+            </Button>
+          </Box>
+        </Dialog>
+        <EditCardDialog
+          open={isEditDialogOpened}
+          data={userData}
+          teamLeaderDetails={teamLeaderDetails}
+          onClose={(callApi) => {
+            if (callApi) {
+              fetchCardData();
+            }
+            setIsEditDialogOpened(false);
+          }}
+        />
+        {(userData?.id_proof?.front || userData?.id_proof?.back) && (
+          <ImageDialog
+            open={imageListDialog}
+            onClose={() => setImageListDialog(false)}
+            images={[userData.id_proof.front, userData.id_proof.back]}
+          />
+        )}
+
+        <Card sx={{ maxWidth: 1000, width: "100%" }}>
+          <Box
             sx={{
-              color: "#ff5722",
-              p: 1,
-              m: 0,
-              mr: 3,
-            }}
-            variant="standard"
-            startIcon={<EditIcon />}
-            onClick={() => {
-              setIsEditDialogOpened(true);
+              display: "flex",
+              position: "relative",
+              flexDirection: "row-reverse",
+              mt: 1,
             }}
           >
-            Edit
-          </Button>
-        </Box>
-        <CardContent>
-          <Grid container>
-            {/* COL 1 */}
-            <Grid item xs={6}>
-              {/* Profile image */}
-              <Grid container rowGap={3}>
-                <Grid item xs={12}>
-                  <Box display="flex">
-                    <IconButton
-                      onClick={() => navigate(-1)}
-                      aria-label="back"
-                      sx={{ mr: 2 }}
-                    >
-                      <ArrowBackIcon sx={{ fontSize: 30 }} />
-                    </IconButton>
-                    <TextGroup title="UID:" value={userData.uid} />
-                  </Box>
-                </Grid>
-                <Grid item xs={6}>
-                  <Grid container>
-                    <Grid item xs={7}>
-                      <Card sx={{ width: "110px", height: "120px" }}>
-                        {userData.image ? (
-                          <CardMedia
-                            component="img"
-                            sx={{ width: "110px" }}
-                            image={userData.image}
-                            alt={`Profile Image`}
-                          />
-                        ) : (
-                          <PersonIcon sx={{ fontSize: "100px" }} />
-                        )}
-                      </Card>
-                    </Grid>
-                    <Grid item xs={5}>
-                      <TextGroup title="Name" value={userData.name} />
-                      <TextGroup title="Status" value={userData.status} />
-                      <ToggleButtonGroup
-                        color="primary"
-                        exclusive
-                        value={role}
-                        onChange={(e) => {
-                          updateUserRole({ role: e.target.value });
-                        }}
-                        aria-label="Platform"
+            <Button
+              sx={{
+                color: "#ff5722",
+                p: 1,
+                m: 0,
+                mr: 3,
+              }}
+              variant="standard"
+              startIcon={<EditIcon />}
+              onClick={() => {
+                setIsEditDialogOpened(true);
+              }}
+            >
+              Edit
+            </Button>
+          </Box>
+          <CardContent>
+            <Grid container>
+              {/* COL 1 */}
+              <Grid item xs={6}>
+                {/* Profile image */}
+                <Grid container rowGap={3}>
+                  <Grid item xs={12}>
+                    <Box display="flex">
+                      <IconButton
+                        onClick={() => navigate(-1)}
+                        aria-label="back"
+                        sx={{ mr: 2 }}
                       >
-                        <ToggleButton value="ADMIN">Admin</ToggleButton>
-                        <ToggleButton value="FE">FE</ToggleButton>
-                        <ToggleButton value="TL">TL</ToggleButton>
-                      </ToggleButtonGroup>
+                        <ArrowBackIcon sx={{ fontSize: 30 }} />
+                      </IconButton>
+                      <TextGroup title="UID:" value={userData.uid} />
+                    </Box>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Grid container>
+                      <Grid item xs={7}>
+                        <Card sx={{ width: "110px", height: "120px" }}>
+                          {userData.image ? (
+                            <CardMedia
+                              component="img"
+                              sx={{ width: "110px" }}
+                              image={userData.image}
+                              alt={`Profile Image`}
+                            />
+                          ) : (
+                            <PersonIcon sx={{ fontSize: "100px" }} />
+                          )}
+                        </Card>
+                      </Grid>
+                      <Grid item xs={5}>
+                        <TextGroup title="Name" value={userData.name} />
+                        <TextGroup title="Status" value={userData.status} />
+                        <ToggleButtonGroup
+                          color="primary"
+                          exclusive
+                          value={role}
+                          onChange={(e) => {
+                            updateUserRole({ role: e.target.value });
+                          }}
+                          aria-label="Platform"
+                        >
+                          <ToggleButton value="ADMIN">Admin</ToggleButton>
+                          <ToggleButton value="FE">FE</ToggleButton>
+                          <ToggleButton value="TL">TL</ToggleButton>
+                          <ToggleButton value="SUBADMIN">SUBADMIN</ToggleButton>
+                        </ToggleButtonGroup>
+                      </Grid>
                     </Grid>
                   </Grid>
                 </Grid>
-              </Grid>
 
-              <Grid item xs={12} sx={{ mt: 2 }}>
-                <Box display="flex" alignItems="center">
-                  <EmailIcon sx={{ mr: 2 }} />
-                  <Link
-                    onClick={() => window.open(`mailto:${userData.email}`)}
-                    underline="none"
+                <Grid item xs={12} sx={{ mt: 2 }}>
+                  <Box display="flex" alignItems="center">
+                    <EmailIcon sx={{ mr: 2 }} />
+                    <Link
+                      onClick={() => window.open(`mailto:${userData.email}`)}
+                      underline="none"
+                    >
+                      <TextGroup title="Email" value={userData.email} />
+                    </Link>
+                  </Box>
+                </Grid>
+
+                {/* Phone */}
+                <Grid item xs={12} sx={{ mt: 2 }}>
+                  <Box
+                    display="flex"
+                    alignItems="center"
+                    sx={{ width: "30px !important" }}
                   >
-                    <TextGroup title="Email" value={userData.email} />
-                  </Link>
-                </Box>
-              </Grid>
+                    <LocalPhoneIcon sx={{ mr: 2 }} />
 
-              {/* Phone */}
-              <Grid item xs={12} sx={{ mt: 2 }}>
-                <Box
-                  display="flex"
-                  alignItems="center"
-                  sx={{ width: "30px !important" }}
-                >
-                  <LocalPhoneIcon sx={{ mr: 2 }} />
-
-                  <Box mb={1}>
-                    <Typography fontSize="10px" color="text.secondary">
-                      Phone
-                    </Typography>
-                    <Link underline="none" sx={{ width: "fit" }}>
-                      <Typography
-                        variant="h6"
-                        fontSize="12px"
-                        fontWeight={600}
-                        gutterBottom
-                        onClick={() =>
-                          window.open(`https://wa.me/${userData.phone}`)
-                        }
-                      >
-                        {userData.phone}
+                    <Box mb={1}>
+                      <Typography fontSize="10px" color="text.secondary">
+                        Phone
                       </Typography>
-                    </Link>
+                      <Link underline="none" sx={{ width: "fit" }}>
+                        <Typography
+                          variant="h6"
+                          fontSize="12px"
+                          fontWeight={600}
+                          gutterBottom
+                          onClick={() =>
+                            window.open(`https://wa.me/${userData.phone}`)
+                          }
+                        >
+                          {userData.phone}
+                        </Typography>
+                      </Link>
+                    </Box>
+                    {/* <TextGroup title="Phone" value={userData.phone} /> */}
                   </Box>
-                  {/* <TextGroup title="Phone" value={userData.phone} /> */}
-                </Box>
-                <Box
-                  sx={{
-                    ml: { lg: "35px", md: "35px" },
-                    width: "90px !important",
-                  }}
-                >
-                  <Box mb={1}>
-                    <Typography fontSize="10px" color="text.secondary">
-                      Emergency Contact
-                    </Typography>
-                    <Link underline="none" sx={{ width: "80px" }}>
-                      <Typography
-                        variant="h6"
-                        fontSize="12px"
-                        fontWeight={600}
-                        gutterBottom
-                        onClick={() =>
-                          window.open(
-                            `https://wa.me/${userData.emergency_contact}`
-                          )
-                        }
-                      >
-                        {userData.emergency_contact}
+                  <Box
+                    sx={{
+                      ml: { lg: "35px", md: "35px" },
+                      width: "90px !important",
+                    }}
+                  >
+                    <Box mb={1}>
+                      <Typography fontSize="10px" color="text.secondary">
+                        Emergency Contact
                       </Typography>
-                    </Link>
-                  </Box>
-                  {/* <Link
+                      <Link underline="none" sx={{ width: "80px" }}>
+                        <Typography
+                          variant="h6"
+                          fontSize="12px"
+                          fontWeight={600}
+                          gutterBottom
+                          onClick={() =>
+                            window.open(
+                              `https://wa.me/${userData.emergency_contact}`
+                            )
+                          }
+                        >
+                          {userData.emergency_contact}
+                        </Typography>
+                      </Link>
+                    </Box>
+                    {/* <Link
                     onClick={() =>
                       window.open(`tel:${userData.emergency_contact}`)
                     }
@@ -337,133 +358,134 @@ const UserInfoCard = () => {
                       value={userData.emergency_contact}
                     />
                   </Link> */}
-                </Box>
-              </Grid>
-
-              <Grid item xs={12}>
-                <Box display="flex" alignItems="center">
-                  <LocationOnIcon sx={{ mr: 2 }} />
-                  <TextGroup title="Address" value={userData.address} />
-                </Box>
-                <Box sx={{ ml: { lg: "35px", md: "35px" } }}>
-                  <TextGroup title="District" value={userData.district} />
-                </Box>
-                <Box sx={{ ml: { lg: "35px", md: "35px" } }}>
-                  <TextGroup title="State" value={userData.state} />
-                </Box>
-              </Grid>
-            </Grid>
-
-            {/* COL 2 */}
-            <Grid item xs={6}>
-              <Grid container>
-                <Grid item xs={12}>
-                  <TextGroup
-                    title="Team Leader ID"
-                    value={teamLeaderDetails.tl_id}
-                    subText={teamLeaderDetails.name}
-                  />
-                </Grid>
-
-                <Grid item xs={12}>
-                  <Box mb={1}>
-                    <Typography fontSize="10px" color="text.secondary">
-                      Created At
-                    </Typography>
-                    <Typography
-                      variant="h6"
-                      fontSize="12px"
-                      fontWeight={600}
-                      gutterBottom
-                    >
-                      {moment(userData.created_at).format("DD-MM-YYYY HH:MM")}
-                    </Typography>
                   </Box>
                 </Grid>
 
                 <Grid item xs={12}>
-                  <Box mb={1} sx={{ width: "80px" }}>
-                    <Typography fontSize="10px" color="text.secondary">
-                      Co-ordinates
-                    </Typography>
-                    <Link
-                      onClick={() => {
-                        window.open(
-                          `https://www.google.com/maps?q=${
-                            userData?.lat || 0
-                          },${userData?.lon || 0}`
-                        );
-                      }}
-                    >
+                  <Box display="flex" alignItems="center">
+                    <LocationOnIcon sx={{ mr: 2 }} />
+                    <TextGroup title="Address" value={userData.address} />
+                  </Box>
+                  <Box sx={{ ml: { lg: "35px", md: "35px" } }}>
+                    <TextGroup title="District" value={userData.district} />
+                  </Box>
+                  <Box sx={{ ml: { lg: "35px", md: "35px" } }}>
+                    <TextGroup title="State" value={userData.state} />
+                  </Box>
+                </Grid>
+              </Grid>
+
+              {/* COL 2 */}
+              <Grid item xs={6}>
+                <Grid container>
+                  <Grid item xs={12}>
+                    <TextGroup
+                      title="Team Leader ID"
+                      value={teamLeaderDetails.tl_id}
+                      subText={teamLeaderDetails.name}
+                    />
+                  </Grid>
+
+                  <Grid item xs={12}>
+                    <Box mb={1}>
+                      <Typography fontSize="10px" color="text.secondary">
+                        Created At
+                      </Typography>
                       <Typography
                         variant="h6"
                         fontSize="12px"
                         fontWeight={600}
                         gutterBottom
                       >
-                        {`${userData?.lat || 0},${userData?.lon || 0}`}
+                        {moment(userData.created_at).format("DD-MM-YYYY HH:MM")}
                       </Typography>
-                    </Link>
-                  </Box>
-                </Grid>
+                    </Box>
+                  </Grid>
 
-                <Grid item xs={12}>
-                  <TextGroup title="ID Card: (Aadhaar)" />
-                  <Box>
-                    {userData?.id_proof?.front && (
-                      <img
-                        src={userData?.id_proof?.front}
-                        alt=""
-                        style={{ width: "100px", mx: 1 }}
+                  <Grid item xs={12}>
+                    <Box mb={1} sx={{ width: "80px" }}>
+                      <Typography fontSize="10px" color="text.secondary">
+                        Co-ordinates
+                      </Typography>
+                      <Link
                         onClick={() => {
-                          setImageListDialog(true);
+                          window.open(
+                            `https://www.google.com/maps?q=${
+                              userData?.lat || 0
+                            },${userData?.lon || 0}`
+                          );
                         }}
-                      />
-                    )}
-                    {userData?.id_proof?.back && (
-                      <img
-                        src={userData?.id_proof?.back}
-                        alt=""
-                        style={{ width: "100px", marginLeft: 3 }}
-                        onClick={() => {
-                          setImageListDialog(true);
-                        }}
-                      />
-                    )}
-                  </Box>
+                      >
+                        <Typography
+                          variant="h6"
+                          fontSize="12px"
+                          fontWeight={600}
+                          gutterBottom
+                        >
+                          {`${userData?.lat || 0},${userData?.lon || 0}`}
+                        </Typography>
+                      </Link>
+                    </Box>
+                  </Grid>
+
+                  <Grid item xs={12}>
+                    <TextGroup title="ID Card: (Aadhaar)" />
+                    <Box>
+                      {userData?.id_proof?.front && (
+                        <img
+                          src={userData?.id_proof?.front}
+                          alt=""
+                          style={{ width: "100px", mx: 1 }}
+                          onClick={() => {
+                            setImageListDialog(true);
+                          }}
+                        />
+                      )}
+                      {userData?.id_proof?.back && (
+                        <img
+                          src={userData?.id_proof?.back}
+                          alt=""
+                          style={{ width: "100px", marginLeft: 3 }}
+                          onClick={() => {
+                            setImageListDialog(true);
+                          }}
+                        />
+                      )}
+                    </Box>
+                  </Grid>
                 </Grid>
               </Grid>
-            </Grid>
-            <Grid item container xs={12} display="flex" justifyContent="end">
-              <Button
-                onClick={() => {
-                  window.open(
-                    `https://wa.me/+91${userData.phone}?text=Hi ${userData.name}, your password is ${userData.password}`
-                  );
-                }}
-              >
-                send password
-              </Button>
-              <Button
-                onClick={
-                  // () => handleUserSuspension()
-                  () => {
-                    if (userData?.status != "Suspended") {
-                      setIsSuspensionDialogOpened(true);
-                    } else {
-                      handleUserSuspension();
+              <Grid item container xs={12} display="flex" justifyContent="end">
+                <Button
+                  onClick={() => {
+                    window.open(
+                      `https://wa.me/+91${userData.phone}?text=Hi ${userData.name}, your password is ${userData.password}`
+                    );
+                  }}
+                >
+                  send password
+                </Button>
+                <Button
+                  onClick={
+                    // () => handleUserSuspension()
+                    () => {
+                      if (userData?.status != "Suspended") {
+                        setIsSuspensionDialogOpened(true);
+                      } else {
+                        handleUserSuspension();
+                      }
                     }
                   }
-                }
-              >
-                {statupMap[userData?.status]
-                  ? statupMap[userData?.status]
-                  : "unsuspend"}
-              </Button>
+                >
+                  {statupMap[userData?.status]
+                    ? statupMap[userData?.status]
+                    : "unsuspend"}
+                </Button>
+              </Grid>
             </Grid>
-          </Grid>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </Box>
     </Box>
   );
 };

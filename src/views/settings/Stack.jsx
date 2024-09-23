@@ -322,7 +322,7 @@ Text Dialog  logic
           onTextChange={handleTextChange}
           onAdd={handleAddAction}
         />
-        {(!isEmpty(preSelectedDetails) || stackName === "state") && (
+        {(!isEmpty(preSelectedDetails) || stackName === "district") && (
           <List>
             {filteredStates.map((state, index) => (
               <ListItemButton

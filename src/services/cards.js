@@ -450,7 +450,7 @@ async function deleteCard(id) {
     message,
     error = "",
   } = await axiosUtil.delete({
-    path: "cards",
+    path: "bin/card",
     params: { token: tokenUtil.getAuthToken(), id },
   });
   if (status === "failed") {

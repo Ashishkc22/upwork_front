@@ -55,7 +55,24 @@ async function restoreData(payload) {
     return;
   }
 }
+async function deleteData(id, type) {
+  const {
+    status,
+    data,
+    message,
+    error = "",
+  } = await axiosUtil.delete({
+    path: `bin/${type}`,
+    params: { token: tokenUtil.getAuthToken(), id },
+  });
+  if (status === "failed") {
+    return { status, error: error || message };
+  } else if (!isEmpty(data)) {
+    return data;
+  }
+}
 export default {
   getBinData,
   restoreData,
+  deleteData,
 };

@@ -112,6 +112,8 @@ const Header = memo(
     isNavAllowed = () => true,
     pSelectedCard,
     showPrintMode = false,
+    showAddHospital = false,
+    hanldeAddHospital = () => {},
   }) => {
     const navigate = useNavigate();
     const [selectedCard, setSelectedCard] = useState(defaultSelectedCard);
@@ -731,6 +733,20 @@ const Header = memo(
                   </Typography>
                 )}
               </Grid>
+            )}
+            {showAddHospital && (
+              <Button
+                sx={{
+                  background: "#ff5722",
+                  color: "white",
+                  ":hover": {
+                    background: "#e23f0c",
+                  },
+                }}
+                onClick={() => hanldeAddHospital()}
+              >
+                Add hospital
+              </Button>
             )}
           </Grid>
         </Grid>

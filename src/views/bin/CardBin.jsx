@@ -15,6 +15,7 @@ import Tab from "@mui/material/Tab";
 import { tokens } from "../../theme";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import CardPreviewDialog from "./CardPreviewDialog";
 
 let typingTimer;
 
@@ -38,25 +39,39 @@ const headers = [
 ];
 
 const CardBin = ({ binData, handleDataRestore }) => {
+  const [selectedCard, setSelectedCardData] = useState({});
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   return (
-    <CustomTable
-      headers={headers}
-      rows={binData}
-      dataForSmallScreen={{
-        use: true,
-        title: { keys: ["name", "created_by_uid", "deleted_at"] },
-      }}
-      showPagiantion
-      showActionMenu={false}
-      actions={[
-        {
-          label: "Restore",
-          smallIcon: <RestoreIcon size="small" />,
-          icon: <RestoreIcon />,
-          handler: handleDataRestore,
-        },
-      ]}
-    />
+    <div>
+      <CardPreviewDialog
+        cardData={selectedCard}
+        open={isDialogOpen}
+        setIsDialogOpen={setIsDialogOpen}
+        setSelectedCardData={setSelectedCardData}
+      />
+      <CustomTable
+        headers={headers}
+        rows={binData}
+        dataForSmallScreen={{
+          use: true,
+          title: { keys: ["name", "created_by_uid", "deleted_at"] },
+        }}
+        showPagiantion
+        showActionMenu={false}
+        actions={[
+          {
+            label: "Restore",
+            smallIcon: <RestoreIcon size="small" />,
+            icon: <RestoreIcon />,
+            handler: handleDataRestore,
+          },
+        ]}
+        rowClick={(data) => {
+          setIsDialogOpen(true);
+          setSelectedCardData(data);
+        }}
+      />
+    </div>
   );
 };
 

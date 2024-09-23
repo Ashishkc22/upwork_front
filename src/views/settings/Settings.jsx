@@ -82,11 +82,23 @@ const SettingsPage = () => {
   };
 
   useEffect(() => {
-    getAddress({ params: { ...(showHidden && { showHidden }) } }).then(
-      (states) => {
-        setStates(states);
-      }
-    );
+    setSelectedStates({
+      _id: "63c681806072b29c2133326e",
+      name: "MP",
+      __v: 0,
+      active: true,
+    });
+    getAddress({
+      type: "district",
+      params: {
+        stateId: "63c681806072b29c2133326e",
+        ...(showHidden && { showHidden }),
+      },
+    }).then((district) => {
+      // setStates(district);
+      // console.log("data", district);
+      setDistrict(district);
+    });
   }, [showHidden]);
 
   function handleStateClick(state) {
@@ -264,7 +276,7 @@ const SettingsPage = () => {
       </AppBar>
       <TabPanel value={value} index={0}>
         <Grid container>
-          <Grid item lg={2} sx={{ m: 0, p: 0 }}>
+          {/* <Grid item lg={2} sx={{ m: 0, p: 0 }}>
             <Stack
               handleSwitchChange={handleActiveDeactivateAddress}
               showHidden={showHidden}
@@ -277,19 +289,18 @@ const SettingsPage = () => {
               stackName="state"
               apiCallBack={handleApiCallback}
             />
-          </Grid>
+          </Grid> */}
           <Grid item lg={2}>
             <Stack
               handleSwitchChange={handleActiveDeactivateAddress}
               showHidden={showHidden}
-              addDialogText={`Create District in ${selectedState.name}`}
+              addDialogText={`Create District in MP`}
               searchInputLabel="Search District"
-              titleWithCount={`District (${district?.length || 0})`}
+              titleWithCount={`District (${district?.length})`}
               stackData={district}
               selectedItem={selectedDistrict}
               handleItemClick={handleDistrictClick}
               stackName="district"
-              preSelectedDetails={selectedState}
               apiCallBack={handleApiCallback}
             />
           </Grid>

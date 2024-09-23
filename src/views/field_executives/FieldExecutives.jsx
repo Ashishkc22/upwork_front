@@ -13,7 +13,24 @@ import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 let typingTimer;
 
 const headers = [
-  { label: "RANK", key: "index" },
+  {
+    label: "RANK",
+    key: "index",
+    indicator: true,
+    getColor: ({ last_fetch, status }) => {
+      const color =
+        status === "Verified"
+          ? new Date(last_fetch) >
+            new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+            ? "green"
+            : "grey"
+          : status === "Unverified"
+          ? "#ffc107"
+          : "red";
+
+      return color;
+    },
+  },
   { label: "ID", key: "uid" },
   { label: "NAME", key: "name" },
   { label: "MOB NO.", key: "phone" },
@@ -70,7 +87,7 @@ const HospitalPage = () => {
         params: {
           limit: 100,
           page: _page,
-          sortBy: "name",
+          sortBy: "created_at",
           ...(search && search != "em" && { q: search }),
           ...(district && district != "em" && { district }),
           ...(tehsil && tehsil != "em" && { tehsil }),
@@ -122,9 +139,9 @@ const HospitalPage = () => {
     navigate(`${row.uid}`);
   };
 
-  useEffect(() => {
-    getUsers();
-  }, []);
+  // useEffect(() => {
+  //   getUsers();
+  // }, []);
 
   const customPrevioudButton = (porps) => (
     <Button
@@ -227,6 +244,7 @@ const HospitalPage = () => {
               }}
               rowClick={handleRowClick}
               showPagiantion
+              statusIndicator
             />
             <Box sx={{ height: "20px" }}></Box>
 

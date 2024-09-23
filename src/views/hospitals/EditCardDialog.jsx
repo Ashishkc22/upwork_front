@@ -132,6 +132,18 @@ const EditCardDialog = ({ open, onClose, data, mode = "Edit" }) => {
           ? [...prevState[name], value]
           : prevState[name].filter((item) => item !== value),
       }));
+    } else if (type === "number") {
+      if (name === "tel_no" && event.target?.value?.length <= 11) {
+        setFormData((prevState) => ({
+          ...prevState,
+          [name]: value,
+        }));
+      } else if (name !== "tel_no" && event.target?.value?.length <= 10) {
+        setFormData((prevState) => ({
+          ...prevState,
+          [name]: value,
+        }));
+      }
     } else {
       setFormData((prevState) => ({
         ...prevState,
@@ -416,6 +428,54 @@ const EditCardDialog = ({ open, onClose, data, mode = "Edit" }) => {
                 >
                   Clear
                 </Button>
+              </Grid>
+            </Grid>
+          </Grid>
+          {/* Contact person name and phone number */}
+          <Grid item xs={12}>
+            <Grid container columnSpacing={1}>
+              <Grid item xs={12}>
+                <Typography variant="h6" fontWeight={600}>
+                  Contact Person Information
+                </Typography>
+              </Grid>
+              <Grid item xs={6}>
+                <TextField
+                  id="standard-basic"
+                  label="Name"
+                  value={formData.contactPersonName}
+                  onChange={(e) => {
+                    setFormData((pre) => {
+                      return {
+                        ...pre,
+                        contactPersonName: e.target.value,
+                      };
+                    });
+                  }}
+                  variant="standard"
+                  sx={{ width: "100%" }}
+                />
+              </Grid>
+
+              <Grid item xs={6}>
+                <TextField
+                  id="standard-basic"
+                  label="Phone"
+                  value={formData.contactPersonPhone}
+                  onChange={(e) => {
+                    if (e.target?.value?.length <= 10) {
+                      setFormData((pre) => {
+                        return {
+                          ...pre,
+                          contactPersonPhone: e.target.value,
+                        };
+                      });
+                    }
+                  }}
+                  variant="standard"
+                  type="number"
+                  sx={{ width: "100%" }}
+                />
               </Grid>
             </Grid>
           </Grid>
@@ -736,6 +796,7 @@ const EditCardDialog = ({ open, onClose, data, mode = "Edit" }) => {
               fullWidth
               margin="normal"
               variant="standard"
+              type="number"
             />
           </Grid>
 
@@ -748,6 +809,7 @@ const EditCardDialog = ({ open, onClose, data, mode = "Edit" }) => {
               fullWidth
               margin="normal"
               variant="standard"
+              type="number"
             />
           </Grid>
 

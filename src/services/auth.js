@@ -1,6 +1,7 @@
 import { isEmpty } from "lodash";
 import axiosUtil from "../utils/api.util";
 import cookiesUtil from "../utils/cookies.util";
+import storageUtil from "../utils/storage.util";
 import { enqueueSnackbar } from "notistack";
 
 async function login(payload) {
@@ -26,6 +27,7 @@ async function login(payload) {
     return { message, status, error: error || message };
   } else if (!isEmpty(data)) {
     cookiesUtil.setCookie({ value: { token: data.user_token }, days: 1 });
+    storageUtil.setStorageData(data.role, "userRole");
     enqueueSnackbar("Login successful.", {
       variant: "success",
       autoHideDuration: 2000,

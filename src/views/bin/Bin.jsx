@@ -23,6 +23,7 @@ import { tokens } from "../../theme";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import CardBin from "./CardBin";
+import HospitalBin from "./Hospital";
 
 let typingTimer;
 
@@ -62,12 +63,18 @@ const Bin = () => {
 
   //   API call to get hospital data
   const getBinData = ({ _page } = {}) => {
+    const tabNameMap = {
+      0: "Card",
+      1: "Hospital",
+    };
     setIsPageLoading(true);
+
     bin
       .getBinData({
         params: {
           limit: 100,
           page: _page,
+          type: tabNameMap[tab],
         },
       })
       .then((response) => {
@@ -93,7 +100,7 @@ const Bin = () => {
 
   useEffect(() => {
     getBinData();
-  }, []);
+  }, [tab]);
 
   function TabPanel(props) {
     const { children, value, index, ...other } = props;
@@ -157,8 +164,6 @@ const Bin = () => {
         <Tabs
           value={tab}
           onChange={(e, value) => {
-            console.log("tabe", value);
-
             setTab(value);
           }}
           sx={{
@@ -171,10 +176,12 @@ const Bin = () => {
           }}
         >
           <Tab label="Cards Bin" />
+          <Tab label="Hospital Bin" />
           {/* <Tab label="Item Two" />
           <Tab label="Item Three" /> */}
         </Tabs>
       </Grid>
+
       {isPageLoading ? (
         <Grid item xs={12}>
           <LinearIndeterminate />
@@ -184,6 +191,15 @@ const Bin = () => {
           {/* {!isEmpty(hospitalList) && ( */}
           <TabPanel value={tab} index={0} dir={theme.direction}>
             <CardBin
+              setPageCount={setPageCount}
+              setIsPageLoading={setIsPageLoading}
+              binData={binData}
+              handleDataRestore={handleDataRestore}
+            />
+            <Box sx={{ height: "20px" }}></Box>
+          </TabPanel>
+          <TabPanel value={tab} index={1} dir={theme.direction}>
+            <HospitalBin
               setPageCount={setPageCount}
               setIsPageLoading={setIsPageLoading}
               binData={binData}

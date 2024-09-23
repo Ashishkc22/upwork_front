@@ -13,7 +13,14 @@ import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 let typingTimer;
 
 const headers = [
-  { label: "SNO", key: "index" },
+  {
+    label: "SNO",
+    key: "index",
+    indicator: true,
+    getColor: ({ status }) => {
+      return status === "ENABLE" ? "green" : "red";
+    },
+  },
   { label: "UID", key: "uid" },
   { label: "NAME", key: "entity_name" },
   { label: "REG NO", key: "reg_no" },
@@ -155,37 +162,14 @@ const HospitalPage = () => {
           showGram={false}
           showType
           showOtherCard={true}
+          showAddHospital
+          hanldeAddHospital={() => setAddHospitalDialog(true)}
         />
       </Grid>
       {isPageLoading ? (
         <LinearIndeterminate />
       ) : (
         <>
-          <Grid
-            item
-            xs={12}
-            sx={{
-              display: "flex",
-              justifyContent: "end",
-              mt: 0,
-              mx: 1,
-              p: 0,
-            }}
-            justifyContent="end"
-          >
-            <Button
-              sx={{
-                background: "#ff5722",
-                color: "white",
-                ":hover": {
-                  background: "#e23f0c",
-                },
-              }}
-              onClick={() => setAddHospitalDialog(true)}
-            >
-              Add hospital
-            </Button>
-          </Grid>
           <Grid item xs={12}>
             {/* {!isEmpty(hospitalList) && ( */}
             <CustomTable
@@ -198,6 +182,7 @@ const HospitalPage = () => {
               }}
               rowClick={handleRowClick}
               showPagiantion
+              statusIndicator
             />
             <Box sx={{ height: "30px" }}></Box>
 

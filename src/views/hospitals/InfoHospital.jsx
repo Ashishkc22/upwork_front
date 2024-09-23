@@ -15,6 +15,12 @@ import {
 import DeleteIcon from "@mui/icons-material/Delete";
 import MedicalServicesIcon from "@mui/icons-material/MedicalServices";
 
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogContentText from "@mui/material/DialogContentText";
+import DialogTitle from "@mui/material/DialogTitle";
+
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import EditIcon from "@mui/icons-material/Edit";
 import moment from "moment";
@@ -23,6 +29,7 @@ import { isEmpty } from "lodash";
 import hospitals from "../../services/hospitals";
 import CroppingDialog from "./ImageCropDialog"; // Adjust path as necessary
 import EditCardDialog from "./EditCardDialog";
+import bin from "../../services/bin";
 
 const HospitalInfoCard = () => {
   const navigate = useNavigate();
@@ -30,6 +37,8 @@ const HospitalInfoCard = () => {
   const [hospitalData, setHospitalData] = useState({
     // Initial state as before
   });
+  const [isDetelConfirmationDialog, setIsDetelConfirmationDialog] =
+    useState(false);
   const [status, setStatus] = useState(hospitalData.status === "ENABLE");
   const [isCroppingDialogOpen, setIsCroppingDialogOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
@@ -115,6 +124,17 @@ const HospitalInfoCard = () => {
     setIsStatusChecked(!isStatusChecked);
   };
 
+  const handleHospitalDelete = async () => {
+    try {
+      const deletedData = await bin.deleteData(hospitalData._id, "hospital");
+      if (!isEmpty(deletedData)) {
+        navigate(-1);
+      }
+    } catch (error) {
+      console.log("error", error);
+    }
+  };
+
   const handleImageClick = ({ url, index }) => {
     setSelectedImage(url);
     setIsCroppingDialogOpen(true);
@@ -130,271 +150,354 @@ const HospitalInfoCard = () => {
       alignItems="center"
       sx={{ width: "100%", p: 2 }}
     >
-      <EditCardDialog
-        open={isEditDialogOpen}
-        onClose={() => {
-          fetchCardData();
-          setIsEditDialogOpen(false);
+      {/* Background overlay */}
+      <Box
+        onClick={() => navigate(-1)}
+        sx={{
+          position: "absolute",
+          height: `100vh`,
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          zIndex: 1, // Lower than the content
         }}
-        data={hospitalData}
       />
-      <Card sx={{ maxWidth: 1000, width: "100%" }}>
-        <CardContent>
-          <Box display="flex" justifyContent="space-between">
-            <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-              <IconButton
-                onClick={() => navigate(-1)}
-                aria-label="back"
-                sx={{ mr: 2 }}
-              >
-                <ArrowBackIcon sx={{ fontSize: 30 }} />
-              </IconButton>
-              <TextGroup title="UID:" value={hospitalData.uid} />
-            </Box>
-            <Box>
-              <Button
-                sx={{
-                  display: "inline-flex",
-                  color: "#ff5722",
-                  p: 1,
-                  m: 0,
-                  mr: 3,
-                }}
-                variant="standard"
-                startIcon={<EditIcon />}
-                onClick={() => {
-                  setIsEditDialogOpen(true);
-                }}
-              >
-                Edit
-              </Button>
-            </Box>
-          </Box>
 
-          <Grid container spacing={1}>
-            <Grid item lg={4} md={4} sm={5}>
-              <TextGroup title="ID:" value={hospitalData._id} />
-              <TextGroup
-                title="Entity name:"
-                value={hospitalData.entity_name}
-              />
-              <TextGroup
-                title="Establishment Year:"
-                value={hospitalData.established_in}
-              />
-              <TextGroup title="Reg No.:" value={hospitalData.reg_no} />
-              <TextGroup title="Category:" value={hospitalData.category} />
-              <TextGroup
-                title="Basic Facilities:"
-                value={hospitalData.basic_facilities?.join(", ")}
-              />
-              <TextGroup
-                title="Timings:"
-                value={hospitalData.timings?.join(", ")}
-              />
-              <Grid container>
-                <Grid item xs={6}>
-                  <TextGroup title="Tel No.:" value={hospitalData.tel_no} />
-                </Grid>
-                <Grid item>
-                  <TextGroup
-                    title="Mobile No.:"
-                    value={hospitalData.mobile_no}
-                  />
-                </Grid>
-              </Grid>
-
-              <TextGroup title="Address:" value={hospitalData.address} />
-              <Grid container>
-                <Grid item xs={6}>
-                  <TextGroup title="City:" value={hospitalData.city} />
-                  <TextGroup title="District:" value={hospitalData.district} />
-                </Grid>
-                <Grid item>
-                  <TextGroup title="State:" value={hospitalData.state} />
-                  <TextGroup title="Pincode:" value={hospitalData.pincode} />
-                </Grid>
-              </Grid>
-            </Grid>
-            <Grid
-              item
-              container
-              lg={8}
-              md={8}
-              sm={7}
-              sx={{ maxWidth: 1000, width: "100%" }}
+      {/* Your content */}
+      <Box
+        sx={{
+          position: "relative",
+          zIndex: 2, // Higher z-index so this is clickable
+        }}
+      >
+        <EditCardDialog
+          open={isEditDialogOpen}
+          onClose={() => {
+            fetchCardData();
+            setIsEditDialogOpen(false);
+          }}
+          data={hospitalData}
+        />
+        {/* Delete confirmation dialog */}
+        <Dialog
+          open={isDetelConfirmationDialog}
+          onClose={(e) => {
+            e.stopPropagation();
+            setIsDetelConfirmationDialog(false);
+          }}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+        >
+          <DialogTitle id="alert-dialog-title">Confirm Deletion</DialogTitle>
+          <DialogContent>
+            <DialogContentText id="alert-dialog-description">
+              Are you sure you want to delete this item? This action cannot be
+              undone.
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsDetelConfirmationDialog(false);
+              }}
             >
-              <Grid item xs={6} sm={6}>
+              Cancel
+            </Button>
+            <Button onClick={() => handleHospitalDelete()} autoFocus>
+              Delete
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        <Card sx={{ maxWidth: 1000, width: "100%" }}>
+          <CardContent>
+            <Box display="flex" justifyContent="space-between">
+              <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+                <IconButton
+                  onClick={() => navigate(-1)}
+                  aria-label="back"
+                  sx={{ mr: 2 }}
+                >
+                  <ArrowBackIcon sx={{ fontSize: 30 }} />
+                </IconButton>
+                <TextGroup title="UID:" value={hospitalData.uid} />
+              </Box>
+              <Box>
+                <Button
+                  sx={{
+                    display: "inline-flex",
+                    color: "#ff5722",
+                    p: 1,
+                    m: 0,
+                    mr: 3,
+                  }}
+                  variant="standard"
+                  startIcon={<EditIcon />}
+                  onClick={() => {
+                    setIsEditDialogOpen(true);
+                  }}
+                >
+                  Edit
+                </Button>
+                <Button
+                  sx={{
+                    display: "inline-flex",
+                    color: "#ff5722",
+                    p: 1,
+                    m: 0,
+                    mr: 5,
+                  }}
+                  variant="standard"
+                  startIcon={<DeleteIcon />}
+                  onClick={() => setIsDetelConfirmationDialog(true)}
+                >
+                  Delete
+                </Button>
+              </Box>
+            </Box>
+
+            <Grid container spacing={1}>
+              <Grid item lg={4} md={4} sm={5}>
+                <TextGroup title="ID:" value={hospitalData._id} />
+                <TextGroup
+                  title="Entity name:"
+                  value={hospitalData.entity_name}
+                />
+                <TextGroup
+                  title="Establishment Year:"
+                  value={hospitalData.established_in}
+                />
+                <TextGroup title="Reg No.:" value={hospitalData.reg_no} />
+                <TextGroup title="Category:" value={hospitalData.category} />
+                <TextGroup
+                  title="Basic Facilities:"
+                  value={hospitalData.basic_facilities?.join(", ")}
+                />
+                <TextGroup
+                  title="Timings:"
+                  value={hospitalData.timings?.join(", ")}
+                />
                 <Grid container>
-                  <Grid item xs={5}>
-                    <TextGroup title="Status:" value={hospitalData.status} />
+                  <Grid item xs={6}>
+                    <TextGroup title="Tel No.:" value={hospitalData.tel_no} />
                   </Grid>
                   <Grid item>
-                    <Switch
-                      checked={isStatusChecked}
-                      onChange={handleStatusChange}
-                      inputProps={{ "aria-label": "status toggle" }}
+                    <TextGroup
+                      title="Mobile No.:"
+                      value={hospitalData.mobile_no}
                     />
                   </Grid>
                 </Grid>
-                <TextGroup
-                  title="Website:"
-                  value={
-                    hospitalData.website ? (
+
+                <TextGroup title="Address:" value={hospitalData.address} />
+                <Grid container>
+                  <Grid item xs={6}>
+                    <TextGroup title="City:" value={hospitalData.city} />
+                    <TextGroup
+                      title="District:"
+                      value={hospitalData.district}
+                    />
+                  </Grid>
+                  <Grid item>
+                    <TextGroup title="State:" value={hospitalData.state} />
+                    <TextGroup title="Pincode:" value={hospitalData.pincode} />
+                  </Grid>
+                </Grid>
+              </Grid>
+              <Grid
+                item
+                container
+                lg={8}
+                md={8}
+                sm={7}
+                sx={{ maxWidth: 1000, width: "100%" }}
+              >
+                <Grid item xs={6} sm={6}>
+                  <Grid container>
+                    <Grid item xs={5}>
+                      <TextGroup title="Status:" value={hospitalData.status} />
+                    </Grid>
+                    <Grid item>
+                      <Switch
+                        checked={isStatusChecked}
+                        onChange={handleStatusChange}
+                        inputProps={{ "aria-label": "status toggle" }}
+                      />
+                    </Grid>
+                  </Grid>
+                  <TextGroup
+                    title="Website:"
+                    value={
+                      hospitalData.website ? (
+                        <Link
+                          href={hospitalData.website}
+                          target="_blank"
+                          rel="noopener"
+                        >
+                          {hospitalData.website}
+                        </Link>
+                      ) : (
+                        "N/A"
+                      )
+                    }
+                  />
+                  <TextGroup title="Hospital Rates:" />
+                  {hospitalData.hospital_rates?.map((rate, index) => (
+                    <div key={index}>
+                      {Object.entries(rate).map(([key, value]) => (
+                        <Grid
+                          container
+                          columnSpacing={1}
+                          alignItems="center"
+                          sx={{ p: 0, m: 0 }}
+                        >
+                          <Grid item sx={{ p: 0, m: 0 }}>
+                            <Typography
+                              fontSize="10px"
+                              fontWeight={600}
+                              color="text.secondary"
+                            >
+                              {key + ":"}
+                            </Typography>
+                          </Grid>
+                          <Grid item sx={{ p: 0, m: 0 }}>
+                            <Typography
+                              variant="h6"
+                              fontSize="12px"
+                              fontWeight={600}
+                              gutterBottom
+                            >
+                              {value}
+                            </Typography>
+                          </Grid>
+                        </Grid>
+                      ))}
+                    </div>
+                  ))}
+                  <TextGroup
+                    title="Date of Agreement:"
+                    value={hospitalData.date_of_agreement}
+                  />
+                  <TextGroup
+                    title="Created At:"
+                    value={moment(hospitalData.created_at).format(
+                      "DD-MM-YYYY HH:mm:ss"
+                    )}
+                  />
+                  <TextGroup
+                    title="Created By:"
+                    value={hospitalData.created_by}
+                  />
+                  <TextGroup
+                    title="Map Link:"
+                    value={
                       <Link
-                        href={hospitalData.website}
+                        href={hospitalData.map_link}
                         target="_blank"
                         rel="noopener"
                       >
-                        {hospitalData.website}
+                        View on Map
                       </Link>
-                    ) : (
-                      "N/A"
-                    )
-                  }
-                />
-                <TextGroup title="Hospital Rates:" />
-                {hospitalData.hospital_rates?.map((rate, index) => (
-                  <div key={index}>
-                    {Object.entries(rate).map(([key, value]) => (
-                      <Grid
-                        container
-                        columnSpacing={1}
-                        alignItems="center"
-                        sx={{ p: 0, m: 0 }}
-                      >
-                        <Grid item sx={{ p: 0, m: 0 }}>
-                          <Typography
-                            fontSize="10px"
-                            fontWeight={600}
-                            color="text.secondary"
-                          >
-                            {key + ":"}
-                          </Typography>
-                        </Grid>
-                        <Grid item sx={{ p: 0, m: 0 }}>
-                          <Typography
-                            variant="h6"
-                            fontSize="12px"
-                            fontWeight={600}
-                            gutterBottom
-                          >
-                            {value}
-                          </Typography>
-                        </Grid>
-                      </Grid>
-                    ))}
-                  </div>
-                ))}
-                <TextGroup
-                  title="Date of Agreement:"
-                  value={hospitalData.date_of_agreement}
-                />
-                <TextGroup
-                  title="Created At:"
-                  value={moment(hospitalData.created_at).format(
-                    "DD-MM-YYYY HH:mm:ss"
+                    }
+                  />
+                  {hospitalData?.contactPersonName && (
+                    <TextGroup
+                      title="Contact person name: "
+                      value={hospitalData.contactPersonName}
+                    />
                   )}
-                />
-                <TextGroup
-                  title="Created By:"
-                  value={hospitalData.created_by}
-                />
-                <TextGroup
-                  title="Map Link:"
-                  value={
-                    <Link
-                      href={hospitalData.map_link}
-                      target="_blank"
-                      rel="noopener"
-                    >
-                      View on Map
-                    </Link>
-                  }
-                />
-              </Grid>
-              <Grid item xs={6} sm={6}>
-                <TextGroup
-                  title="Discount IPD:"
-                  value={`${hospitalData.discount_ipd}%`}
-                />
-                <TextGroup
-                  title="Discount OPD:"
-                  value={`${hospitalData.discount_opd}%`}
-                />
-                <TextGroup
-                  title="Discount Medicine:"
-                  value={`${hospitalData.discount_medicine}%`}
-                />
-                <TextGroup
-                  title="Discount Diagnostic:"
-                  value={`${hospitalData.discount_diagnostic}%`}
-                />{" "}
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}
-                ></Box>
-                <TextGroup
-                  title="Doctors:"
-                  value={
-                    hospitalData?.doctors?.length
-                      ? hospitalData?.doctors?.map((DocDetails) => {
-                          return (
-                            <Box display="flex" alignItems="center">
-                              <MedicalServicesIcon />
-                              <Box sx={{ display: "block", mx: 1 }}>
-                                <Typography variant="h6">
-                                  {DocDetails.name}
-                                </Typography>
+                  {hospitalData?.contactPersonPhone && (
+                    <TextGroup
+                      title="Contact person phone: "
+                      value={hospitalData.contactPersonPhone}
+                    />
+                  )}
+                </Grid>
+                <Grid item xs={6} sm={6}>
+                  <TextGroup
+                    title="Discount IPD:"
+                    value={`${hospitalData.discount_ipd}%`}
+                  />
+                  <TextGroup
+                    title="Discount OPD:"
+                    value={`${hospitalData.discount_opd}%`}
+                  />
+                  <TextGroup
+                    title="Discount Medicine:"
+                    value={`${hospitalData.discount_medicine}%`}
+                  />
+                  <TextGroup
+                    title="Discount Diagnostic:"
+                    value={`${hospitalData.discount_diagnostic}%`}
+                  />{" "}
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  ></Box>
+                  <TextGroup
+                    title="Doctors:"
+                    value={
+                      hospitalData?.doctors?.length
+                        ? hospitalData?.doctors?.map((DocDetails) => {
+                            return (
+                              <Box display="flex" alignItems="center">
+                                <MedicalServicesIcon />
+                                <Box sx={{ display: "block", mx: 1 }}>
+                                  <Typography variant="h6">
+                                    {DocDetails.name}
+                                  </Typography>
 
-                                <Typography fontSize={9}>
-                                  {DocDetails.specialization}
-                                  {` (${DocDetails.experience})`}
-                                </Typography>
+                                  <Typography fontSize={9}>
+                                    {DocDetails.specialization}
+                                    {` (${DocDetails.experience})`}
+                                  </Typography>
+                                </Box>
                               </Box>
-                            </Box>
-                          );
-                        })
-                      : "No Data"
-                  }
-                />
-                <TextGroup title="Auth Signature:" />
-                {hospitalData.auth_sign ? (
-                  <img src="hospitalData.auth_sign" alt="sign" />
-                ) : (
-                  "N/A"
+                            );
+                          })
+                        : "No Data"
+                    }
+                  />
+                  <TextGroup title="Auth Signature:" />
+                  {hospitalData.auth_sign ? (
+                    <img src="hospitalData.auth_sign" alt="sign" />
+                  ) : (
+                    "N/A"
+                  )}
+                </Grid>
+                {!isEmpty(imageList) && (
+                  <Grid item xs={12}>
+                    <ImageList
+                      images={imageList}
+                      handleImageClick={handleImageClick}
+                    />
+                  </Grid>
                 )}
               </Grid>
-              {!isEmpty(imageList) && (
-                <Grid item xs={12}>
-                  <ImageList
-                    images={imageList}
-                    handleImageClick={handleImageClick}
-                  />
-                </Grid>
-              )}
             </Grid>
-          </Grid>
-        </CardContent>
-      </Card>
-      <CroppingDialog
-        open={isCroppingDialogOpen}
-        onClose={(isSuccessfull) => {
-          if (isSuccessfull) {
-            setTimeout(() => {
-              fetchCardData();
-            }, 1000);
-          }
-          setIsCroppingDialogOpen(false);
-        }}
-        image={selectedImage}
-        onCropComplete={handleCropComplete}
-        selectedImageIndex={selectedImageIndex}
-        mode="View"
-      />
+          </CardContent>
+        </Card>
+        <CroppingDialog
+          open={isCroppingDialogOpen}
+          onClose={(isSuccessfull) => {
+            if (isSuccessfull) {
+              setTimeout(() => {
+                fetchCardData();
+              }, 1000);
+            }
+            setIsCroppingDialogOpen(false);
+          }}
+          image={selectedImage}
+          onCropComplete={handleCropComplete}
+          selectedImageIndex={selectedImageIndex}
+          mode="View"
+        />
+      </Box>
     </Box>
   );
 };

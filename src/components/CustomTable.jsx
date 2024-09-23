@@ -39,6 +39,7 @@ const DynamicTable = ({
   handleSort,
   showActionMenu = false,
   sortType = "acc",
+  statusIndicator = true,
 }) => {
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
@@ -209,6 +210,11 @@ const DynamicTable = ({
                         lg: 1,
                         md: "2px",
                         sm: 0,
+                        ...(statusIndicator &&
+                          keymap.indicator && {
+                            borderLeft: "solid",
+                            borderLeftColor: keymap?.getColor(row) || "red",
+                          }),
                       },
                       ...(!isEmpty(tbCellStyle) && tbCellStyle),
                     }}
