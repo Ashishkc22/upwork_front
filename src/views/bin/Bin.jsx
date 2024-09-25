@@ -86,6 +86,7 @@ const Bin = () => {
           }
         } else {
           setBinData([]);
+          setPageCount(0);
         }
         setIsPageLoading(false);
       });

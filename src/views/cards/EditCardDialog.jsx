@@ -258,14 +258,19 @@ const EditDialog = ({ open, onClose, cardData, setIscardLoadtion }) => {
                   >
                     <FormControlLabel
                       value="Female"
-                      control={<Radio />}
+                      control={<Radio size="small" />}
                       label="Female"
                     />
                     <FormControlLabel
                       value="Male"
-                      control={<Radio />}
+                      control={<Radio size="small" />}
                       label="Male"
                     />
+                    {/* <FormControlLabel
+                      value="Other"
+                      control={<Radio size="small" />}
+                      label="Other"
+                    /> */}
                   </RadioGroup>
                 </FormControl>
               )}
@@ -395,6 +400,7 @@ const EditDialog = ({ open, onClose, cardData, setIscardLoadtion }) => {
                 <MenuItem value="A+">A+</MenuItem>
                 <MenuItem value="A-">A-</MenuItem>
                 <MenuItem value="B+">B+</MenuItem>
+                <MenuItem value="B-">B-</MenuItem>
                 <MenuItem value="AB+">AB+</MenuItem>
                 <MenuItem value="AB-">AB-</MenuItem>
                 <MenuItem value="O+">O+</MenuItem>

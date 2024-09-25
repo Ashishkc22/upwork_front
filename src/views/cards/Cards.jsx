@@ -607,6 +607,7 @@ const Cards = () => {
     Object.keys(navData.filterObjects?.stateMap)?.forEach((key) =>
       navData.filterObjects.stateMap[key]()
     );
+    addDataToURL({ tab: "totalCards" });
     handleCardSelect(navData.value, true, navData.filterObjects);
     setIsLeaveDialogOpned(false);
   };
@@ -672,9 +673,9 @@ const Cards = () => {
           // tehsilCounts={tehsilCounts}
           handleSelectCard={handleCardSelect}
           isNavAllowed={() => {
-            console.log("markAsPrintPending", markAsPrintPending);
-
-            return isEmpty(markAsPrintPending);
+            return (
+              isEmpty(markAsPrintPending) || selectedCard !== "toBePrinted"
+            );
           }}
           isImageMode={isImageMode}
           handleViewChange={() => setIsImageMode(!isImageMode)}

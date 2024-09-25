@@ -707,31 +707,34 @@ const CardComponent = () => {
                   </Box>
 
                   <Box>
-                    <Grid container>
-                      {cardData.blood_group &&
-                        cardData.blood_group != "null" && (
-                          <Grid item xs={6}>
+                    <Grid container sx={{ minHeight: "80px" }}>
+                      <Grid item xs={6}>
+                        {cardData.blood_group &&
+                          cardData.blood_group != "null" && (
                             <TextElement
                               label="Blood Group"
                               value={cardData?.blood_group || ""}
                             />
-                          </Grid>
-                        )}
-                      {cardData.emergency_contact && (
-                        <Grid item xs={6} sx={{ display: "flex" }}>
+                          )}
+                      </Grid>
+                      <Grid item xs={6} sx={{ display: "flex" }}>
+                        {cardData.emergency_contact && (
                           <IconButton
+                            sx={{ height: "40px", mt: 1 }}
                             onClick={() =>
                               window.open(`tel:${FEDetails.phone}`)
                             }
                           >
                             <PhoneIcon />
                           </IconButton>
+                        )}
+                        {cardData.emergency_contact && (
                           <TextElement
                             label="Emergency Contact"
                             value={cardData.emergency_contact || ""}
                           />
-                        </Grid>
-                      )}
+                        )}
+                      </Grid>
                     </Grid>
                   </Box>
                   <Box>

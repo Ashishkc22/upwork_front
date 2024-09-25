@@ -27,7 +27,7 @@ import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import { isEmpty } from "lodash";
 
 const drawerWidth = 240;
-const drawerVersion = "v1.5.0";
+const drawerVersion = "v1.5.1";
 
 const openedMixin = (theme) => ({
   width: drawerWidth,

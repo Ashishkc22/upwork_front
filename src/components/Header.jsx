@@ -208,6 +208,8 @@ const Header = memo(
       if (tab != name) {
         addDataToURL({ page: null });
       }
+      console.log("isNavAllowed()", isNavAllowed());
+
       if (isNavAllowed()) {
         setSelectedCard(name);
         addDataToURL({ tab: name });
