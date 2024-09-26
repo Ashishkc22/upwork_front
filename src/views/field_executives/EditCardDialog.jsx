@@ -210,7 +210,7 @@ const EditProfileDialog = ({ open, onClose, data, teamLeaderDetails }) => {
   }
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="md">
+    <Dialog open={open} maxWidth="md">
       <ImageCropDialog
         open={isCropDialogOpened}
         onClose={() => {

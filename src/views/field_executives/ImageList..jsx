@@ -3,9 +3,10 @@ import Dialog from "@mui/material/Dialog";
 import IconButton from "@mui/material/IconButton";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import { CardMedia, Box } from "@mui/material";
 
-const ImageDialog = ({ open, onClose, images, initialIndex }) => {
-  const [currentIndex, setCurrentIndex] = useState(initialIndex || 0);
+const ImageDialog = ({ open, onClose, images, initialIndex = 0 }) => {
+  const [currentIndex, setCurrentIndex] = useState(initialIndex);
 
   // Navigate to previous image
   const goToPrevious = () => {
@@ -47,12 +48,29 @@ const ImageDialog = ({ open, onClose, images, initialIndex }) => {
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
-      <div style={{ position: "relative" }}>
-        <img
+      <div style={{ position: "relative", py: 1 }}>
+        <Box display="flex" justifyContent="center">
+          {images[currentIndex] ? (
+            <CardMedia
+              component="img"
+              sx={{
+                width: "70%",
+                // height: "100%",
+                // objectFit: "contain",
+                borderRadius: 3,
+              }}
+              image={images[currentIndex]}
+              alt={`Image ${currentIndex + 1}`}
+            />
+          ) : (
+            goToNext()
+          )}
+        </Box>
+        {/* <img
           src={images[currentIndex]}
           alt={`Image ${currentIndex + 1}`}
           style={{ width: "100%", height: "100%", objectFit: "contain" }}
-        />
+        /> */}
         <IconButton
           style={{
             position: "absolute",

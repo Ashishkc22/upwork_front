@@ -191,13 +191,21 @@ const UserInfoCard = () => {
             setIsEditDialogOpened(false);
           }}
         />
-        {(userData?.id_proof?.front || userData?.id_proof?.back) && (
-          <ImageDialog
-            open={imageListDialog}
-            onClose={() => setImageListDialog(false)}
-            images={[userData.id_proof.front, userData.id_proof.back]}
-          />
-        )}
+        {(userData?.id_proof?.front ||
+          userData?.id_proof?.back ||
+          userData?.image) &&
+          imageListDialog && (
+            <ImageDialog
+              open={imageListDialog}
+              onClose={() => setImageListDialog(false)}
+              initialIndex={imageListDialog - 1}
+              images={[
+                userData.image,
+                userData.id_proof.front,
+                userData.id_proof.back,
+              ]}
+            />
+          )}
 
         <Card sx={{ maxWidth: 1000, width: "100%" }}>
           <Box
@@ -252,6 +260,9 @@ const UserInfoCard = () => {
                               sx={{ width: "110px" }}
                               image={userData.image}
                               alt={`Profile Image`}
+                              onClick={() => {
+                                setImageListDialog(1);
+                              }}
                             />
                           ) : (
                             <PersonIcon sx={{ fontSize: "100px" }} />
@@ -270,10 +281,10 @@ const UserInfoCard = () => {
                           }}
                           aria-label="Platform"
                         >
-                          <ToggleButton value="ADMIN">Admin</ToggleButton>
+                          {/* <ToggleButton value="ADMIN">Admin</ToggleButton> */}
                           <ToggleButton value="FE">FE</ToggleButton>
                           <ToggleButton value="TL">TL</ToggleButton>
-                          <ToggleButton value="SUBADMIN">SUBADMIN</ToggleButton>
+                          {/* <ToggleButton value="SUBADMIN">SUBADMIN</ToggleButton> */}
                         </ToggleButtonGroup>
                       </Grid>
                     </Grid>
@@ -430,8 +441,47 @@ const UserInfoCard = () => {
 
                   <Grid item xs={12}>
                     <TextGroup title="ID Card: (Aadhaar)" />
-                    <Box>
-                      {userData?.id_proof?.front && (
+                    <Box display="flex" columnGap={1}>
+                      <Box display="flex">
+                        <Card
+                          sx={{
+                            width: "140px",
+                            borderRadius: 3,
+                          }}
+                        >
+                          {userData?.id_proof?.front ? (
+                            <CardMedia
+                              component="img"
+                              sx={{ width: "140px", borderRadius: 3 }}
+                              image={userData?.id_proof?.front}
+                              alt={`Profile Image`}
+                              onClick={() => {
+                                setImageListDialog(2);
+                              }}
+                            />
+                          ) : (
+                            <PersonIcon sx={{ fontSize: "100px" }} />
+                          )}
+                        </Card>
+                      </Box>
+                      <Box>
+                        <Card sx={{ width: "140px", borderRadius: 3 }}>
+                          {userData?.id_proof?.back ? (
+                            <CardMedia
+                              component="img"
+                              sx={{ width: "140px", borderRadius: 3 }}
+                              image={userData?.id_proof?.back}
+                              alt={`Profile Image`}
+                              onClick={() => {
+                                setImageListDialog(3);
+                              }}
+                            />
+                          ) : (
+                            <PersonIcon sx={{ fontSize: "100px" }} />
+                          )}
+                        </Card>
+                      </Box>
+                      {/* {userData?.id_proof?.front && (
                         <img
                           src={userData?.id_proof?.front}
                           alt=""
@@ -441,16 +491,20 @@ const UserInfoCard = () => {
                           }}
                         />
                       )}
+
                       {userData?.id_proof?.back && (
                         <img
                           src={userData?.id_proof?.back}
                           alt=""
-                          style={{ width: "100px", marginLeft: 3 }}
+                          style={{
+                            width: "100px",
+                            marginLeft: 3,
+                          }}
                           onClick={() => {
                             setImageListDialog(true);
                           }}
                         />
-                      )}
+                      )} */}
                     </Box>
                   </Grid>
                 </Grid>
