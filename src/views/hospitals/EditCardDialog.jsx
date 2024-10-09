@@ -126,7 +126,7 @@ const EditCardDialog = ({ open, onClose, data, mode = "Edit" }) => {
     getAddressData({ type: "state" });
     if (mode !== "Edit") {
       const draftData = storageUtil.getStorageData("hospital-draft-data") || {};
-      if (draftData) {
+      if (!isEmpty(draftData)) {
         setFormData(draftData);
       }
     }
@@ -569,7 +569,7 @@ const EditCardDialog = ({ open, onClose, data, mode = "Edit" }) => {
                   key={facility}
                   control={
                     <Checkbox
-                      checked={formData.basic_facilities.includes(facility)}
+                      checked={formData.basic_facilities?.includes(facility)}
                       onChange={handleChange}
                       name="basic_facilities"
                       value={facility}
