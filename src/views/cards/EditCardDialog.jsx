@@ -266,11 +266,11 @@ const EditDialog = ({ open, onClose, cardData, setIscardLoadtion }) => {
                       control={<Radio size="small" />}
                       label="Male"
                     />
-                    {/* <FormControlLabel
-                      value="Other"
+                    <FormControlLabel
+                      value="Transgenders"
                       control={<Radio size="small" />}
-                      label="Other"
-                    /> */}
+                      label="Transgender"
+                    />
                   </RadioGroup>
                 </FormControl>
               )}

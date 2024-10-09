@@ -177,13 +177,16 @@ const HospitalPage = () => {
       }}
       rowSpacing={3}
     >
-      <EditCardDialog
-        open={addUsersDialog}
-        onClose={() => setAddUsersDialog(false)}
-        mode="Add"
-      />
+      {addUsersDialog && (
+        <EditCardDialog
+          open={addUsersDialog}
+          onClose={() => setAddUsersDialog(false)}
+          addTLMode
+        />
+      )}
       <Grid item xs={12}>
         <Header
+          currentComponentName="FE"
           toTalScoreDetails={{
             totalScore: totalUsers,
             totalScoreToshow: totalusersToShow,
@@ -207,7 +210,7 @@ const HospitalPage = () => {
         <LinearIndeterminate />
       ) : (
         <>
-          {/* <Grid
+          <Grid
             item
             xs={12}
             sx={{
@@ -219,19 +222,19 @@ const HospitalPage = () => {
             }}
             justifyContent="end"
           >
-            {/* <Button
-          sx={{
-            background: "#ff5722",
-            color: "white",
-            ":hover": {
-              background: "#e23f0c",
-            },
-          }}
-          onClick={() => setAddUsersDialog(true)}
-        >
-          Add field executive
-        </Button>
-          </Grid> */}
+            <Button
+              sx={{
+                background: "#ff5722",
+                color: "white",
+                ":hover": {
+                  background: "#e23f0c",
+                },
+              }}
+              onClick={() => setAddUsersDialog(true)}
+            >
+              Add TL
+            </Button>
+          </Grid>
           <Grid item xs={12}>
             {/* {!isEmpty(hospitalList) && ( */}
             <CustomTable

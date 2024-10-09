@@ -24,6 +24,8 @@ import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import settings from "../../services/settings";
 import { tokens } from "../../theme";
+import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+import UploadLocation from "./UploadLocations";
 
 import { useTheme } from "@mui/material/styles";
 
@@ -74,6 +76,8 @@ const SettingsPage = () => {
   const colors = tokens(theme.palette.mode);
 
   const handleChange = (event, newValue) => {
+    console.log("newValue", newValue);
+
     setValue(newValue);
   };
 
@@ -191,8 +195,7 @@ const SettingsPage = () => {
   function handleApiCallback(stackName) {
     const apiMap = {
       state: () => getAddress(),
-      district: () =>
-        !isEmpty(selectedState) && handleStateClick(selectedState),
+      district: () => handleStateClick(selectedState),
       tehsil: () =>
         !isEmpty(selectedDistrict) && handleDistrictClick(selectedDistrict),
       janPanchayat:
@@ -238,7 +241,7 @@ const SettingsPage = () => {
   }
 
   return (
-    <Box sx={{ width: "100%" }}>
+    <Box sx={{ width: "100%", p: 0 }}>
       <AppBar
         position="static"
         sx={{ backgroundColor: "transparent", boxShadow: "none" }}
@@ -263,6 +266,7 @@ const SettingsPage = () => {
             <Tab icon={<LocationOnIcon />} label="Location Settings" />
             <Tab icon={<LocalHospitalIcon />} label="Hospital Settings" />
             <Tab icon={<ContactMailIcon />} label="Contact Settings" />
+            {/* <Tab icon={<CloudUploadIcon />} label="Upload Loactions" /> */}
           </Tabs>
           <Button
             size="large"
@@ -274,8 +278,9 @@ const SettingsPage = () => {
           </Button>
         </Toolbar>
       </AppBar>
-      <TabPanel value={value} index={0}>
-        <Grid container>
+
+      {value === 0 && (
+        <Grid container sx={{ p: 0, px: 1 }}>
           {/* <Grid item lg={2} sx={{ m: 0, p: 0 }}>
             <Stack
               handleSwitchChange={handleActiveDeactivateAddress}
@@ -290,11 +295,11 @@ const SettingsPage = () => {
               apiCallBack={handleApiCallback}
             />
           </Grid> */}
-          <Grid item lg={2}>
+          <Grid item lg={2} sx={{ p: 0 }}>
             <Stack
               handleSwitchChange={handleActiveDeactivateAddress}
               showHidden={showHidden}
-              addDialogText={`Create District in MP`}
+              addDialogTitle={`Create District in MP`}
               searchInputLabel="Search District"
               titleWithCount={`District (${district?.length})`}
               stackData={district}
@@ -308,7 +313,7 @@ const SettingsPage = () => {
             <Stack
               handleSwitchChange={handleActiveDeactivateAddress}
               showHidden={showHidden}
-              addDialogText={`Create Tehsil in ${selectedDistrict.name}`}
+              addDialogTitle={`Create Tehsil in ${selectedDistrict.name}`}
               searchInputLabel="Search Tehsil"
               titleWithCount={`Tehsil (${tehsil?.length || 0})`}
               stackData={tehsil}
@@ -323,7 +328,7 @@ const SettingsPage = () => {
             <Stack
               handleSwitchChange={handleActiveDeactivateAddress}
               showHidden={showHidden}
-              addDialogText={`Create Janpad Panchayat in ${selectedDistrict.name}`}
+              addDialogTitle={`Create Janpad Panchayat in ${selectedDistrict.name}`}
               searchInputLabel="Search Janpad Panchayat"
               titleWithCount={`Janpad Panchayat (${janpad?.length || 0})`}
               stackData={janpad}
@@ -338,9 +343,13 @@ const SettingsPage = () => {
             <Stack
               handleSwitchChange={handleActiveDeactivateAddress}
               showHidden={showHidden}
-              addDialogText={`Create Gram Panchayat in ${
+              addDialogTitle={`Create Gram Panchayat in ${
                 selectedTehsil?.name || selectedJanpad?.name
               }`}
+              updateDialogText={`Update Gram Panchayat in ${
+                selectedTehsil?.name || selectedJanpad?.name
+              }`}
+              tehsilOption={tehsil}
               searchInputLabel="Search Gram Panchayat"
               titleWithCount={`Gram Panchayat (${gramPanchayat?.length || 0})`}
               stackData={gramPanchayat}
@@ -357,7 +366,8 @@ const SettingsPage = () => {
             <Stack
               handleSwitchChange={handleActiveDeactivateAddress}
               showHidden={showHidden}
-              addDialogText={`Create Gram in ${selectedGramPanchayat?.name}`}
+              addDialogTitle={`Create Gram in ${selectedGramPanchayat?.name}`}
+              updateDialogText={`Update Gram in ${selectedGramPanchayat?.name}`}
               searchInputLabel="Search Gram"
               titleWithCount={`Gram (${gram?.length || 0})`}
               stackData={gram}
@@ -391,13 +401,16 @@ const SettingsPage = () => {
             />
           </Grid>
         </Grid>
-      </TabPanel>
+      )}
       <TabPanel value={value} index={1}>
         <HospitalSettings />
       </TabPanel>
       <TabPanel value={value} index={2}>
         <ContactSettings />
       </TabPanel>
+      {/* <TabPanel value={value} index={3}>
+        <UploadLocation />
+      </TabPanel> */}
     </Box>
   );
 };

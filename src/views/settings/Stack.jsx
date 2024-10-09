@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import {
   Box,
   Stack,
@@ -12,8 +12,8 @@ import {
   ListItemButton,
   Container,
   Grid,
-  Card,
-  CardContent,
+  CircularProgress,
+  Backdrop,
   Typography,
   Divider,
   Link,
@@ -29,6 +29,9 @@ import { useEffect } from "react";
 import settings from "../../services/settings";
 import Switch from "@mui/material/Switch";
 import { styled } from "@mui/material/styles";
+import WhatsAppIcon from "@mui/icons-material/WhatsApp";
+import commonService from "../../services/common";
+import { read, utils } from "xlsx";
 
 const ColoredSwitch = styled(Switch)(({ theme }) => ({
   "& .MuiSwitch-switchBase.Mui-checked": {
@@ -40,7 +43,7 @@ const ColoredSwitch = styled(Switch)(({ theme }) => ({
 }));
 
 let typingTimer;
-
+let timeoutInstance;
 const InfoCard = ({ title, value, phone }) => (
   <Grid container>
     <Grid
@@ -48,6 +51,7 @@ const InfoCard = ({ title, value, phone }) => (
       xs={12}
       style={{
         fontWeight: "bold",
+        fontSize: "10px",
       }}
     >
       {title}:
@@ -70,25 +74,34 @@ const InfoCard = ({ title, value, phone }) => (
             textOverflow: "ellipsis",
             overflow: "hidden",
             whiteSpace: "nowrap",
+            fontSize: "10px",
           }}
         >
           {value}
         </Grid>
-        <Link
-          onClick={() => window.open(`https://wa.me/${phone}`)}
-          underline="none"
-        >
-          <Box mb={1}>
-            <Typography
-              variant="h6"
-              fontSize="12px"
-              fontWeight={600}
-              gutterBottom
-            >
-              {phone}
-            </Typography>
-          </Box>
-        </Link>
+
+        <Box sx={{ display: "flex", alignItems: "center" }}>
+          <Typography
+            variant="body1"
+            fontSize="10px"
+            fontWeight={500}
+            gutterBottom
+          >
+            {phone}
+          </Typography>
+
+          <WhatsAppIcon
+            sx={{
+              color: "#23e223",
+              fontSize: "15px",
+              mx: 2,
+              ":hover": {
+                cursor: "pointer",
+              },
+            }}
+            onClick={() => window.open(`https://wa.me/+91${phone}`)}
+          />
+        </Box>
       </Grid>
     ) : (
       <Grid
@@ -126,8 +139,11 @@ const StateList = ({
   stackName,
   preSelectedDetails,
   districtDetails,
+  addDialogTitle,
   showHidden,
   handleSwitchChange,
+  updateDialogText = "",
+  tehsilOption,
 }) => {
   const [states, setStates] = useState([]);
   const [filteredStates, setFilteredStates] = useState([]);
@@ -135,6 +151,9 @@ const StateList = ({
   const [searchTerm, setSearchTerm] = useState("");
   const [newState, setNewState] = useState("");
   const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const [dialogMode, setDialogMode] = useState("add");
+  const [isBackDropOpen, setIsBackDropOpen] = useState(false);
+  const fileRef = useRef(null);
 
   const handleAddState = () => {
     if (newState && !states.includes(newState)) {
@@ -187,7 +206,7 @@ Text Dialog  logic
 */
 
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [textValue, setTextValue] = useState("");
+  const [formData, setFormData] = useState({});
 
   const handleOpenDialog = () => {
     setDialogOpen(true);
@@ -198,8 +217,6 @@ Text Dialog  logic
   };
 
   const handleAddAction = async () => {
-    console.log("Text value:", textValue);
-    // Implement the logic for the Add action here
     const keyMap = {
       district: "stateId",
       tehsil: "districtId",
@@ -207,23 +224,88 @@ Text Dialog  logic
       gramPanchayat: "janPanchayatId",
       gram: "gramPanchayatId",
     };
-    await settings.addAddressType({
-      type: stackName,
-      body: {
-        ...(!isEmpty(preSelectedDetails) && {
-          [keyMap[stackName]]: preSelectedDetails._id,
-        }),
-        name: textValue,
-        active: true,
-      },
-    });
+    console.log("dialogMode", dialogMode);
+
+    if (dialogMode === "add") {
+      // Implement the logic for the Add action here
+      await settings.addAddressType({
+        type: stackName,
+        body: {
+          ...(!isEmpty(preSelectedDetails) && {
+            [keyMap[stackName]]: preSelectedDetails._id,
+          }),
+          name: formData.name,
+          active: true,
+        },
+      });
+    } else {
+      const payload = {
+        name: formData.name,
+        ...(formData.pincode && { pincode: formData.pincode }),
+        ...(formData.tehsil && { tehsil: formData.tehsil }),
+        ...(formData.map_link && { map_link: formData.map_link }),
+      };
+      if (formData.rojgarSahayak) {
+        payload.rojgar_sahayak = {
+          name: formData.rojgarSahayak,
+        };
+      }
+      if (formData.rojgarSahayakPhone) {
+        if (!payload.rojgar_sahayak) {
+          payload.rojgar_sahayak = { phone: formData.rojgarSahayakPhone };
+        } else {
+          payload.rojgar_sahayak.phone = formData.rojgarSahayakPhone;
+        }
+      }
+      if (formData.sachiv) {
+        payload.sachiv = {
+          name: formData.rojgarSahayak,
+        };
+      }
+      if (formData.sachivPhone) {
+        if (!payload.sachiv) {
+          payload.sachiv = { phone: formData.sachivPhone };
+        } else {
+          payload.sachiv.phone = formData.sachivPhone;
+        }
+      }
+
+      if (formData.sarpanch) {
+        payload.sarpanch = {
+          name: formData.sarpanch,
+        };
+      }
+      if (formData.sarpanchPhone) {
+        if (!payload.sarpanch) {
+          payload.sarpanch = { phone: formData.sarpanchPhone };
+        } else {
+          payload.sarpanch.phone = formData.sarpanchPhone;
+        }
+      }
+
+      await settings.updateLocation({
+        type: stackName,
+        body: {
+          id: formData.id,
+          ...(!isEmpty(preSelectedDetails) && {
+            [keyMap[stackName]]: preSelectedDetails._id,
+          }),
+          ...payload,
+          active: true,
+        },
+      });
+    }
 
     apiCallBack(stackName);
     handleCloseDialog(); // Optionally close the dialog after adding
   };
 
-  const handleTextChange = (value) => {
-    setTextValue(value);
+  const handleTextChange = (value, name) => {
+    setFormData((p) => {
+      const t = { ...p };
+      t[name] = value;
+      return t;
+    });
   };
 
   const getSearchIcons = () => {
@@ -248,7 +330,8 @@ Text Dialog  logic
 
     if (isEmpty(preSelectedDetails)) isButtonDisable = true;
 
-    if (stackName === "state") isButtonDisable = false;
+    if (stackName === "state" || stackName === "district")
+      isButtonDisable = false;
 
     return (
       <InputAdornment position="end">
@@ -269,11 +352,127 @@ Text Dialog  logic
       id: gramPanchayat._id,
       verified: true,
     });
+    apiCallBack("district");
     apiCallBack(stackName);
   };
 
+  const arrangeExcelData = (data) => {
+    const formatedData = [];
+    let districtIndex = -1;
+    let janpadIndex = 0;
+    let gramPanchayatIndex = 0;
+    let gramIndex = 0;
+    for (let i = 0; i < data.length; i++) {
+      const index = i;
+      const row = data[index];
+      let obj = {
+        janpadPanchyat: [],
+        gramPanchayat: [],
+        gram: [],
+      };
+      if (!row?.District) {
+        console.log("Incorrect data");
+        // enqueueSnackbar("Incorrect Data.", {
+        //   variant: "error",
+        //   autoHideDuration: 2000,
+        // });
+        return;
+      }
+
+      if (
+        row.District &&
+        formatedData?.[districtIndex]?.district != row.District
+      ) {
+        obj = {
+          district: row?.District || "",
+          janpadPanchyat: [],
+        };
+        // formatedData.push();
+        districtIndex += 1;
+        janpadIndex = -1;
+        gramPanchayatIndex = -1;
+        gramIndex = -1;
+      } else {
+        obj = formatedData[districtIndex];
+      }
+      if (
+        row["Janpad Panchayat"] &&
+        formatedData?.[districtIndex]?.janpadPanchyat?.[janpadIndex].name !=
+          row["Janpad Panchayat"]
+      ) {
+        obj.janpadPanchyat.push({
+          name: row["Janpad Panchayat"],
+        });
+        janpadIndex += 1;
+      }
+      if (row["Gram Panchayat"]) {
+        if (!obj.janpadPanchyat[janpadIndex]?.gramPanchayat)
+          obj.janpadPanchyat[janpadIndex].gramPanchayat = [];
+        obj.janpadPanchyat[janpadIndex].gramPanchayat.push({
+          name: row["Gram Panchayat"],
+          rojgar_sahayak: {
+            name: row["Rojgar Sahayak"],
+            phone: row["Mob No._2"],
+          },
+          sachiv: {
+            name: row.Sachiv,
+            phone: row["Mob No._1"],
+          },
+          sarpanch: { name: row.Sarpanch, phone: row["Mob No."] },
+          pincode: "",
+        });
+        gramPanchayatIndex += 1;
+      }
+      if (row.Gram) {
+        if (
+          !obj.janpadPanchyat[janpadIndex]?.gramPanchayat[gramPanchayatIndex]
+            ?.gram
+        )
+          obj.janpadPanchyat[janpadIndex].gramPanchayat[
+            gramPanchayatIndex
+          ].gram = [];
+        obj.janpadPanchyat[janpadIndex].gramPanchayat[
+          gramPanchayatIndex
+        ].gram.push({
+          name: row.Gram,
+        });
+        gramIndex += 1;
+      }
+      formatedData[districtIndex] = obj;
+    }
+    console.log("formatedData", formatedData);
+    return formatedData;
+  };
+
+  const handleFileUpload = async (e) => {
+    setIsBackDropOpen(true);
+    const file = e.target?.files?.[0];
+    if (file) {
+      const fileReader = new FileReader();
+      fileReader.onload = async function (e) {
+        const fileBuffer = e.target.result;
+        const wb = read(fileBuffer);
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        const fileJSONData = utils.sheet_to_json(ws);
+        const formatedData = arrangeExcelData(fileJSONData);
+        await commonService.uploadLocation(formatedData, {
+          skip: ["district"],
+        });
+        fileRef.current.value = "";
+        apiCallBack(stackName);
+        setIsBackDropOpen(false);
+      };
+      fileReader.onerror = () => {
+        setIsBackDropOpen(false);
+      };
+      fileReader.readAsArrayBuffer(file);
+    } else {
+      setIsBackDropOpen(false);
+    }
+  };
+
   return (
-    <Box>
+    <Box sx={{ position: "relative" }}>
       <TextField
         //   label={searchInputLabel}
         variant="standard"
@@ -301,9 +500,9 @@ Text Dialog  logic
       />
       <Stack
         sx={{
-          width: "100%",
-          maxWidth: 360,
-          maxHeight: "550px",
+          height: stackName === "gram" ? "26vh" : "calc(100vh - 152px)",
+          // height:
+          //   window.visualViewport.height - window.visualViewport.height * 0.25,
           overflow: "scroll",
           overflowX: "hidden",
           "::-webkit-scrollbar": {
@@ -314,14 +513,33 @@ Text Dialog  logic
           },
         }}
       >
+        <Backdrop
+          sx={(theme) => ({
+            color: "#fff",
+            zIndex: theme.zIndex.drawer + 1,
+            height: stackName === "gram" ? "26vh" : "calc(100vh - 73px)",
+            position: "absolute",
+            width: "100%",
+          })}
+          open={isBackDropOpen}
+        >
+          <CircularProgress color="inherit" />
+        </Backdrop>
         <TextDialog
           open={dialogOpen}
           onClose={handleCloseDialog}
-          title={addDialogText}
-          textValue={textValue}
+          title={addDialogTitle}
+          updateTitle={updateDialogText}
+          formData={formData}
           onTextChange={handleTextChange}
           onAdd={handleAddAction}
+          stackName={stackName}
+          tehsilOptions={tehsilOption}
+          mode={dialogMode}
+          setDialogMode={setDialogMode}
+          setFormData={setFormData}
         />
+
         {(!isEmpty(preSelectedDetails) || stackName === "district") && (
           <List>
             {filteredStates.map((state, index) => (
@@ -333,13 +551,40 @@ Text Dialog  logic
                     background: "#fbe9e7",
                   }),
                 }}
-                onClick={() => handleItemClick(state)}
+                onClick={() => {
+                  if (selectedItem._id != state._id) {
+                    timeoutInstance = setTimeout(() => {
+                      handleItemClick(state);
+                    }, 100);
+                  }
+                }}
+                onDoubleClick={() => {
+                  console.log("double click");
+                  clearTimeout(timeoutInstance);
+                  setFormData({
+                    id: state._id,
+                    name: state.name,
+                    sarpanch: state?.sarpanch?.name,
+                    sarpanchPhone: state?.sarpanch?.phone,
+                    sachiv: state.sachiv?.name,
+                    sachivPhone: state.sachiv?.phone,
+                    rojgarSahayak: state.rojgar_sahayak?.name,
+                    rojgarSahayakPhone: state.rojgar_sahayak?.phone,
+                    pincode: state?.pincode,
+                    tehsil: state?.tehsil,
+                    map_link: state?.map_link,
+                  });
+                  setDialogMode("edit");
+                  setDialogOpen(true);
+                }}
               >
                 <ListItem
                   sx={{
                     m: 0,
                     p: 0,
-                    ...(selectedItem._id === state._id && { color: "#ff5722" }),
+                    ...(selectedItem._id === state._id && {
+                      color: "#ff5722",
+                    }),
                   }}
                 >
                   <ListItemText primary={state.name} s />
@@ -381,10 +626,37 @@ Text Dialog  logic
           </List>
         )}
       </Stack>
-
+      {!isEmpty(preSelectedDetails) &&
+        stackName === "janPanchayat" &&
+        fileRef && (
+          <Box
+            sx={{
+              position: "sticky",
+              bottom: 0,
+              display: "flex",
+              justifyContent: "center",
+            }}
+          >
+            <Button
+              onClick={() => {
+                fileRef.current.click();
+              }}
+            >
+              Upload File
+            </Button>
+            <input
+              type="file"
+              hidden
+              ref={fileRef}
+              accept=".xlsx"
+              onChange={handleFileUpload}
+            />
+          </Box>
+        )}
+      {/* </Box> */}
       {!isEmpty(gramPanchayat) && (
-        <Container maxWidth="md" sx={{ marginTop: 4 }} justifyContent="center">
-          <Grid container spacing={2}>
+        <Container>
+          <Grid container rowGap={1}>
             {!isEmpty(gramPanchayat) && (
               <Grid item xs={12}>
                 <InfoCard title="Gram Panchayat" value={gramPanchayat.name} />

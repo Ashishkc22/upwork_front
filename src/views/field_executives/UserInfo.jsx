@@ -180,17 +180,20 @@ const UserInfoCard = () => {
             </Button>
           </Box>
         </Dialog>
-        <EditCardDialog
-          open={isEditDialogOpened}
-          data={userData}
-          teamLeaderDetails={teamLeaderDetails}
-          onClose={(callApi) => {
-            if (callApi) {
-              fetchCardData();
-            }
-            setIsEditDialogOpened(false);
-          }}
-        />
+        {isEditDialogOpened && (
+          <EditCardDialog
+            open={isEditDialogOpened}
+            data={userData}
+            setUserData={setUserData}
+            teamLeaderDetails={teamLeaderDetails}
+            onClose={(callApi) => {
+              if (callApi) {
+                fetchCardData();
+              }
+              setIsEditDialogOpened(false);
+            }}
+          />
+        )}
         {(userData?.id_proof?.front ||
           userData?.id_proof?.back ||
           userData?.image) &&
@@ -277,14 +280,20 @@ const UserInfoCard = () => {
                           exclusive
                           value={role}
                           onChange={(e) => {
-                            updateUserRole({ role: e.target.value });
+                            if (e.target.value != "ADMIN") {
+                              updateUserRole({ role: e.target.value });
+                            }
                           }}
                           aria-label="Platform"
                         >
-                          {/* <ToggleButton value="ADMIN">Admin</ToggleButton> */}
+                          {role === "ADMIN" && (
+                            <ToggleButton disabled value="ADMIN">
+                              Admin
+                            </ToggleButton>
+                          )}
                           <ToggleButton value="FE">FE</ToggleButton>
                           <ToggleButton value="TL">TL</ToggleButton>
-                          {/* <ToggleButton value="SUBADMIN">SUBADMIN</ToggleButton> */}
+                          <ToggleButton value="SUBADMIN">SUBADMIN</ToggleButton>
                         </ToggleButtonGroup>
                       </Grid>
                     </Grid>
@@ -389,13 +398,38 @@ const UserInfoCard = () => {
               {/* COL 2 */}
               <Grid item xs={6}>
                 <Grid container>
-                  <Grid item xs={12}>
-                    <TextGroup
-                      title="Team Leader ID"
-                      value={teamLeaderDetails.tl_id}
-                      subText={teamLeaderDetails.name}
-                    />
-                  </Grid>
+                  {teamLeaderDetails?.name && (
+                    <Grid item xs={12}>
+                      <Box
+                        mb={1}
+                        onClick={() =>
+                          navigate(
+                            `/field-executives/${teamLeaderDetails.tl_id}?isTL=true`
+                          )
+                        }
+                      >
+                        <Typography fontSize="10px" color="text.secondary">
+                          Team Leader ID
+                        </Typography>
+                        <Typography
+                          variant="h6"
+                          fontSize="12px"
+                          fontWeight={600}
+                          gutterBottom
+                        >
+                          {teamLeaderDetails.tl_id}
+                        </Typography>
+                        <Typography
+                          fontSize="12px"
+                          fontWeight={600}
+                          sx={{ color: "#0000007d" }}
+                          gutterBottom
+                        >
+                          {teamLeaderDetails.name}
+                        </Typography>
+                      </Box>
+                    </Grid>
+                  )}
 
                   <Grid item xs={12}>
                     <Box mb={1}>
@@ -506,6 +540,99 @@ const UserInfoCard = () => {
                         />
                       )} */}
                     </Box>
+                  </Grid>
+                  <Grid
+                    item
+                    xs={12}
+                    container
+                    columnGap={2}
+                    rowGap={1}
+                    sx={{ my: 1 }}
+                  >
+                    <Grid item xs={12}>
+                      <TextGroup title="Other documents" />
+                    </Grid>
+                    <Grid item>
+                      <Box>
+                        <Card
+                          sx={{
+                            width: "140px",
+                            borderRadius: 3,
+                          }}
+                        >
+                          {userData?.passportImage ? (
+                            <CardMedia
+                              component="img"
+                              sx={{ width: "140px", borderRadius: 3 }}
+                              image={userData?.passportImage}
+                              alt={`Profile Image`}
+                              onClick={() => {
+                                setImageListDialog(2);
+                              }}
+                            />
+                          ) : (
+                            <PersonIcon sx={{ fontSize: "100px" }} />
+                          )}
+                        </Card>
+                      </Box>
+                    </Grid>
+                    <Grid item>
+                      <Box>
+                        <Card sx={{ width: "140px", borderRadius: 3 }}>
+                          {userData?.registrationFormImage ? (
+                            <CardMedia
+                              component="img"
+                              sx={{ width: "140px", borderRadius: 3 }}
+                              image={userData?.registrationFormImage}
+                              alt={`Profile Image`}
+                              onClick={() => {
+                                setImageListDialog(3);
+                              }}
+                            />
+                          ) : (
+                            <PersonIcon sx={{ fontSize: "100px" }} />
+                          )}
+                        </Card>
+                      </Box>
+                    </Grid>
+                    <Grid item>
+                      <Box>
+                        <Card sx={{ width: "140px", borderRadius: 3 }}>
+                          {userData?.agreementImage ? (
+                            <CardMedia
+                              component="img"
+                              sx={{ width: "140px", borderRadius: 3 }}
+                              image={userData?.agreementImage}
+                              alt={`Profile Image`}
+                              onClick={() => {
+                                setImageListDialog(3);
+                              }}
+                            />
+                          ) : (
+                            <PersonIcon sx={{ fontSize: "100px" }} />
+                          )}
+                        </Card>
+                      </Box>
+                    </Grid>
+                    <Grid item>
+                      <Box>
+                        <Card sx={{ width: "140px", borderRadius: 3 }}>
+                          {userData?.panCardImage ? (
+                            <CardMedia
+                              component="img"
+                              sx={{ width: "140px", borderRadius: 3 }}
+                              image={userData?.panCardImage}
+                              alt={`Pancard Image`}
+                              onClick={() => {
+                                setImageListDialog(3);
+                              }}
+                            />
+                          ) : (
+                            <PersonIcon sx={{ fontSize: "100px" }} />
+                          )}
+                        </Card>
+                      </Box>
+                    </Grid>
                   </Grid>
                 </Grid>
               </Grid>

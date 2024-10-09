@@ -114,6 +114,7 @@ const Header = memo(
     showPrintMode = false,
     showAddHospital = false,
     hanldeAddHospital = () => {},
+    currentComponentName = "",
   }) => {
     const navigate = useNavigate();
     const [selectedCard, setSelectedCard] = useState(defaultSelectedCard);
@@ -613,6 +614,21 @@ const Header = memo(
     ]);
 
     useEffect(() => {
+      if (toTalScoreDetails.totalScore) {
+        storageUtil.setStorageData(
+          toTalScoreDetails.totalScore,
+          `${currentComponentName}-totalScore`
+        );
+      }
+      if (secondaryTotalDetails.secondaryTotalScore) {
+        storageUtil.setStorageData(
+          secondaryTotalDetails.secondaryTotalScore,
+          `${currentComponentName}-secondaryTotalScore`
+        );
+      }
+    }, [toTalScoreDetails, secondaryTotalDetails]);
+
+    useEffect(() => {
       if (showDistrict) {
         getAddressData({ type: "district" });
       }
@@ -649,7 +665,13 @@ const Header = memo(
           <Grid container alignItems="center">
             {showOtherCard ? (
               <OtherScoreCard
-                value={toTalScoreDetails.totalScore}
+                value={
+                  toTalScoreDetails.totalScore ||
+                  storageUtil?.getStorageData(
+                    `${currentComponentName}-totalScore`
+                  ) ||
+                  0
+                }
                 secondValue={toTalScoreDetails.totalScoreToshow}
                 text={toTalScoreDetails.text}
                 name={toTalScoreDetails.name}
@@ -658,7 +680,13 @@ const Header = memo(
             ) : (
               <ScoreCard
                 // value={headerData.totalCards}
-                value={toTalScoreDetails.totalScore}
+                value={
+                  toTalScoreDetails.totalScore ||
+                  storageUtil?.getStorageData(
+                    `${currentComponentName}-totalScore`
+                  ) ||
+                  0
+                }
                 secondValue={toTalScoreDetails.totalScoreToshow}
                 text={toTalScoreDetails.text}
                 name={toTalScoreDetails.name}
@@ -689,7 +717,13 @@ const Header = memo(
                 />
                 <ScoreCard
                   // value={headerData.toBePrinted}
-                  value={secondaryTotalDetails.secondaryTotalScore}
+                  value={
+                    secondaryTotalDetails.secondaryTotalScore ||
+                    storageUtil?.getStorageData(
+                      `${currentComponentName}-secondaryTotalScore`
+                    ) ||
+                    0
+                  }
                   secondValue={
                     secondaryTotalDetails.secondaryTotalScoreToshow || 0
                   }

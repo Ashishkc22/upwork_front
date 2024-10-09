@@ -19,6 +19,7 @@
     "axios": "^1.7.3",
     "clsx": "^2.1.1",
     "compressorjs": "^1.2.1",
+    "d3": "^7.9.0",
     "dayjs": "^1.11.12",
     "dom-to-image": "^2.6.0",
     "dom-to-image-more": "^3.3.1",
@@ -37,8 +38,10 @@
     "react-router-dom": "^6.26.0",
     "react-scripts": "5.0.1",
     "react-to-pdf": "^1.0.1",
+    "recharts": "^2.12.7",
     "rsuite": "^5.69.0",
     "web-vitals": "^2.1.4",
+    "xlsx": "^0.18.5",
     "yup": "^1.4.0"
   },
   "scripts": {

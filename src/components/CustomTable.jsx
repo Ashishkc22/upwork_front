@@ -43,7 +43,7 @@ const DynamicTable = ({
 }) => {
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
-  const isWideScreen = useMediaQuery("(min-width:1200px)");
+  const isWideScreen = useMediaQuery("(min-width:1000px)");
   let [urlDateType, setUrlDateType] = useSearchParams();
 
   function calculateAge({ row, keymap, birthYear }) {

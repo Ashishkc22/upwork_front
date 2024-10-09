@@ -148,6 +148,7 @@ const HospitalPage = () => {
       />
       <Grid item xs={12}>
         <Header
+          currentComponentName="Hospitals"
           toTalScoreDetails={{
             totalScore: totalHospitals || 0,
             totalScoreToshow: totalHospitalsToShow || 0,

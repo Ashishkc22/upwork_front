@@ -38,6 +38,8 @@ import dayjs from "dayjs";
 import { isEmpty } from "lodash";
 import ImageListCard from "./ImageList.";
 import common from "../../services/common";
+import storageUtil from "../../utils/storage.util";
+import CancelPresentationIcon from "@mui/icons-material/CancelPresentation";
 
 const facilities = [
   "Wheel chair",
@@ -108,6 +110,7 @@ const EditCardDialog = ({ open, onClose, data, mode = "Edit" }) => {
   const [stateOptions, setStateOption] = useState([]);
   // District states
   const [districtOption, setDistrictOption] = useState([]);
+  const [draftDataCleared, setDraftDataCleared] = useState(false);
 
   useEffect(() => {
     if (!isEmpty(data) && mode === "Edit") {
@@ -121,10 +124,19 @@ const EditCardDialog = ({ open, onClose, data, mode = "Edit" }) => {
       setSpecializtionOptions(data.doctor_specialization);
     });
     getAddressData({ type: "state" });
+    if (mode !== "Edit") {
+      const draftData = storageUtil.getStorageData("hospital-draft-data") || {};
+      if (draftData) {
+        setFormData(draftData);
+      }
+    }
   }, []);
 
   const handleChange = (event) => {
     const { name, value, type, checked } = event.target;
+    if (name === "pincode" && value?.length > 6) {
+      return;
+    }
     if (type === "checkbox") {
       setFormData((prevState) => ({
         ...prevState,
@@ -156,7 +168,9 @@ const EditCardDialog = ({ open, onClose, data, mode = "Edit" }) => {
     const { name, value, type, checked } = event.target;
     console.log("name", name);
     console.log("value", value);
-
+    if (name === "established_in" && value?.length > 4) {
+      return;
+    }
     const newFormData = {
       ...formData,
       [name]: value,
@@ -210,7 +224,7 @@ const EditCardDialog = ({ open, onClose, data, mode = "Edit" }) => {
   function getAddressData(payload) {
     common.getAddressData(payload).then((data) => {
       if (payload?.type == "district" && !data?.error) {
-        setDistrictOption(data);
+        setDistrictOption(data || []);
       } else {
         if (!data?.error) {
           setStateOption(data);
@@ -226,7 +240,19 @@ const EditCardDialog = ({ open, onClose, data, mode = "Edit" }) => {
       maxWidth="sm"
       fullWidth
     >
-      <DialogTitle>Edit Hospital</DialogTitle>
+      <DialogTitle sx={{ display: "flex", justifyContent: "space-between" }}>
+        <Box>Edit Hospital</Box>
+        <Button
+          disabled={!storageUtil.getStorageData("hospital-draft-data")}
+          onClick={() => {
+            setDraftDataCleared(true);
+            storageUtil.removeItem("hospital-draft-data");
+          }}
+          endIcon={<CancelPresentationIcon />}
+        >
+          Delete Draft
+        </Button>
+      </DialogTitle>
       <DialogContent sx={{ height: "700px" }}>
         <Grid container sx={{ py: 2 }} columnSpacing={2} rowSpacing={2}>
           <Grid item xs={6}>
@@ -353,14 +379,17 @@ const EditCardDialog = ({ open, onClose, data, mode = "Edit" }) => {
                 <TextField
                   id="standard-basic"
                   label="Experience in Yrs"
+                  type="number"
                   value={doctorDetails.experience}
                   onChange={(e) => {
-                    setDoctorDetails((pre) => {
-                      return {
-                        ...pre,
-                        experience: e.target.value,
-                      };
-                    });
+                    if (!e.target?.value || e.target?.value?.length <= 4) {
+                      setDoctorDetails((pre) => {
+                        return {
+                          ...pre,
+                          experience: e.target.value,
+                        };
+                      });
+                    }
                   }}
                   variant="standard"
                   sx={{ width: "100%" }}
@@ -410,6 +439,12 @@ const EditCardDialog = ({ open, onClose, data, mode = "Edit" }) => {
                         doctors,
                       };
                       return newFormData;
+                    });
+                    setDoctorDetails({
+                      name: "",
+                      type: "",
+                      specialization: "",
+                      experience: "",
                     });
                   }}
                 >
@@ -686,6 +721,7 @@ const EditCardDialog = ({ open, onClose, data, mode = "Edit" }) => {
             <TextField
               label="Pincode"
               name="pincode"
+              type="number"
               value={formData.pincode}
               onChange={handleChange}
               fullWidth
@@ -717,7 +753,7 @@ const EditCardDialog = ({ open, onClose, data, mode = "Edit" }) => {
                   defaultValue={formData.state}
                   value={formData.state}
                   name="state"
-                  label="State"
+                  // label="State"
                   variant="standard"
                 >
                   {stateOptions.map((data, index) => {
@@ -942,10 +978,13 @@ const EditCardDialog = ({ open, onClose, data, mode = "Edit" }) => {
                 <DemoItem label="Date of agreement">
                   <MobileDatePicker
                     {...(formData?.date_of_agreement && {
-                      defaultValue: dayjs(formData.date_of_agreement),
+                      defaultValue: dayjs(
+                        formData.date_of_agreement,
+                        "dd-mm-yyyy"
+                      ),
                     })}
                     {...(formData?.date_of_agreement && {
-                      value: dayjs(formData.date_of_agreement),
+                      value: dayjs(formData.date_of_agreement, "dd-mm-yyyy"),
                     })}
                     onChange={(e) => {
                       setFormData((prev) => {
@@ -969,7 +1008,15 @@ const EditCardDialog = ({ open, onClose, data, mode = "Edit" }) => {
         </Grid>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose} color="primary">
+        <Button
+          onClick={() => {
+            if (mode !== "Edit") {
+              storageUtil.setStorageData(formData, "hospital-draft-data");
+            }
+            onClose();
+          }}
+          color="primary"
+        >
           Cancel
         </Button>
         <Button

@@ -26,7 +26,7 @@ import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import { UNSAFE_NavigationContext as NavigationContext } from "react-router-dom";
 import LeavePageDialog from "./LeaveDialog";
 import Backdrop from "@mui/material/Backdrop";
-
+import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import waterMarkImg from "../../v1cardImages/waterMark.png";
 import supportImg from "../../v1cardImages/support.png";
 import locImg from "../../v1cardImages/loc.png";
@@ -618,7 +618,13 @@ const Cards = () => {
       storageUtil.setStorageData(markAsPrintPending, "markAsPrintedData");
     }
   }, [markAsPrintPending]);
-
+  const scrollToTop = () => {
+    const searchParams = new URLSearchParams(window.location.search).get("tab");
+    storageUtil.setStorageData(0, `${location.pathname}-${searchParams}`);
+    window.scrollTo({
+      top: 0,
+    });
+  };
   return (
     <Grid component="main" sx={{ width: "96%", overflowX: "hidden" }}>
       <img
@@ -633,9 +639,24 @@ const Cards = () => {
         handleLeave={handlePageLeave}
       />
 
+      <Fab
+        onClick={scrollToTop}
+        color="secondary"
+        aria-label="scroll to top"
+        size="small"
+        style={{
+          position: "fixed",
+          bottom: "60px",
+          right: "10px",
+        }}
+      >
+        <KeyboardArrowUpIcon />
+      </Fab>
+
       <Grid item sx={{ mb: 2 }}>
         {isCardDownloading && <LoadingScreen />}
         <Header
+          currentComponentName="Cards"
           statusCount={statusCount}
           toTalScoreDetails={{
             totalScore: totalCardsAndToBePrinted?.totalCards || 0,

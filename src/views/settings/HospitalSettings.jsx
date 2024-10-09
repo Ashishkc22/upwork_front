@@ -63,7 +63,7 @@ const HospitalSettings = () => {
   const [selectedItem, setSelectedItem] = useState(null);
 
   // State to manage the text input value
-  const [textValue, setTextValue] = useState("");
+  const [textValue, setTextValue] = useState({});
 
   // State to manage the dialog title
   const [addDialogText, setAddDialogText] = useState("Enter Text");
@@ -104,7 +104,7 @@ const HospitalSettings = () => {
 
   // Function to handle text input change
   const handleTextChange = (event) => {
-    setTextValue(event);
+    setTextValue({ name: event });
   };
 
   const handleAddAction = () => {
@@ -113,12 +113,12 @@ const HospitalSettings = () => {
       if (!isEmpty(textDialogInUpdatingdetails)) {
         newArray[textDialogInUpdatingdetails.index] = {
           active: newArray[textDialogInUpdatingdetails.index].active,
-          name: textValue,
+          name: textValue.name,
         };
       } else {
         newArray.push({
           active: true,
-          name: textValue,
+          name: textValue.name,
         });
       }
       return newArray;
@@ -232,7 +232,7 @@ const HospitalSettings = () => {
         open={dialogOpen}
         onClose={handleCloseDialog}
         title={addDialogText}
-        textValue={textValue}
+        formData={textValue}
         onTextChange={handleTextChange}
         onAdd={handleAddAction}
       />

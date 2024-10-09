@@ -2,6 +2,7 @@ import axiosUtil from "../utils/api.util";
 import { isEmpty } from "lodash";
 import tokenUtil from "../utils/token.util";
 import common from "./common";
+import { enqueueSnackbar } from "notistack";
 
 async function getUsers({ params } = {}) {
   const {
@@ -117,6 +118,7 @@ function base64ToBlob(base64, mimeType) {
 
 function dataUrlToBlob(dataUrl) {
   const [header, base64Data] = dataUrl.split(",");
+  console.log("header", header);
   const mimeType = header.match(/:(.*?);/)[1];
   return base64ToBlob(base64Data, mimeType);
 }
@@ -125,37 +127,70 @@ function generateRandom5DigitNumber() {
   return Math.floor(10000 + Math.random() * 90000);
 }
 
-async function uploadImage(image) {
+async function uploadImage(image, skipBlob) {
   const newformData = new FormData();
-  const imageBlobData = dataUrlToBlob(image);
+  console.log("skipBlob", skipBlob);
+
+  const imageBlobData = skipBlob ? image : dataUrlToBlob(image);
   newformData.append("file", imageBlobData, `${generateRandom5DigitNumber()}`);
   const url = await common.fileUpload(newformData);
   return url;
 }
 
 async function saveFieldExecutiveForm(formData, mode = "EDIT", id) {
-  const { images } = formData;
+  const { images, updatedImagesNames, signatureDataUrl } = formData;
   if (mode === "EDIT") {
-    if (images.aadhaarBack) {
-      formData.id_proof.back = await uploadImage(images.aadhaarBack);
+    const keyMapper = {
+      Profile: "image",
+      aFront: "id_proof.front",
+      aBack: "id_proof.back",
+      Passport: "passportImage",
+      RegistrationForm: "registrationFormImage",
+      Agreement: "agreementImage",
+      PanCard: "panCardImage",
+    };
+    const updatedImages = Object.keys(updatedImagesNames);
+    for (const [name, image] of Object.entries(images)) {
+      if (updatedImages.includes(name)) {
+        if (name === "aFront") {
+          if (isEmpty(formData.id_proof)) formData.id_proof = {};
+          formData.id_proof.front = await uploadImage(image);
+        } else if (name === "aBack") {
+          if (isEmpty(formData.id_proof)) formData.id_proof = {};
+          formData.id_proof.back = await uploadImage(image);
+        } else {
+          formData[keyMapper[name]] = await uploadImage(image);
+        }
+      }
     }
-    if (images.aadhaarFront) {
-      formData.id_proof.front = await uploadImage(images.aadhaarFront);
+    // Object.entries(images).forEach(async (data) => {
+    //   const [name, image] = data;
+    //   if (updatedImages.includes(name)) {
+    //     if (name === "aFront") {
+    //       if (isEmpty(formData.id_proof)) formData.id_proof = {};
+    //       formData.id_proof.front = await uploadImage(image);
+    //     }
+    //     if (name === "aBack") {
+    //       if (isEmpty(formData.id_proof)) formData.id_proof = {};
+    //       formData.id_proof.back = await uploadImage(image);
+    //     } else {
+    //       formData[keyMapper[name]] = await uploadImage(image);
+    //     }
+    //   }
+    // });
+    if (updatedImages.includes("signature") && signatureDataUrl) {
+      formData.signatureImage = await uploadImage(formData.signatureDataUrl);
     }
-    if (images.profilePic) {
-      formData.image = await uploadImage(images.profilePic);
-    }
-
+    delete formData.signatureDataUrl;
+    delete formData.updatedImagesNames;
     delete formData.images;
+    console.log("formData", formData);
   }
-
   let path = `auth/user/${formData.id}`;
 
   if (mode === "STATSUPDATE") {
     path = `auth/user/${id}`;
   }
-  console.log("mode", mode);
-
   const data = await axiosUtil.patch({
     path,
     params: {
@@ -169,6 +204,55 @@ async function saveFieldExecutiveForm(formData, mode = "EDIT", id) {
   } else if (!isEmpty(data)) {
     return data;
   }
+}
+
+async function saveTLDetails(formData) {
+  try {
+    const keyMapper = {
+      Profile: "image",
+      aFront: "id_proof.front",
+      aBack: "id_proof.back",
+      Passport: "passportImage",
+      RegistrationForm: "registrationFormImage",
+      Agreement: "agreementImage",
+      PanCard: "panCardImage",
+    };
+    const { imagesToUpload, signatureDataUrl } = formData;
+    Object.entries(imagesToUpload).forEach(async (data) => {
+      const [name, image] = data;
+      if (name === "aFront") {
+        if (isEmpty(formData.id_proof)) formData.id_proof = {};
+        formData.id_proof.back = await uploadImage(image);
+      }
+      if (name === "aBack") {
+        if (isEmpty(formData.id_proof)) formData.id_proof = {};
+        formData.id_proof.front = await uploadImage(image);
+      } else {
+        formData[keyMapper[name]] = await uploadImage(image);
+      }
+    });
+    if (signatureDataUrl) {
+      formData.signatureImage = await uploadImage(formData.signatureDataUrl);
+    }
+    delete formData.signatureDataUrl;
+    delete formData.imagesToUpload;
+    formData.token = tokenUtil.getAuthToken();
+    console.log("formData", formData);
+
+    const data = await axiosUtil.post({
+      path: "auth/add-tl",
+      body: formData,
+    });
+    if (data.status === "failed") {
+      enqueueSnackbar("failed", {
+        variant: data.message || "error",
+        autoHideDuration: 2000,
+      });
+      return {};
+    } else if (!isEmpty(data)) {
+      return data;
+    }
+  } catch (error) {}
 }
 
 async function changeUserStatus(formData, id) {
@@ -194,4 +278,5 @@ export default {
   saveFieldExecutiveForm,
   getTLById,
   changeUserStatus,
+  saveTLDetails,
 };

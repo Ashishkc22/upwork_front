@@ -13,15 +13,14 @@ const DashboardCard = ({
   height,
   bgcolor,
   handleCardClick,
+  todayScore, // New prop for today's score
+  yesterdayScore, // New prop for yesterday's score
 }) => {
   return (
     <Card elevation={3} sx={{ borderRadius: "20px" }}>
       <CardActionArea onClick={handleCardClick}>
-        <CardContent
-          //   sx={{ height: "70%" }}
-          sx={{ height: height }}
-        >
-          <Box display="flex" flexDirection="column" alignItems="flex-end">
+        <CardContent sx={{ height: height, pb: 0 }}>
+          <Box textAlign="end">
             <Typography variant="h2" color="primary">
               {total}
             </Typography>
@@ -32,14 +31,47 @@ const DashboardCard = ({
               {percentageChange}%
             </Typography>
           </Box>
+          {/* Display today's and yesterday's scores if available */}
+          {todayScore !== undefined && yesterdayScore !== undefined && (
+            <Box
+              display="flex"
+              flexDirection="row"
+              columnGap={1}
+              justifyContent="space-between"
+              sx={{ mt: 1 }}
+            >
+              <Box display="flex">
+                <Typography variant="body1" color="textSecondary">
+                  Today:
+                </Typography>
+                <Typography
+                  variant="body1"
+                  fontWeight={600}
+                  color="textSecondary"
+                >
+                  {todayScore}
+                </Typography>
+              </Box>
+              <Box display="flex">
+                <Typography variant="body1" color="textSecondary">
+                  Yesterday:
+                </Typography>
+                <Typography
+                  variant="body1"
+                  fontWeight={600}
+                  color="textSecondary"
+                >
+                  {yesterdayScore}
+                </Typography>
+              </Box>
+            </Box>
+          )}
         </CardContent>
         {/* Colored Bottom covering 20% of the card area */}
         <Box
           sx={{
             ...(bgcolor?.includes("linear")
-              ? {
-                  backgroundImage: bgcolor,
-                }
+              ? { backgroundImage: bgcolor }
               : { backgroundColor: bgcolor }),
             display: "flex",
             alignItems: "center",

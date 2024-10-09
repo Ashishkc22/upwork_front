@@ -30,6 +30,7 @@ import hospitals from "../../services/hospitals";
 import CroppingDialog from "./ImageCropDialog"; // Adjust path as necessary
 import EditCardDialog from "./EditCardDialog";
 import bin from "../../services/bin";
+import storageUtil from "../../utils/storage.util";
 
 const HospitalInfoCard = () => {
   const navigate = useNavigate();
@@ -225,36 +226,40 @@ const HospitalInfoCard = () => {
                 <TextGroup title="UID:" value={hospitalData.uid} />
               </Box>
               <Box>
-                <Button
-                  sx={{
-                    display: "inline-flex",
-                    color: "#ff5722",
-                    p: 1,
-                    m: 0,
-                    mr: 3,
-                  }}
-                  variant="standard"
-                  startIcon={<EditIcon />}
-                  onClick={() => {
-                    setIsEditDialogOpen(true);
-                  }}
-                >
-                  Edit
-                </Button>
-                <Button
-                  sx={{
-                    display: "inline-flex",
-                    color: "#ff5722",
-                    p: 1,
-                    m: 0,
-                    mr: 5,
-                  }}
-                  variant="standard"
-                  startIcon={<DeleteIcon />}
-                  onClick={() => setIsDetelConfirmationDialog(true)}
-                >
-                  Delete
-                </Button>
+                {storageUtil.getStorageData("userRole") === "ADMIN" && (
+                  <Button
+                    sx={{
+                      display: "inline-flex",
+                      color: "#ff5722",
+                      p: 1,
+                      m: 0,
+                      mr: 3,
+                    }}
+                    variant="standard"
+                    startIcon={<EditIcon />}
+                    onClick={() => {
+                      setIsEditDialogOpen(true);
+                    }}
+                  >
+                    Edit
+                  </Button>
+                )}
+                {storageUtil.getStorageData("userRole") === "ADMIN" && (
+                  <Button
+                    sx={{
+                      display: "inline-flex",
+                      color: "#ff5722",
+                      p: 1,
+                      m: 0,
+                      mr: 5,
+                    }}
+                    variant="standard"
+                    startIcon={<DeleteIcon />}
+                    onClick={() => setIsDetelConfirmationDialog(true)}
+                  >
+                    Delete
+                  </Button>
+                )}
               </Box>
             </Box>
 
@@ -380,12 +385,14 @@ const HospitalInfoCard = () => {
                     title="Date of Agreement:"
                     value={hospitalData.date_of_agreement}
                   />
-                  <TextGroup
-                    title="Created At:"
-                    value={moment(hospitalData.created_at).format(
-                      "DD-MM-YYYY HH:mm:ss"
-                    )}
-                  />
+                  {hospitalData?.created_at && (
+                    <TextGroup
+                      title="Created At:"
+                      value={moment(hospitalData.created_at).format(
+                        "DD-MM-YYYY HH:mm:ss"
+                      )}
+                    />
+                  )}
                   <TextGroup
                     title="Created By:"
                     value={hospitalData.created_by}

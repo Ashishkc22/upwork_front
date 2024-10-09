@@ -190,9 +190,14 @@ const LoginPage = () => {
     } else {
       setIsLoginButtonLoading(true);
       // Handle login logic here
-      await authServices.login({ email, password });
-      setIsLoginButtonLoading(false);
-      nav("/dashboard");
+      const data = await authServices.login({ email, password });
+      console.log("data", data);
+      if (data.role === "ADMIN") {
+        setIsLoginButtonLoading(false);
+        nav("/dashboard");
+      } else {
+        nav("/hospitals?status=ENABLE");
+      }
     }
   };
 
