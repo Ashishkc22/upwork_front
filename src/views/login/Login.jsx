@@ -24,6 +24,7 @@ import OutlinedInput from "@mui/material/OutlinedInput";
 import InputLabel from "@mui/material/InputLabel";
 import InputAdornment from "@mui/material/InputAdornment";
 import LoadingButton from "@mui/lab/LoadingButton";
+import { isEmpty } from "lodash";
 
 const SendOtp = ({
   handleClose,
@@ -192,11 +193,15 @@ const LoginPage = () => {
       // Handle login logic here
       const data = await authServices.login({ email, password });
       console.log("data", data);
-      if (data.role === "ADMIN") {
-        setIsLoginButtonLoading(false);
-        nav("/dashboard");
+      if (!isEmpty(data)) {
+        if (data?.role === "ADMIN") {
+          setIsLoginButtonLoading(false);
+          nav("/dashboard");
+        } else {
+          nav("/hospitals?status=ENABLE");
+        }
       } else {
-        nav("/hospitals?status=ENABLE");
+        setIsLoginButtonLoading(false);
       }
     }
   };
