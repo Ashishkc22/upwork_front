@@ -6,7 +6,7 @@ const apiInfo = {
   },
   pro: {
     protocol: "https",
-    url: "f996-103-249-90-43.ngrok-free.app",
+    url: "8ced-103-249-90-57.ngrok-free.app",
   },
 };
 
