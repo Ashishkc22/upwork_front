@@ -266,7 +266,7 @@ const SettingsPage = () => {
             <Tab icon={<LocationOnIcon />} label="Location Settings" />
             <Tab icon={<LocalHospitalIcon />} label="Hospital Settings" />
             <Tab icon={<ContactMailIcon />} label="Contact Settings" />
-            {/* <Tab icon={<CloudUploadIcon />} label="Upload Loactions" /> */}
+            <Tab icon={<CloudUploadIcon />} label="Upload Loactions" />
           </Tabs>
           <Button
             size="large"
@@ -408,9 +408,9 @@ const SettingsPage = () => {
       <TabPanel value={value} index={2}>
         <ContactSettings />
       </TabPanel>
-      {/* <TabPanel value={value} index={3}>
+      <TabPanel value={value} index={3}>
         <UploadLocation />
-      </TabPanel> */}
+      </TabPanel>
     </Box>
   );
 };

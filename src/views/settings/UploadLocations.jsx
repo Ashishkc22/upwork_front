@@ -8,6 +8,8 @@ import { enqueueSnackbar } from "notistack";
 import Fab from "@mui/material/Fab";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import commonService from "../../services/common";
+import Backdrop from "@mui/material/Backdrop";
+import CircularProgress from "@mui/material/CircularProgress";
 
 const UploadLocation = () => {
   const fileRef = useRef(null);
@@ -22,6 +24,8 @@ const UploadLocation = () => {
     useState(null);
   const [selectedGram, setSelectedGram] = useState(null);
 
+  const [open, setOpen] = useState(false);
+
   const handleFileChange = (event) => {
     console.log("hello", event?.target?.files?.[0]);
 
@@ -31,83 +35,101 @@ const UploadLocation = () => {
   };
 
   const arrangeExcelData = (data) => {
-    const formatedData = [];
-    let districtIndex = -1;
-    let janpadIndex = 0;
-    let gramPanchayatIndex = 0;
-    let gramIndex = 0;
-    for (let i = 0; i < data.length; i++) {
-      const index = i;
-      const row = data[index];
-      let obj = {
-        janpadPanchyat: [],
-        gramPanchayat: [],
-        gram: [],
-      };
-      if (row["S.No."] === 1 && !row?.District) {
-        console.log("Incorrect data");
-        enqueueSnackbar("Incorrect Data.", {
-          variant: "error",
-          autoHideDuration: 2000,
-        });
-        return;
-      }
-
-      if (row.District) {
-        obj = {
-          district: row?.District || "",
+    try {
+      const formatedData = [];
+      let districtIndex = -1;
+      let janpadIndex = 0;
+      let gramPanchayatIndex = 0;
+      let gramIndex = 0;
+      for (let i = 0; i < data.length; i++) {
+        const index = i;
+        const row = data[index];
+        let obj = {
           janpadPanchyat: [],
+          gramPanchayat: [],
+          gram: [],
         };
-        // formatedData.push();
-        districtIndex += 1;
-        janpadIndex = -1;
-        gramPanchayatIndex = -1;
-        gramIndex = -1;
-      } else {
-        obj = formatedData[districtIndex];
-      }
-      if (row["Janpad Panchayat"]) {
-        obj.janpadPanchyat.push({
-          name: row["Janpad Panchayat"],
-        });
-        janpadIndex += 1;
-      }
-      if (row["Gram Panchayat"]) {
-        if (!obj.janpadPanchyat[janpadIndex]?.gramPanchayat)
-          obj.janpadPanchyat[janpadIndex].gramPanchayat = [];
-        obj.janpadPanchyat[janpadIndex].gramPanchayat.push({
-          name: row["Gram Panchayat"],
-          rojgar_sahayak: {
-            name: row["Rojgar Sahayak"],
-            phone: row["Mob No._2"],
-          },
-          sachiv: {
-            name: row.Sachiv,
-            phone: row["Mob No._1"],
-          },
-          sarpanch: { name: row.Sarpanch, phone: row["Mob No."] },
-          pincode: "",
-        });
-        gramPanchayatIndex += 1;
-      }
-      if (row.Gram) {
-        if (
-          !obj.janpadPanchyat[janpadIndex]?.gramPanchayat[gramPanchayatIndex]
-            ?.gram
-        )
+        // if (row["S.No."] === 1 && !row?.District) {
+        //   console.log("Incorrect data");
+        //   enqueueSnackbar("Incorrect Data.", {
+        //     variant: "error",
+        //     autoHideDuration: 2000,
+        //   });
+        //   return;
+        // }
+
+        if (row.District) {
+          obj = {
+            district: row?.District || "",
+            janpadPanchyat: [],
+          };
+          // formatedData.push();
+          districtIndex += 1;
+          janpadIndex = -1;
+          gramPanchayatIndex = -1;
+          gramIndex = -1;
+        } else {
+          obj = formatedData[districtIndex];
+        }
+        if (row["Janpad Panchayat"]) {
+          obj.janpadPanchyat.push({
+            name: row["Janpad Panchayat"],
+          });
+          janpadIndex += 1;
+          gramPanchayatIndex = -1;
+        }
+        if (row["Gram Panchayat"]) {
+          if (!obj.janpadPanchyat[janpadIndex]?.gramPanchayat)
+            obj.janpadPanchyat[janpadIndex].gramPanchayat = [];
+          obj.janpadPanchyat[janpadIndex].gramPanchayat.push({
+            name: row["Gram Panchayat"],
+            rojgar_sahayak: {
+              name: row["Rojgar Sahayak"],
+              phone: row["Mob No._2"],
+            },
+            sachiv: {
+              name: row.Sachiv,
+              phone: row["Mob No._1"],
+            },
+            sarpanch: { name: row.Sarpanch, phone: row["Mob No."] },
+            pincode: "",
+          });
+          gramPanchayatIndex += 1;
+        }
+        if (row.Gram) {
+          if (
+            !obj.janpadPanchyat[janpadIndex]?.gramPanchayat[gramPanchayatIndex]
+              ?.gram
+          ) {
+            // console.log("obj.janpadPanchyat", row);
+            // console.log("obj.janpadPanchyat", gramPanchayatIndex);
+            // console.log("obj", obj);
+
+            obj.janpadPanchyat[janpadIndex].gramPanchayat[
+              gramPanchayatIndex
+            ].gram = [];
+          }
           obj.janpadPanchyat[janpadIndex].gramPanchayat[
             gramPanchayatIndex
-          ].gram = [];
-        obj.janpadPanchyat[janpadIndex].gramPanchayat[
-          gramPanchayatIndex
-        ].gram.push({
-          name: row.Gram,
-        });
-        gramIndex += 1;
+          ].gram.push({
+            name: row.Gram,
+          });
+          gramIndex += 1;
+        }
+        // console.log("obj", obj);
+
+        formatedData[districtIndex] = obj;
       }
-      formatedData[districtIndex] = obj;
+      console.log("formatedData", formatedData);
+
+      setFileFormatedData(formatedData);
+    } catch (error) {
+      setOpen(false);
+      enqueueSnackbar("Incorrect Data.", {
+        variant: "error",
+        autoHideDuration: 2000,
+      });
     }
-    setFileFormatedData(formatedData);
   };
 
   const handleItemClick = (data, title, value) => {
@@ -122,12 +144,12 @@ const UploadLocation = () => {
       setSelectedGram([...data]);
     }
   };
-
   useEffect(() => {
     if (file) {
       const reader = new FileReader();
 
       reader.onload = function (e) {
+        setOpen(true);
         const arrayBuffer = e.target.result;
         const wb = read(arrayBuffer);
         const ws = wb.Sheets[wb.SheetNames[0]]; // get the first worksheet
@@ -136,6 +158,7 @@ const UploadLocation = () => {
           console.log("data", data);
           const formatedData = arrangeExcelData(data);
           console.log("formatedData", formatedData);
+          setOpen(false);
         }
       };
       reader.readAsArrayBuffer(file);
@@ -186,6 +209,12 @@ const UploadLocation = () => {
           style={{ display: "none" }}
         />
       </Grid>
+      <Backdrop
+        sx={(theme) => ({ color: "#fff", zIndex: theme.zIndex.drawer + 1 })}
+        open={open}
+      >
+        <CircularProgress color="inherit" />
+      </Backdrop>
       {!isEmpty(fileFormatedData) && (
         <Fab
           variant="extended"

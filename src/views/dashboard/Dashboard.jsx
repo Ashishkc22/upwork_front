@@ -272,8 +272,13 @@ const Dashboard = () => {
   const yesterdayScore = 75;
   const yesterdayPercentage = 10.0;
   return (
-    <Box>
-      <AppBar
+    <Box
+      sx={{ width: "100%", m: 1 }}
+      display="flex"
+      justifyContent="center"
+      alignItems="center"
+    >
+      {/* <AppBar
         position="static"
         sx={{ backgroundColor: "transparent", boxShadow: "none" }}
       >
@@ -296,89 +301,87 @@ const Dashboard = () => {
           >
             <Tab label="Cards" />
             <Tab label="Location Analytics" />
-            {/* <Tab icon={<CloudUploadIcon />} label="Upload Loactions" /> */}
+            <Tab icon={<CloudUploadIcon />} label="Upload Loactions" /> 
           </Tabs>
         </Toolbar>
-      </AppBar>
-      <CustomDateRangePicker
-        open={filter === "CUSTOM" && openDialog}
-        onClose={handleCloseDialog}
-        onApply={handleApply}
-      />
-      <CustomDatePicker
-        open={filter === "CUSTOM DATE" && openDialog}
-        onClose={handleCloseDialog}
-        onApply={handleApply}
-      />
-      <TabPanel value={selectedTab} index={0}>
-        {isScreenLoading ? (
-          <Container>
-            <LoadingScreen />
-          </Container>
-        ) : (
-          <Container maxWidth={false} sx={{ padding: 0 }} disableGutters>
-            {/* <ImageComponent
+      </AppBar> */}
+
+      {/* <TabPanel value={selectedTab} index={0}> */}
+      {isScreenLoading ? (
+        <LoadingScreen />
+      ) : (
+        <Container maxWidth={false} sx={{ padding: 0 }} disableGutters>
+          {/* <ImageComponent
         url={
           "https://storage.googleapis.com/download/storage/v1/b/arogyam-super.appspot.com/o/1720941908699.png?generation=1720941911109063&alt=media"
         }
       /> */}
-            {/* <CardViewer
+          {/* <CardViewer
         cardId={"66937e7e6c40d43cd5381b6e?token=6vTmn8wGx8PAvtNVDRKHyP"}
       /> */}
-            <Box
-              display="flex"
-              justifyContent="flex-end"
-              alignItems="center"
-              mb={3}
-            >
-              <FormControl sx={{ minWidth: 120, mr: 2 }}>
-                <InputLabel>Filter</InputLabel>
-                <Select
-                  value={filter}
-                  onChange={handleFilterChange}
-                  label="Filter"
-                >
-                  <MenuItem value="">
-                    <em>None</em>
-                  </MenuItem>
-                  <MenuItem value="TODAY">TODAY</MenuItem>
-                  <MenuItem value="THIS WEEK">THIS WEEK</MenuItem>
-                  <MenuItem value="THIS MONTH">THIS MONTH</MenuItem>
-                  <MenuItem value="ALL">ALL</MenuItem>
-                  <MenuItem value="CUSTOM" onClick={() => handleOpenDialog()}>
-                    CUSTOM
-                  </MenuItem>
-                  <MenuItem
-                    value="CUSTOM DATE"
-                    onClick={() => handleOpenDialog()}
-                  >
-                    CUSTOM DATE
-                  </MenuItem>
-                </Select>
-              </FormControl>
-              <IconButton
-                onClick={handleRefresh}
-                color="primary"
-                aria-label="refresh"
+          <Box
+            display="flex"
+            justifyContent="flex-end"
+            alignItems="center"
+            mb={3}
+          >
+            <FormControl sx={{ minWidth: 120, mr: 2 }}>
+              <InputLabel>Filter</InputLabel>
+              <Select
+                value={filter}
+                onChange={handleFilterChange}
+                label="Filter"
               >
-                <RefreshIcon />
-              </IconButton>
-            </Box>
-
-            <Grid
-              maxWidth={false}
-              container
-              spacing={3}
-              sx={{ maxWidth: "100vw" }}
-              disableGutters
+                <MenuItem value="">
+                  <em>None</em>
+                </MenuItem>
+                <MenuItem value="TODAY">TODAY</MenuItem>
+                <MenuItem value="THIS WEEK">THIS WEEK</MenuItem>
+                <MenuItem value="THIS MONTH">THIS MONTH</MenuItem>
+                <MenuItem value="ALL">ALL</MenuItem>
+                <MenuItem value="CUSTOM" onClick={() => handleOpenDialog()}>
+                  CUSTOM
+                </MenuItem>
+                <MenuItem
+                  value="CUSTOM DATE"
+                  onClick={() => handleOpenDialog()}
+                >
+                  CUSTOM DATE
+                </MenuItem>
+              </Select>
+            </FormControl>
+            <IconButton
+              onClick={handleRefresh}
+              color="primary"
+              aria-label="refresh"
             >
-              {getCardStack({
-                value: filter?.includes("CUSTOM") ? date : filter,
-                setFilter: () => setFilter(null),
-              })}
-              {!isEmpty(dashboardData) && (
-                <>
-                  {/* <Grid item xs={12} sm={4} md={3} lg={2}>
+              <RefreshIcon />
+            </IconButton>
+          </Box>
+          <CustomDateRangePicker
+            open={filter === "CUSTOM" && openDialog}
+            onClose={handleCloseDialog}
+            onApply={handleApply}
+          />
+          <CustomDatePicker
+            open={filter === "CUSTOM DATE" && openDialog}
+            onClose={handleCloseDialog}
+            onApply={handleApply}
+          />
+          <Grid
+            maxWidth={false}
+            container
+            spacing={3}
+            sx={{ maxWidth: "100vw" }}
+            disableGutters
+          >
+            {getCardStack({
+              value: filter?.includes("CUSTOM") ? date : filter,
+              setFilter: () => setFilter(null),
+            })}
+            {!isEmpty(dashboardData) && (
+              <>
+                {/* <Grid item xs={12} sm={4} md={3} lg={2}>
                   <PreDashboardCard
                     title="Total FE"
                     todayScore={dashboardData.total_users}
@@ -389,242 +392,230 @@ const Dashboard = () => {
                     yesterdayPercentage=""
                   />
                 </Grid> */}
-                  <Grid item xs={12} sm={4} md={3} lg={2}>
-                    <DashboardCard
-                      total={dashboardData.total_users}
-                      title="Total FE"
-                      percentageChange={
-                        cardPercentage?.totalUsersCombinedPercentage || "0.0"
-                      }
-                      height="120px" // Greater height for the first card
-                      bgcolor="#ff5722"
-                      handleCardClick={() => nav("/field-executives")}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={4} md={3} lg={2}>
-                    <DashboardCard
-                      total={dashboardData.un_verified_users}
-                      title="To Be Verified"
-                      percentageChange={
-                        cardPercentage.unverifiedUsersPercentage
-                      }
-                      bgcolor="#ffc107"
-                      handleCardClick={() =>
-                        nav("/field-executives?status=Unverified")
-                      }
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={4} md={3} lg={2}>
-                    <DashboardCard
-                      total={dashboardData.active_users}
-                      title="Active"
-                      percentageChange={cardPercentage.activeUsersPercentage}
-                      bgcolor="#4caf50"
-                      handleCardClick={() =>
-                        nav("/field-executives?status=Active")
-                      }
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={4} md={3} lg={2}>
-                    <DashboardCard
-                      total={dashboardData.inactive_users}
-                      title="Inactive Users"
-                      percentageChange={cardPercentage.inactiveUsersPercentage}
-                      bgcolor="#9e9e9e"
-                      handleCardClick={() =>
-                        nav("/field-executives?status=Inactive")
-                      }
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={4} md={3} lg={2}>
-                    <DashboardCard
-                      total={dashboardData.suspended_users}
-                      title="Suspended"
-                      percentageChange={cardPercentage.suspendedUsersPercentage}
-                      bgcolor="#f44336"
-                      handleCardClick={() =>
-                        nav("/field-executives?status=Suspended")
-                      }
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={4} md={3} lg={2}>
-                    <DashboardCard
-                      total={dashboardData.rejected_users}
-                      title="Rejected"
-                      percentageChange={cardPercentage.rejectedUsersPercentage}
-                      bgcolor="#f44336"
-                      handleCardClick={() =>
-                        nav("/field-executives?status=Rejected")
-                      }
-                    />
-                  </Grid>
+                <Grid item xs={12} sm={4} md={3} lg={2}>
+                  <DashboardCard
+                    total={dashboardData.total_users}
+                    title="Total FE"
+                    percentageChange={
+                      cardPercentage?.totalUsersCombinedPercentage || "0.0"
+                    }
+                    height="120px" // Greater height for the first card
+                    bgcolor="#ff5722"
+                    handleCardClick={() => nav("/field-executives")}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={4} md={3} lg={2}>
+                  <DashboardCard
+                    total={dashboardData.un_verified_users}
+                    title="To Be Verified"
+                    percentageChange={cardPercentage.unverifiedUsersPercentage}
+                    bgcolor="#ffc107"
+                    handleCardClick={() =>
+                      nav("/field-executives?status=Unverified")
+                    }
+                  />
+                </Grid>
+                <Grid item xs={12} sm={4} md={3} lg={2}>
+                  <DashboardCard
+                    total={dashboardData.active_users}
+                    title="Active"
+                    percentageChange={cardPercentage.activeUsersPercentage}
+                    bgcolor="#4caf50"
+                    handleCardClick={() =>
+                      nav("/field-executives?status=Active")
+                    }
+                  />
+                </Grid>
+                <Grid item xs={12} sm={4} md={3} lg={2}>
+                  <DashboardCard
+                    total={dashboardData.inactive_users}
+                    title="Inactive Users"
+                    percentageChange={cardPercentage.inactiveUsersPercentage}
+                    bgcolor="#9e9e9e"
+                    handleCardClick={() =>
+                      nav("/field-executives?status=Inactive")
+                    }
+                  />
+                </Grid>
+                <Grid item xs={12} sm={4} md={3} lg={2}>
+                  <DashboardCard
+                    total={dashboardData.suspended_users}
+                    title="Suspended"
+                    percentageChange={cardPercentage.suspendedUsersPercentage}
+                    bgcolor="#f44336"
+                    handleCardClick={() =>
+                      nav("/field-executives?status=Suspended")
+                    }
+                  />
+                </Grid>
+                <Grid item xs={12} sm={4} md={3} lg={2}>
+                  <DashboardCard
+                    total={dashboardData.rejected_users}
+                    title="Rejected"
+                    percentageChange={cardPercentage.rejectedUsersPercentage}
+                    bgcolor="#f44336"
+                    handleCardClick={() =>
+                      nav("/field-executives?status=Rejected")
+                    }
+                  />
+                </Grid>
 
-                  <Grid item xs={12} sm={4} md={3} lg={2}>
-                    <DashboardCard
-                      total={dashboardData.total_cards}
-                      title="Total Cards"
-                      percentageChange={cardPercentage.totalCardsPercentage}
-                      height="120px" // Greater height for the first card
-                      bgcolor="#ff5722"
-                      handleCardClick={() => nav("/cards?tab=totalCards")}
-                      todayScore={dashboardData.todayTotalCards}
-                      yesterdayScore={dashboardData.yesterdayTotalCards}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={4} md={3} lg={2}>
-                    <DashboardCard
-                      total={dashboardData.available_to_print}
-                      title="Available to print"
-                      percentageChange={
-                        cardPercentage.availableToPrintPercentage
-                      }
-                      bgcolor="#ffc107"
-                      handleCardClick={() =>
-                        nav("/cards?page=Cards&tab=toBePrinted")
-                      }
-                      todayScore={dashboardData.availableToPrintTodayCount}
-                      yesterdayScore={
-                        dashboardData.availableToPrintYesterdayCount
-                      }
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={4} md={3} lg={2}>
-                    <DashboardCard
-                      total={dashboardData.printed}
-                      title="Printed"
-                      percentageChange={cardPercentage.printedPercentage}
-                      bgcolor="linear-gradient(79deg, #ffc107, white, #4caf50)"
-                      handleCardClick={() =>
-                        nav("/cards?tab=totalCards&status=PRINTED")
-                      }
-                      todayScore={dashboardData.printedTodayCount}
-                      yesterdayScore={dashboardData.printedYesterdayCount}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={4} md={3} lg={2}>
-                    <DashboardCard
-                      total={dashboardData.delivered_cards}
-                      title="Delivered"
-                      percentageChange={cardPercentage.deliveredCardsPercentage}
-                      bgcolor="#4caf50"
-                      handleCardClick={() =>
-                        nav("/cards?tab=totalCards&status=DELIVERED")
-                      }
-                      todayScore={dashboardData.deliveredCardsTodayCount}
-                      yesterdayScore={
-                        dashboardData.deliveredCardsYesterdayCount
-                      }
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={4} md={3} lg={2}>
-                    <DashboardCard
-                      total={dashboardData.undelivered_cards}
-                      title="Undelivered"
-                      percentageChange={
-                        cardPercentage.undeliveredCardsPercentage
-                      }
-                      bgcolor="#f44336"
-                      handleCardClick={() =>
-                        nav("/cards?tab=totalCards&status=UNDELIVERED")
-                      }
-                      todayScore={dashboardData.undeliveredCardsTodayCount}
-                      yesterdayScore={
-                        dashboardData.undeliveredCardsYesterdayCount
-                      }
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={4} md={3} lg={2}>
-                    <DashboardCard
-                      total={dashboardData.discard_cards}
-                      title="Discarded"
-                      percentageChange={cardPercentage.discardCardsPercentage}
-                      bgcolor="#9e9e9e"
-                      handleCardClick={() =>
-                        nav("/cards?tab=totalCards&status=DISCARDED")
-                      }
-                      todayScore={dashboardData.discardedCardsTodayCount}
-                      yesterdayScore={
-                        dashboardData.discardedCardsYesterdayCount
-                      }
-                    />
-                  </Grid>
+                <Grid item xs={12} sm={4} md={3} lg={2}>
+                  <DashboardCard
+                    total={dashboardData.total_cards}
+                    title="Total Cards"
+                    percentageChange={cardPercentage.totalCardsPercentage}
+                    height="120px" // Greater height for the first card
+                    bgcolor="#ff5722"
+                    handleCardClick={() => nav("/cards?tab=totalCards")}
+                    todayScore={dashboardData.todayTotalCards}
+                    yesterdayScore={dashboardData.yesterdayTotalCards}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={4} md={3} lg={2}>
+                  <DashboardCard
+                    total={dashboardData.available_to_print}
+                    title="Available to print"
+                    percentageChange={cardPercentage.availableToPrintPercentage}
+                    bgcolor="#ffc107"
+                    handleCardClick={() =>
+                      nav("/cards?page=Cards&tab=toBePrinted")
+                    }
+                    todayScore={dashboardData.availableToPrintTodayCount}
+                    yesterdayScore={
+                      dashboardData.availableToPrintYesterdayCount
+                    }
+                  />
+                </Grid>
+                <Grid item xs={12} sm={4} md={3} lg={2}>
+                  <DashboardCard
+                    total={dashboardData.printed}
+                    title="Printed"
+                    percentageChange={cardPercentage.printedPercentage}
+                    bgcolor="linear-gradient(79deg, #ffc107, white, #4caf50)"
+                    handleCardClick={() =>
+                      nav("/cards?tab=totalCards&status=PRINTED")
+                    }
+                    todayScore={dashboardData.printedTodayCount}
+                    yesterdayScore={dashboardData.printedYesterdayCount}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={4} md={3} lg={2}>
+                  <DashboardCard
+                    total={dashboardData.delivered_cards}
+                    title="Delivered"
+                    percentageChange={cardPercentage.deliveredCardsPercentage}
+                    bgcolor="#4caf50"
+                    handleCardClick={() =>
+                      nav("/cards?tab=totalCards&status=DELIVERED")
+                    }
+                    todayScore={dashboardData.deliveredCardsTodayCount}
+                    yesterdayScore={dashboardData.deliveredCardsYesterdayCount}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={4} md={3} lg={2}>
+                  <DashboardCard
+                    total={dashboardData.undelivered_cards}
+                    title="Undelivered"
+                    percentageChange={cardPercentage.undeliveredCardsPercentage}
+                    bgcolor="#f44336"
+                    handleCardClick={() =>
+                      nav("/cards?tab=totalCards&status=UNDELIVERED")
+                    }
+                    todayScore={dashboardData.undeliveredCardsTodayCount}
+                    yesterdayScore={
+                      dashboardData.undeliveredCardsYesterdayCount
+                    }
+                  />
+                </Grid>
+                <Grid item xs={12} sm={4} md={3} lg={2}>
+                  <DashboardCard
+                    total={dashboardData.discard_cards}
+                    title="Discarded"
+                    percentageChange={cardPercentage.discardCardsPercentage}
+                    bgcolor="#9e9e9e"
+                    handleCardClick={() =>
+                      nav("/cards?tab=totalCards&status=DISCARDED")
+                    }
+                    todayScore={dashboardData.discardedCardsTodayCount}
+                    yesterdayScore={dashboardData.discardedCardsYesterdayCount}
+                  />
+                </Grid>
 
-                  <Grid item xs={12} sm={4} md={3} lg={2}>
-                    <DashboardCard
-                      total={dashboardData.total_hospital}
-                      title="Total"
-                      percentageChange={cardPercentage.totalHospitalPercentage}
-                      height="120px" // Greater height for the first card
-                      bgcolor="#ff5722"
-                      handleCardClick={() => nav("/hospitals")}
-                      todayScore={dashboardData.totalHospitalTodayCount}
-                      yesterdayScore={dashboardData.totalHospitalYesterdayCount}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={4} md={3} lg={2}>
-                    <DashboardCard
-                      total={dashboardData.hospitals}
-                      title="Hospitals"
-                      percentageChange={cardPercentage.hospitalsPercentage}
-                      bgcolor="#ff5722"
-                      handleCardClick={() =>
-                        nav("/hospitals?category=Hospital")
-                      }
-                      todayScore={dashboardData.hospitalTodayCount}
-                      yesterdayScore={dashboardData.hospitalYesterdayCount}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={4} md={3} lg={2}>
-                    <DashboardCard
-                      total={dashboardData.medicals}
-                      title="Medicals"
-                      percentageChange={cardPercentage.medicalsPercentage}
-                      bgcolor="#ff5722"
-                      handleCardClick={() => nav("/hospitals?category=Medical")}
-                      todayScore={dashboardData.totalMedicalTodayCount}
-                      yesterdayScore={dashboardData.totalMedicalYesterdayCount}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={4} md={3} lg={2}>
-                    <DashboardCard
-                      total={dashboardData.diagnostic_centers}
-                      title="Diagnotic Centers"
-                      percentageChange={
-                        cardPercentage.diagnosticCentersPercentage
-                      }
-                      bgcolor="#ff5722"
-                      handleCardClick={() =>
-                        nav("/hospitals?category=Diagnostic+Centre")
-                      }
-                      todayScore={dashboardData.totalDCTodayCount}
-                      yesterdayScore={dashboardData.totalDCYesterdayCount}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={4} md={3} lg={2}>
-                    <DashboardCard
-                      total={dashboardData.pathology_lab}
-                      title="Pathology Lab"
-                      percentageChange={
-                        cardPercentage.diagnosticCentersPercentage
-                      }
-                      bgcolor="#ff5722"
-                      handleCardClick={() =>
-                        nav("/hospitals?category=Pathology+Lab")
-                      }
-                      todayScore={dashboardData.pathologyLabTodayCount}
-                      yesterdayScore={dashboardData.pathologyLabYesterdayCount}
-                    />
-                  </Grid>
-                </>
-              )}
-              {/* Add more cards as needed */}
-            </Grid>
-          </Container>
-        )}
-      </TabPanel>
-      <TabPanel value={selectedTab} index={1}>
+                <Grid item xs={12} sm={4} md={3} lg={2}>
+                  <DashboardCard
+                    total={dashboardData.total_hospital}
+                    title="Total"
+                    percentageChange={cardPercentage.totalHospitalPercentage}
+                    height="120px" // Greater height for the first card
+                    bgcolor="#ff5722"
+                    handleCardClick={() => nav("/hospitals")}
+                    todayScore={dashboardData.totalHospitalTodayCount}
+                    yesterdayScore={dashboardData.totalHospitalYesterdayCount}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={4} md={3} lg={2}>
+                  <DashboardCard
+                    total={dashboardData.hospitals}
+                    title="Hospitals"
+                    percentageChange={cardPercentage.hospitalsPercentage}
+                    bgcolor="#ff5722"
+                    handleCardClick={() => nav("/hospitals?category=Hospital")}
+                    todayScore={dashboardData.hospitalTodayCount}
+                    yesterdayScore={dashboardData.hospitalYesterdayCount}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={4} md={3} lg={2}>
+                  <DashboardCard
+                    total={dashboardData.medicals}
+                    title="Medicals"
+                    percentageChange={cardPercentage.medicalsPercentage}
+                    bgcolor="#ff5722"
+                    handleCardClick={() => nav("/hospitals?category=Medical")}
+                    todayScore={dashboardData.totalMedicalTodayCount}
+                    yesterdayScore={dashboardData.totalMedicalYesterdayCount}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={4} md={3} lg={2}>
+                  <DashboardCard
+                    total={dashboardData.diagnostic_centers}
+                    title="Diagnotic Centers"
+                    percentageChange={
+                      cardPercentage.diagnosticCentersPercentage
+                    }
+                    bgcolor="#ff5722"
+                    handleCardClick={() =>
+                      nav("/hospitals?category=Diagnostic+Centre")
+                    }
+                    todayScore={dashboardData.totalDCTodayCount}
+                    yesterdayScore={dashboardData.totalDCYesterdayCount}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={4} md={3} lg={2}>
+                  <DashboardCard
+                    total={dashboardData.pathology_lab}
+                    title="Pathology Lab"
+                    percentageChange={
+                      cardPercentage.diagnosticCentersPercentage
+                    }
+                    bgcolor="#ff5722"
+                    handleCardClick={() =>
+                      nav("/hospitals?category=Pathology+Lab")
+                    }
+                    todayScore={dashboardData.pathologyLabTodayCount}
+                    yesterdayScore={dashboardData.pathologyLabYesterdayCount}
+                  />
+                </Grid>
+              </>
+            )}
+            {/* Add more cards as needed */}
+          </Grid>
+        </Container>
+      )}
+      {/* </TabPanel> */}
+      {/* <TabPanel value={selectedTab} index={1}>
         <TreeChartComponent />
-      </TabPanel>
+      </TabPanel> */}
     </Box>
   );
 };
