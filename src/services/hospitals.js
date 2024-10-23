@@ -119,6 +119,21 @@ async function saveFormData({ id, formData }) {
     }
     formData.images = uploadedImageUrls;
   }
+  if (
+    formData?.signatureImageUrl &&
+    !formData?.signatureImageUrl.includes("https")
+  ) {
+    const newformData = new FormData();
+    const imageBlobData = dataUrlToBlob(formData?.signatureImageUrl);
+    newformData.append(
+      "file",
+      imageBlobData,
+      `${generateRandom5DigitNumber()}`
+    );
+    const url = await common.fileUpload(newformData);
+    formData.signatureImage = url;
+    delete formData.signatureImageUrl;
+  }
 
   const {
     status,
@@ -158,6 +173,18 @@ async function addHospital({ formData }) {
     }
   }
   formData.images = uploadedImageUrls;
+  if (formData?.signatureImageUrl) {
+    const newformData = new FormData();
+    const imageBlobData = dataUrlToBlob(formData?.signatureImageUrl);
+    newformData.append(
+      "file",
+      imageBlobData,
+      `${generateRandom5DigitNumber()}`
+    );
+    const url = await common.fileUpload(newformData);
+    formData.signatureImage = url;
+    delete formData.signatureImageUrl;
+  }
   const {
     status,
     data,

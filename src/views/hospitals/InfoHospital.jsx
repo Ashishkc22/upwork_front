@@ -310,7 +310,21 @@ const HospitalInfoCard = () => {
                     <TextGroup title="Pincode:" value={hospitalData.pincode} />
                   </Grid>
                 </Grid>
+                <Grid>
+                  <TextGroup title="Signature :" />
+                  {hospitalData.signatureImage ? (
+                    <CardMedia
+                      component="img"
+                      width="200"
+                      image={hospitalData.signatureImage}
+                      alt={`Image sign`}
+                    />
+                  ) : (
+                    "N/A"
+                  )}
+                </Grid>
               </Grid>
+
               <Grid
                 item
                 container
@@ -472,7 +486,7 @@ const HospitalInfoCard = () => {
                   />
                   <TextGroup title="Auth Signature:" />
                   {hospitalData.auth_sign ? (
-                    <img src="hospitalData.auth_sign" alt="sign" />
+                    <img src={hospitalData.auth_sign} alt="sign" width={200} />
                   ) : (
                     "N/A"
                   )}

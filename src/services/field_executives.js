@@ -218,8 +218,9 @@ async function saveTLDetails(formData) {
       PanCard: "panCardImage",
     };
     const { imagesToUpload, signatureDataUrl } = formData;
-    Object.entries(imagesToUpload).forEach(async (data) => {
-      const [name, image] = data;
+    const imagesToUploadEntries = Object.entries(imagesToUpload);
+    for (let i = 0; i < imagesToUploadEntries.length; i++) {
+      const [name, image] = imagesToUploadEntries[i];
       if (name === "aFront") {
         if (isEmpty(formData.id_proof)) formData.id_proof = {};
         formData.id_proof.back = await uploadImage(image);
@@ -230,7 +231,20 @@ async function saveTLDetails(formData) {
       } else {
         formData[keyMapper[name]] = await uploadImage(image);
       }
-    });
+    }
+    // Object.entries(imagesToUpload).forEach(async (data) => {
+    //   const [name, image] = data;
+    //   if (name === "aFront") {
+    //     if (isEmpty(formData.id_proof)) formData.id_proof = {};
+    //     formData.id_proof.back = await uploadImage(image);
+    //   }
+    //   if (name === "aBack") {
+    //     if (isEmpty(formData.id_proof)) formData.id_proof = {};
+    //     formData.id_proof.front = await uploadImage(image);
+    //   } else {
+    //     formData[keyMapper[name]] = await uploadImage(image);
+    //   }
+    // });
     if (signatureDataUrl) {
       formData.signatureImage = await uploadImage(formData.signatureDataUrl);
     }
@@ -244,8 +258,10 @@ async function saveTLDetails(formData) {
       body: formData,
     });
     if (data.status === "failed") {
-      enqueueSnackbar("failed", {
-        variant: data.message || "error",
+      console.log("data failed", data);
+
+      enqueueSnackbar(data.message || "something went wrong.", {
+        variant: "error",
         autoHideDuration: 2000,
       });
       return {};

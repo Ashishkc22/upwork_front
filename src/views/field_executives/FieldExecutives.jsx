@@ -2,13 +2,14 @@ import Header from "../../components/Header";
 import { Grid, Card, TablePagination, Box, Button } from "@mui/material";
 import field_executives from "../../services/field_executives";
 import { isEmpty } from "lodash";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import CustomTable from "../../components/CustomTable";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import EditCardDialog from "./EditCardDialog";
-import LinearIndeterminate from "../../components/LinearProgress";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import LoadingScreen from "../../components/LaodingScreenWithWhiteBG";
+import storageUtil from "../../utils/storage.util";
 
 let typingTimer;
 
@@ -43,7 +44,7 @@ const headers = [
   { label: "D", key: "d_count" },
   { label: "UD", key: "ud_count" },
   { label: "DIS", key: "dis_count" },
-  { label: "RATIO", key: "ratio" },
+  { label: "RATIO", key: "ratio", sort: true },
 ];
 
 const HospitalPage = () => {
@@ -67,7 +68,7 @@ const HospitalPage = () => {
 
   //   API call to get hospital data
   const getUsers = ({
-    search = "em",
+    search,
     till_duration,
     duration,
     status,
@@ -76,8 +77,11 @@ const HospitalPage = () => {
     tehsil,
     district,
     _page,
+    sortBy,
   } = {}) => {
     const urlStatus = urlDateType.get("status");
+    console.log("search", search);
+
     if (!search && searchValue && search != "em") {
       search = searchValue;
     }
@@ -87,7 +91,6 @@ const HospitalPage = () => {
         params: {
           limit: 100,
           page: _page,
-          sortBy: "created_at",
           ...(search && search != "em" && { q: search }),
           ...(district && district != "em" && { district }),
           ...(tehsil && tehsil != "em" && { tehsil }),
@@ -95,6 +98,8 @@ const HospitalPage = () => {
           ...((status && status != "em") || urlStatus
             ? { status: status || urlStatus }
             : {}),
+          sortBy: sortBy ? sortBy : "created_at",
+          // ...(sortBy && { sortBy }),
           ...(state && state != "em" && { state }),
           ...(duration && duration != "em" && { duration }),
           ...(till_duration && till_duration != "em" && { till_duration }),
@@ -134,11 +139,32 @@ const HospitalPage = () => {
   const handleRefresh = ({ payload }) => {
     getUsers({ ...payload });
   };
-
+  function addDataToURL(data) {
+    const searchParams = new URLSearchParams(window.location.search);
+    // Iterate over the data object and append each key-value pair to the URL
+    Object.keys(data).forEach((key) => {
+      if (!data[key]) {
+        searchParams.delete(key);
+      } else {
+        searchParams.set(key, data[key]);
+      }
+    });
+    // Update the URL with the new query string
+    navigate(`?${searchParams.toString()}`, { replace: true });
+  }
   const handleRowClick = (row) => {
+    storageUtil.setStorageData(row._id, "FE-highlightedRow");
     navigate(`${row.uid}`);
   };
+  const handleSort = ({ colName, type }) => {
+    if (type === "des") {
+      getUsers({ sortBy: colName });
+    } else {
+      getUsers({});
+    }
 
+    addDataToURL({ sortType: type === "des" ? "des" : "" });
+  };
   // useEffect(() => {
   //   getUsers();
   // }, []);
@@ -206,83 +232,80 @@ const HospitalPage = () => {
           showOtherCard={true}
         />
       </Grid>
-      {isPageLoading ? (
-        <LinearIndeterminate />
-      ) : (
-        <>
-          <Grid
-            item
-            xs={12}
+      {isPageLoading && <LoadingScreen />}
+      <Grid
+        item
+        xs={12}
+        sx={{
+          display: "flex",
+          justifyContent: "end",
+          mt: 0,
+          mx: 1,
+          p: 0,
+        }}
+        justifyContent="end"
+      >
+        <Button
+          sx={{
+            background: "#ff5722",
+            color: "white",
+            ":hover": {
+              background: "#e23f0c",
+            },
+          }}
+          onClick={() => setAddUsersDialog(true)}
+        >
+          Add TL
+        </Button>
+      </Grid>
+      <Grid item xs={12}>
+        {/* {!isEmpty(hospitalList) && ( */}
+        <CustomTable
+          headers={headers}
+          rows={usersList}
+          highlightedRow={storageUtil.getStorageData("FE-highlightedRow")}
+          tbCellStyle={{ py: "9px" }}
+          dataForSmallScreen={{
+            use: true,
+            title: { keys: ["name", "ID"] },
+          }}
+          rowClick={handleRowClick}
+          showPagiantion
+          statusIndicator
+          handleSort={handleSort}
+        />
+        <Box sx={{ height: "20px" }}></Box>
+
+        {/* )} */}
+        <Grid item xs={12} sx={{ height: "39px" }}>
+          <Card
             sx={{
-              display: "flex",
-              justifyContent: "end",
-              mt: 0,
-              mx: 1,
-              p: 0,
+              position: "fixed",
+              bottom: "5px",
+              width: "100%",
+              right: "1px",
             }}
-            justifyContent="end"
           >
-            <Button
-              sx={{
-                background: "#ff5722",
-                color: "white",
-                ":hover": {
-                  background: "#e23f0c",
+            <TablePagination
+              component="div"
+              count={pageCount}
+              page={page}
+              rowsPerPage={100}
+              onPageChange={(e, newPage) => {
+                setPage(newPage);
+                getUsers({ _page: newPage });
+              }}
+              onRowsPerPageChange={() => {}}
+              slots={{
+                actions: {
+                  nextButton: customNextButton,
+                  previousButton: customPrevioudButton,
                 },
               }}
-              onClick={() => setAddUsersDialog(true)}
-            >
-              Add TL
-            </Button>
-          </Grid>
-          <Grid item xs={12}>
-            {/* {!isEmpty(hospitalList) && ( */}
-            <CustomTable
-              headers={headers}
-              rows={usersList}
-              tbCellStyle={{ py: "9px" }}
-              dataForSmallScreen={{
-                use: true,
-                title: { keys: ["name", "ID"] },
-              }}
-              rowClick={handleRowClick}
-              showPagiantion
-              statusIndicator
             />
-            <Box sx={{ height: "20px" }}></Box>
-
-            {/* )} */}
-            <Grid item xs={12} sx={{ height: "39px" }}>
-              <Card
-                sx={{
-                  position: "fixed",
-                  bottom: "5px",
-                  width: "100%",
-                  right: "1px",
-                }}
-              >
-                <TablePagination
-                  component="div"
-                  count={pageCount}
-                  page={page}
-                  rowsPerPage={100}
-                  onPageChange={(e, newPage) => {
-                    setPage(newPage);
-                    getUsers({ _page: newPage });
-                  }}
-                  onRowsPerPageChange={() => {}}
-                  slots={{
-                    actions: {
-                      nextButton: customNextButton,
-                      previousButton: customPrevioudButton,
-                    },
-                  }}
-                />
-              </Card>
-            </Grid>
-          </Grid>
-        </>
-      )}
+          </Card>
+        </Grid>
+      </Grid>
     </Grid>
   );
 };

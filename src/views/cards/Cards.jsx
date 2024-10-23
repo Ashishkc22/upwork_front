@@ -42,6 +42,8 @@ const images = {
   logo: cardLogoImg,
 };
 
+let useEffectTypingTimer;
+
 const tableHeaders = [
   { label: "SNO", key: "index" },
   { label: "NAME", key: "name" },
@@ -232,10 +234,11 @@ const Cards = () => {
     const cId = urlDateType.get("createdById");
     // const tab = urlDateType.get("tab");
     const page = Number(urlDateType.get("page"));
-    console.log("url page", page);
+    console.log("..............Card api triggered.........");
+
     // if (urlDateType.get("sortType") && !sortBy) {
     //   sortBy = "status";
-    // }
+    // };
 
     if (page > 0) {
       setPage(page);
@@ -244,7 +247,6 @@ const Cards = () => {
     if (!_isPrintMode) {
       _isPrintMode = urlDateType.get("printMode");
     }
-    console.log("payload page", _page);
 
     if (selectedCard) {
       const s = urlDateType.get("status");
@@ -367,7 +369,6 @@ const Cards = () => {
       }
       setTimeout(() => {
         const markAsPrinted = storageUtil.getStorageData("markAsPrintedData");
-        console.log("local storage", markAsPrinted);
         if (markAsPrinted) {
           setMarkAsPrintPending(markAsPrinted);
         }
@@ -395,8 +396,6 @@ const Cards = () => {
     } else {
       getTableData({});
     }
-    console.log("type", type);
-
     addDataToURL({ sortType: type === "des" ? "des" : "" });
   };
 
@@ -516,13 +515,18 @@ const Cards = () => {
     const _search = urlDateType.get("search");
     const sortType = urlDateType.get("sortType");
     const tab = urlDateType.get("tab");
-    getTableData({
-      ...apiPayload,
-      _page: page,
-      search: _search,
-      sortBy: sortType ? "status" : null,
-      tab,
-    });
+
+    clearTimeout(useEffectTypingTimer);
+    useEffectTypingTimer = setTimeout(() => {
+      console.log("----getTableData api");
+      getTableData({
+        ...apiPayload,
+        _page: page,
+        search: _search,
+        sortBy: sortType ? "status" : null,
+        tab,
+      });
+    }, 10);
 
     const searchParams = new URLSearchParams(window.location.search).get("tab");
     const handleScroll = () => {
@@ -863,7 +867,11 @@ const Cards = () => {
             component="div"
             count={pageCount || 0}
             page={currentPage || 0}
-            disabled={Object.keys(markAsPrintPending)?.length}
+            disabled={
+              selectedCard === "toBePrinted"
+                ? Object.keys(markAsPrintPending)?.length
+                : false
+            }
             rowsPerPageOptions={[
               10,
               25,

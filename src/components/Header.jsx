@@ -383,6 +383,8 @@ const Header = memo(
     };
 
     const triggerAPICallback = ({ search = "" } = {}) => {
+      console.log("---------------API Triggered---------------");
+
       let trimedStatus;
       if (status?.label) {
         trimedStatus = status?.label?.split(" ")?.[0]?.trim();
@@ -403,6 +405,9 @@ const Header = memo(
       }
       if (search && search != "em") {
         payload.search = search;
+      }
+      if (search != "em" && urlDateType.get("search") && !payload.search) {
+        payload.search = urlDateType.get("search");
       }
       if (search === "em") {
         delete payload.search;
@@ -563,7 +568,7 @@ const Header = memo(
         }
         if (urlDateType?.get("duration")) {
           let dateFormat = moment(urlDateType?.get("duration"), "DD/MM/YYYY");
-          if (urlDateType?.get("duration") === "CUSTOM") {
+          if (urlDateType?.get("durationType") === "CUSTOM") {
             dateFormat = [
               {
                 startDate: moment(
@@ -596,8 +601,11 @@ const Header = memo(
 
     useEffect(() => {
       clearTimeout(useEffectTypingTimer);
+
       useEffectTypingTimer = setTimeout(function () {
         // call API
+        console.log("-----Filter API Trigger------------");
+
         triggerAPICallback();
       }, 10);
     }, [
@@ -642,12 +650,16 @@ const Header = memo(
       // }
       if (showType) {
         hospitals.getHospitalCategory().then((data) => {
-          setCategoryOption(data.hospital_category);
-          const category = urlDateType?.get("category");
-          if (showType && category) {
-            const c = data.hospital_category?.find((h) => h.name == category);
-            setCategory(c);
-            addInChipList(c.name, "category");
+          if (!isEmpty(data)) {
+            setCategoryOption(data.hospital_category.filter((h) => h.active));
+            const category = urlDateType?.get("category");
+            console.log("newValue", category);
+            if (showType && category) {
+              const c = data.hospital_category?.find((h) => h.name == category);
+              console.log("newValue", c);
+              setCategory(c);
+              addInChipList(c.name, "category");
+            }
           }
         });
       }
@@ -913,6 +925,7 @@ const Header = memo(
               <Box sx={{ mx: 1, minWidth: 140 }}>
                 <Autocomplete
                   options={categoryOption}
+                  disableClearable
                   value={category}
                   // {...(!isEmpty(status) && { value: status })}
                   getOptionLabel={(option) => option.name}

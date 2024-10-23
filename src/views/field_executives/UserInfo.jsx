@@ -73,7 +73,9 @@ const UserInfoCard = () => {
         setRole(data.role);
         console.log("data", data);
         fieldExecutives
-          .getTeamLeaderDetailsById({ tlId: data.team_leader_id })
+          .getTeamLeaderDetailsById({
+            tlId: data?.team_leader_id,
+          })
           .then((data) => {
             console.log("_____data", data);
 

@@ -68,7 +68,8 @@ const DynamicTable = ({
     if (
       keymap.key === "created_at" ||
       keymap.key === "expiry_date" ||
-      keymap.key === "deleted_at"
+      keymap.key === "deleted_at" ||
+      keymap.key === "status_updated_at"
     ) {
       return (
         <Typography variant="body2">
@@ -161,6 +162,10 @@ const DynamicTable = ({
                       sm: 0,
                     },
                     ...(keymap.sort && { ":hover": { cursor: "pointer" } }),
+                    ...(keymap.sort &&
+                      urlDateType.get("sortType") === "des" && {
+                        color: "blue",
+                      }),
                   }}
                   {...(keymap.sort && {
                     onClick: () => {

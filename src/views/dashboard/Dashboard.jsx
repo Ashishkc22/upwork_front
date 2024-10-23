@@ -579,19 +579,19 @@ const Dashboard = () => {
                 <Grid item xs={12} sm={4} md={3} lg={2}>
                   <DashboardCard
                     total={dashboardData.diagnostic_centers}
-                    title="Diagnotic Centers"
+                    title="Labs & Diagnostic Centers"
                     percentageChange={
                       cardPercentage.diagnosticCentersPercentage
                     }
                     bgcolor="#ff5722"
                     handleCardClick={() =>
-                      nav("/hospitals?category=Diagnostic+Centre")
+                      nav("/hospitals?category=Labs+%26+Diagnostic+Centers")
                     }
                     todayScore={dashboardData.totalDCTodayCount}
                     yesterdayScore={dashboardData.totalDCYesterdayCount}
                   />
                 </Grid>
-                <Grid item xs={12} sm={4} md={3} lg={2}>
+                {/* <Grid item xs={12} sm={4} md={3} lg={2}>
                   <DashboardCard
                     total={dashboardData.pathology_lab}
                     title="Pathology Lab"
@@ -605,7 +605,7 @@ const Dashboard = () => {
                     todayScore={dashboardData.pathologyLabTodayCount}
                     yesterdayScore={dashboardData.pathologyLabYesterdayCount}
                   />
-                </Grid>
+                </Grid> */}
               </>
             )}
             {/* Add more cards as needed */}

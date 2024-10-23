@@ -19,7 +19,6 @@ import {
   Link,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
-import DeleteIcon from "@mui/icons-material/Delete";
 import SearchIcon from "@mui/icons-material/Search";
 import TextDialog from "./TextDialog";
 import CloseIcon from "@mui/icons-material/Close";
@@ -32,6 +31,7 @@ import { styled } from "@mui/material/styles";
 import WhatsAppIcon from "@mui/icons-material/WhatsApp";
 import commonService from "../../services/common";
 import { read, utils } from "xlsx";
+import LocationOnIcon from "@mui/icons-material/LocationOn";
 
 const ColoredSwitch = styled(Switch)(({ theme }) => ({
   "& .MuiSwitch-switchBase.Mui-checked": {
@@ -500,7 +500,7 @@ Text Dialog  logic
       />
       <Stack
         sx={{
-          height: stackName === "gram" ? "26vh" : "calc(100vh - 152px)",
+          height: stackName === "gram" ? "25vh" : "calc(100vh - 152px)",
           // height:
           //   window.visualViewport.height - window.visualViewport.height * 0.25,
           overflow: "scroll",
@@ -606,7 +606,8 @@ Text Dialog  logic
                       }}
                     />
                   )}
-                  {
+
+                  {stackName !== "gram" ? (
                     <IconButton
                       edge="end"
                       aria-label="delete"
@@ -619,7 +620,25 @@ Text Dialog  logic
                     >
                       <ArrowForwardIcon />
                     </IconButton>
-                  }
+                  ) : (
+                    <IconButton
+                      edge="end"
+                      aria-label="delete"
+                      disabled={!selectedItem.map_link}
+                      sx={{
+                        color: "blue",
+                      }}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        window.open(
+                          `https://${selectedItem.map_link}`,
+                          "_blank"
+                        );
+                      }}
+                    >
+                      <LocationOnIcon />
+                    </IconButton>
+                  )}
                 </ListItem>
               </ListItemButton>
             ))}
@@ -655,7 +674,7 @@ Text Dialog  logic
         )}
       {/* </Box> */}
       {!isEmpty(gramPanchayat) && (
-        <Container>
+        <Container sx={{ py: 1 }}>
           <Grid container rowGap={1}>
             {!isEmpty(gramPanchayat) && (
               <Grid item xs={12}>

@@ -79,7 +79,7 @@ const DashboardCard = ({
             padding: "5%",
           }}
         >
-          <Typography variant="h4" fontWeight="600" color="textSecondary">
+          <Typography variant="h6" fontWeight="600" color="textSecondary">
             {title}
           </Typography>
         </Box>

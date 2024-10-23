@@ -6,9 +6,10 @@ import { useEffect, useState } from "react";
 import CustomTable from "../../components/CustomTable";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import EditCardDialog from "./EditCardDialog";
-import LinearIndeterminate from "../../components/LinearProgress";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import LoadingScreen from "../../components/LaodingScreenWithWhiteBG";
+import storageUtil from "../../utils/storage.util";
 
 let typingTimer;
 
@@ -44,9 +45,10 @@ const HospitalPage = () => {
   const [addHospitalDialog, setAddHospitalDialog] = useState(false);
 
   const [pageCount, setPageCount] = useState(0);
-  const [page, setPage] = useState(0);
 
   let [urlDateType, setUrlDateType] = useSearchParams();
+  const [apiPayload, setApiPayload] = useState({});
+  const [page, setPage] = useState(0);
   const [isPageLoading, setIsPageLoading] = useState(false);
 
   //   API call to get hospital data
@@ -66,12 +68,38 @@ const HospitalPage = () => {
     if (!search && searchValue && search != "em") {
       search = searchValue;
     }
+    if (!_page && _page !== 0 && urlDateType.get("page")) {
+      _page = parseInt(urlDateType.get("page"));
+      setPage(() => _page);
+    }
+
+    setApiPayload((pre) => {
+      const obj = {
+        ...pre,
+      };
+      if (search) obj.search = search;
+      else delete obj.search;
+      if (district) obj.district = district;
+      else delete obj.district;
+      if (duration) obj.duration = duration;
+      else delete obj.duration;
+      if (till_duration) obj.till_duration = till_duration;
+      else delete obj.till_duration;
+      if (_status) obj._status = _status;
+      else delete obj._status;
+      if (_page) obj._page = _page;
+      else delete obj._page;
+      if (type) obj.type = type;
+      else delete obj.type;
+      return obj;
+    });
+
     setIsPageLoading(true);
     hospitals
       .getHospitals({
         params: {
-          limit: 100,
-          page: _page,
+          limit: 10,
+          ...(_page && { page: _page }),
           ...(search && search != "em" && { q: search }),
           ...(district && district != "em" && { district }),
           ...(tehsil && tehsil != "em" && { tehsil }),
@@ -100,13 +128,26 @@ const HospitalPage = () => {
   };
 
   const handleRowClick = (row) => {
+    storageUtil.setStorageData(row._id, "hospital-highlightedRow");
     navigate(`${row._id}`);
   };
 
   useEffect(() => {
     // getHospitals();
   }, []);
-
+  function addDataToURL(data) {
+    const searchParams = new URLSearchParams(window.location.search);
+    // Iterate over the data object and append each key-value pair to the URL
+    Object.keys(data).forEach((key) => {
+      if (!data[key]) {
+        searchParams.delete(key);
+      } else {
+        searchParams.set(key, data[key]);
+      }
+    });
+    // Update the URL with the new query string
+    navigate(`?${searchParams.toString()}`, { replace: true });
+  }
   const customPrevioudButton = (porps) => (
     <Button
       {...porps}
@@ -141,11 +182,13 @@ const HospitalPage = () => {
       }}
       rowSpacing={3}
     >
-      <EditCardDialog
-        open={addHospitalDialog}
-        onClose={() => setAddHospitalDialog(false)}
-        mode="Add"
-      />
+      {addHospitalDialog && (
+        <EditCardDialog
+          open={addHospitalDialog}
+          onClose={() => setAddHospitalDialog(false)}
+          mode="Add"
+        />
+      )}
       <Grid item xs={12}>
         <Header
           currentComponentName="Hospitals"
@@ -167,30 +210,26 @@ const HospitalPage = () => {
           hanldeAddHospital={() => setAddHospitalDialog(true)}
         />
       </Grid>
-      {isPageLoading ? (
-        <LinearIndeterminate />
-      ) : (
-        <>
-          <Grid item xs={12}>
-            {/* {!isEmpty(hospitalList) && ( */}
-            <CustomTable
-              headers={headers}
-              rows={hospitalList}
-              tbCellStyle={{ py: "9px" }}
-              dataForSmallScreen={{
-                use: true,
-                title: { keys: ["entity_name", "district"] },
-              }}
-              rowClick={handleRowClick}
-              showPagiantion
-              statusIndicator
-            />
-            <Box sx={{ height: "30px" }}></Box>
+      {isPageLoading && <LoadingScreen />}
+      <Grid item xs={12}>
+        {/* {!isEmpty(hospitalList) && ( */}
+        <CustomTable
+          headers={headers}
+          rows={hospitalList}
+          tbCellStyle={{ py: "9px" }}
+          highlightedRow={storageUtil.getStorageData("hospital-highlightedRow")}
+          dataForSmallScreen={{
+            use: true,
+            title: { keys: ["entity_name", "district"] },
+          }}
+          rowClick={handleRowClick}
+          showPagiantion
+          statusIndicator
+        />
+        <Box sx={{ height: "30px" }}></Box>
 
-            {/* )} */}
-          </Grid>
-        </>
-      )}
+        {/* )} */}
+      </Grid>
       <Grid item xs={12} sx={{ height: "39px" }}>
         <Card
           sx={{
@@ -204,10 +243,11 @@ const HospitalPage = () => {
             component="div"
             count={pageCount}
             page={page}
-            rowsPerPage={100}
+            rowsPerPage={10}
             onPageChange={(e, newPage) => {
-              setPage(newPage);
-              getHospitals({ _page: newPage });
+              addDataToURL({ page: newPage });
+              setPage(() => newPage);
+              getHospitals({ ...apiPayload, _page: newPage });
             }}
             onRowsPerPageChange={() => {}}
             slots={{

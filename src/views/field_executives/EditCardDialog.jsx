@@ -24,11 +24,15 @@ import { isEmpty } from "lodash";
 import { styled } from "@mui/material/styles";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
 import commonService from "../../services/common";
-import SignWhiteBoard from "./SignWhiteBoard";
+import SignWhiteBoard from "../../components/SignWhiteBoard";
 import AddIcon from "@mui/icons-material/Add";
 import ClearIcon from "@mui/icons-material/Clear";
 import storageUtil from "../../utils/storage.util";
 import CancelPresentationIcon from "@mui/icons-material/CancelPresentation";
+import InputAdornment from "@mui/material/InputAdornment";
+import Visibility from "@mui/icons-material/Visibility";
+import VisibilityOff from "@mui/icons-material/VisibilityOff";
+import Input from "@mui/material/Input";
 
 const VisuallyHiddenInput = styled("input")({
   clip: "rect(0 0 0 0)",
@@ -82,6 +86,7 @@ const EditProfileDialog = ({
   const [frontID, setFrontID] = useState(null);
   const [backID, setBackID] = useState(null);
   const [name, setName] = useState("");
+  const [legalName, setLegalName] = useState("");
   const [phone, setPhone] = useState("");
   const [alternatePhone, setAlternatePhone] = useState("");
   const [janPanchayatOptions, setJanPanchayatOptions] = useState([]);
@@ -89,13 +94,16 @@ const EditProfileDialog = ({
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [address, setAddress] = useState("");
-  const [state, setState] = useState(null);
+  const [state, setState] = useState(addTLMode ? "MP" : null);
   const [district, setDistrict] = useState(null);
   const [emergencyNumber, setEmergencyNumber] = useState("");
   const [teamLeader, setTeamLeader] = useState("");
   const [backupData, setBackupData] = useState({});
   const [stateOptions, setStateOption] = useState([]);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   // const [formErrors, setFormErros] = useState({
   //   name: "required",
@@ -213,7 +221,9 @@ const EditProfileDialog = ({
           },
         })
         .then((data) => {
-          setTeamLeaderOption(data.data);
+          if (data) {
+            setTeamLeaderOption(data.data);
+          }
         });
 
       setImagesToUpload((pre) => {
@@ -302,10 +312,10 @@ const EditProfileDialog = ({
           email: email || data?.email,
           password: password || data.password,
           address: address || data.address,
-          state: state.name || data.state,
+          state: state?.name || data?.state || "MP",
           district: district.name || data.district,
-          ...((janPanchayat || data.janPanchayat) && {
-            janPanchayat: janPanchayat.name || data.janPanchayat,
+          ...((janPanchayat || data?.janPanchayat) && {
+            janPanchayat: janPanchayat?.name || data?.janPanchayat,
           }),
           ...((teamLeader || data.team_leader_id) && {
             team_leader_id: teamLeader || data.team_leader_id,
@@ -313,6 +323,8 @@ const EditProfileDialog = ({
           ...((emergencyNumber || data.emergency_contact) && {
             emergency_contact: emergencyNumber || data.emergency_contact,
           }),
+          legalName,
+          confirmPassword,
           imagesToUpload,
           signatureDataUrl,
         })
@@ -328,9 +340,9 @@ const EditProfileDialog = ({
           email: email || data?.email,
           password: password || data.password,
           address: address || data.address,
-          ...((janPanchayat || data.janPanchayat) && {
+          ...((janPanchayat || data?.janPanchayat) && {
             janPanchayat:
-              janPanchayat.name || janPanchayat || data.janPanchayat,
+              janPanchayat?.name || janPanchayat || data?.janPanchayat,
           }),
           state: state?.name || state || data.state,
           district: district?.name || district || data.district,
@@ -375,6 +387,7 @@ const EditProfileDialog = ({
       storageUtil.setStorageData(
         {
           ...(name && { name }),
+          ...(legalName && { legalName }),
           ...(phone && { phone }),
           ...(alternatePhone && { alternatePhone }),
           ...(janPanchayat && { janPanchayat }),
@@ -398,30 +411,33 @@ const EditProfileDialog = ({
       setEmail(draftData.email);
       setAddress(draftData.address);
       setAlternatePhone(draftData.alternatePhone);
+      setLegalName(draftData.legalName);
       // setEmergencyNumber(draftData.emergency_contact);
-      if (draftData.state) {
-        getAddressData({ type: "state" }).then(() => {
-          // setState(draftData.state);
-          if (draftData.district) {
+      if (draftData.district) {
+        getAddressData({
+          type: "district",
+          params: { stateId: draftData.state._id },
+        }).then(() => {
+          setDistrict(draftData.district);
+          if (draftData.janPanchayat) {
             getAddressData({
-              type: "district",
-              params: { stateId: draftData.state._id },
+              type: "janPanchayat",
+              params: { districtId: draftData.district._id },
             }).then(() => {
-              setDistrict(draftData.district);
-              if (draftData.janPanchayat) {
-                getAddressData({
-                  type: "janPanchayat",
-                  params: { districtId: draftData.district._id },
-                }).then(() => {
-                  setJanPanchayat(draftData.janPanchayat);
-                });
-              }
+              setJanPanchayat(draftData.janPanchayat);
             });
           }
         });
       } else {
-        getAddressData({ type: "state" });
+        getAddressData({
+          type: "district",
+          params: { stateId: "63c681806072b29c2133326e" },
+        });
       }
+    } else {
+      getAddressData({
+        type: "state",
+      });
     }
   }, []);
 
@@ -528,9 +544,16 @@ const EditProfileDialog = ({
               onChange={(e) => setName(e.target.value)}
             />
             <TextField
+              label="Legal Name (as on Id proof)"
+              fullWidth
+              margin="normal"
+              variant="standard"
+              defaultValue={data?.legalName}
+              value={legalName}
+              onChange={(e) => setLegalName(e.target.value)}
+            />
+            <TextField
               label="Mobile no"
-              // error={formErrors["phone"]}
-              // helperText={formErrors["phone"]}
               fullWidth
               margin="normal"
               variant="standard"
@@ -577,7 +600,7 @@ const EditProfileDialog = ({
               value={address}
               onChange={(e) => setAddress(e.target.value)}
             />
-            {!isEmpty(stateOptions) && (
+            {!isEmpty(stateOptions) && !addTLMode && (
               <FormControl fullWidth margin="normal" variant="standard">
                 <InputLabel>State</InputLabel>
                 <Select value={state} label="State">
@@ -586,8 +609,6 @@ const EditProfileDialog = ({
                       key={_state._id}
                       value={_state}
                       onClick={(e) => {
-                        console.log("_state", _state);
-
                         setState(_state);
                         getAddressData({
                           type: "district",
@@ -644,16 +665,58 @@ const EditProfileDialog = ({
               />
             )}
 
-            <TextField
-              label="Password"
-              fullWidth
-              margin="normal"
-              variant="standard"
-              type="text"
-              defaultValue={data?.password}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
+            <FormControl fullWidth variant="standard" margin="normal">
+              <InputLabel htmlFor="standard-adornment-password">
+                Password
+              </InputLabel>
+              <Input
+                id="standard-adornment-password"
+                type={showPassword ? "text" : "password"}
+                defaultValue={data?.password}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                endAdornment={
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label="toggle confirm password visibility"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                }
+              />
+            </FormControl>
+            {addTLMode && (
+              <FormControl fullWidth variant="standard" margin="normal">
+                <InputLabel htmlFor="standard-adornment-confirm-password">
+                  Confirm Password
+                </InputLabel>
+                <Input
+                  id="standard-adornment-confirm-password"
+                  type={showConfirmPassword ? "text" : "password"}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  endAdornment={
+                    <InputAdornment position="end">
+                      <IconButton
+                        aria-label="toggle confirm password visibility"
+                        onClick={() =>
+                          setShowConfirmPassword(!showConfirmPassword)
+                        }
+                      >
+                        {showConfirmPassword ? (
+                          <VisibilityOff />
+                        ) : (
+                          <Visibility />
+                        )}
+                      </IconButton>
+                    </InputAdornment>
+                  }
+                />
+              </FormControl>
+            )}
+            {teamLeaderDetails?.tl_id}
             {!isEmpty(teamLeaderOption) && teamLeaderDetails?.tl_id && (
               <FormControl fullWidth margin="normal" variant="standard">
                 <InputLabel>Team Leader</InputLabel>
@@ -671,6 +734,7 @@ const EditProfileDialog = ({
                 </Select>
               </FormControl>
             )}
+
             {data?.emergency_contact && (
               <TextField
                 label="Emergency Number"
