@@ -624,16 +624,18 @@ Text Dialog  logic
                     <IconButton
                       edge="end"
                       aria-label="delete"
-                      disabled={!selectedItem.map_link}
+                      disabled={!state?.map_link}
                       sx={{
                         color: "blue",
                       }}
                       onClick={(e) => {
                         e.preventDefault();
-                        window.open(
-                          `https://${selectedItem.map_link}`,
-                          "_blank"
-                        );
+                        console.log("map_link", state);
+                        let link = `https://${state.map_link}`;
+                        if (state?.map_link?.includes("https://")) {
+                          link = state.map_link;
+                        }
+                        window.open(link, "_blank");
                       }}
                     >
                       <LocationOnIcon />
