@@ -169,6 +169,10 @@ const CardComponent = () => {
       setCardData(data);
       if (data?.status_history?.length) {
         setIsTimeLineData(data.status_history.reverse());
+        setIsTimeLineOpened(false);
+      } else {
+        setIsTimeLineData([]);
+        setIsTimeLineOpened(false);
       }
       fetchUserById({ uid: data.created_by_uid }).then((data) => {
         setFEDetails(data);
@@ -1156,7 +1160,7 @@ const CardComponent = () => {
           setIscardLoadtion={setIscardLoadtion}
         />
       )}
-      {Boolean(isTimeLineData.length) && (
+      {Boolean(isTimeLineData.length) && isTimeLineOpened && (
         <TimeLineDialog
           open={isTimeLineOpened}
           onClose={(e) => {

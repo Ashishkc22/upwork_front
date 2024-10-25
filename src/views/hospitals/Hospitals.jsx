@@ -98,7 +98,7 @@ const HospitalPage = () => {
     hospitals
       .getHospitals({
         params: {
-          limit: 10,
+          limit: 100,
           ...(_page && { page: _page }),
           ...(search && search != "em" && { q: search }),
           ...(district && district != "em" && { district }),
@@ -243,7 +243,7 @@ const HospitalPage = () => {
             component="div"
             count={pageCount}
             page={page}
-            rowsPerPage={10}
+            rowsPerPage={100}
             onPageChange={(e, newPage) => {
               addDataToURL({ page: newPage });
               setPage(() => newPage);
