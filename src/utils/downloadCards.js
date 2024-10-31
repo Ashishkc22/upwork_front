@@ -347,14 +347,14 @@ async function downloadMultipleCard({
     }
 
     if (index == cardData.length - 1) {
-      // doc.save(
-      //   `${tlDetails.name.replaceAll(" ", "_")}_${
-      //     agentDetails?.name
-      //       ? agentDetails.name.replaceAll(" ", "_")
-      //       : agentDetails.id
-      //   }#${cardCount}_${moment().format("DD_MMM_YYYY_hh_mm")}.pdf`
-      // );
-      preview({ pdfBlob: doc.output("blob") });
+      doc.save(
+        `${tlDetails.name.replaceAll(" ", "_")}_${
+          agentDetails?.name
+            ? agentDetails.name.replaceAll(" ", "_")
+            : agentDetails.id
+        }#${cardCount}_${moment().format("DD_MMM_YYYY_hh_mm")}.pdf`
+      );
+      // preview({ pdfBlob: doc.output("blob") });
       handleDownloadCompleted();
     }
   });
