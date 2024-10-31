@@ -555,17 +555,20 @@ const Cards = () => {
     </Button>
   );
 
-  const customNextButton = (porps) => (
-    <Button
-      {...porps}
-      sx={{ mx: 1 }}
-      size="small"
-      variant="standard"
-      startIcon={<ArrowForwardIcon />}
-    >
-      Next
-    </Button>
-  );
+  const customNextButton = (porps) => {
+    console.log("porps", porps);
+    return (
+      <Button
+        {...porps}
+        sx={{ mx: 1 }}
+        size="small"
+        variant="standard"
+        startIcon={<ArrowForwardIcon />}
+      >
+        Next
+      </Button>
+    );
+  };
 
   const handleCardSelect = (n, byPass = false, filterObjects) => {
     if (
@@ -869,7 +872,7 @@ const Cards = () => {
             page={currentPage || 0}
             disabled={
               selectedCard === "toBePrinted"
-                ? Object.keys(markAsPrintPending)?.length
+                ? !!Object.keys(markAsPrintPending)?.length
                 : false
             }
             rowsPerPageOptions={[

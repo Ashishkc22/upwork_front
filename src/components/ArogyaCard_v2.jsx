@@ -155,7 +155,7 @@ const ArogyamComponent = ({
               display: "inline-flex",
               // marginTop: "3px",
               width: "90px",
-              "align-items": "center",
+              alignItems: "center",
             }}
           >
             <img
@@ -208,7 +208,7 @@ const ArogyamComponent = ({
             style={{
               width: "118px",
               right: "29px",
-              "z-index": 0,
+              zIndex: 0,
             }}
           />
         </div>

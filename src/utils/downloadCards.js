@@ -299,15 +299,26 @@ async function downloadMultipleCard({
     }
     if (index === imageData.length - 1 && count != 9) {
       console.log("imageData.length", imageData.length);
-      console.log("count", count);
       console.log("index", index);
-
+      let par_count = count + 1;
       // skipBackSide.unshift(count);
+      if (count === imageData.length) {
+        console.log("BBBB Adding Back side page", skipBackSide);
+        console.log("BBB count", count);
+        par_count += 1;
+        skipBackSide.push(imageData.length);
+      }
+      if (count === 0) {
+        par_count += 1;
+        skipBackSide.push(0);
+      }
       console.log("Adding Back side page", skipBackSide);
+      console.log("count", count);
+
       addBackSideImage({
         doc,
         imgUrl: imageBackSideUrl,
-        count: count + 1,
+        count: par_count,
         skipBackSide,
       });
     }
@@ -336,14 +347,14 @@ async function downloadMultipleCard({
     }
 
     if (index == cardData.length - 1) {
-      doc.save(
-        `${tlDetails.name.replaceAll(" ", "_")}_${
-          agentDetails?.name
-            ? agentDetails.name.replaceAll(" ", "_")
-            : agentDetails.id
-        }#${cardCount}_${moment().format("DD_MMM_YYYY_hh_mm")}.pdf`
-      );
-      // preview({ pdfBlob: doc.output("blob") });
+      // doc.save(
+      //   `${tlDetails.name.replaceAll(" ", "_")}_${
+      //     agentDetails?.name
+      //       ? agentDetails.name.replaceAll(" ", "_")
+      //       : agentDetails.id
+      //   }#${cardCount}_${moment().format("DD_MMM_YYYY_hh_mm")}.pdf`
+      // );
+      preview({ pdfBlob: doc.output("blob") });
       handleDownloadCompleted();
     }
   });
