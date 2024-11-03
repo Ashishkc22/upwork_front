@@ -3,6 +3,7 @@ import envUtil from "./env.util";
 import { isEmpty } from "lodash";
 import tokenUtil from "./token.util";
 import storageUtil from "./storage.util";
+import { enqueueSnackbar } from "notistack";
 import cookiesUtil from "./cookies.util";
 
 // const PARAMS = ["get", "put", "delete"];
@@ -52,6 +53,11 @@ function request({
         data?.data?.message === "Invalid Token"
       ) {
         cookiesUtil.clearAllCookies();
+        enqueueSnackbar("Invalid Token", {
+          variant: "error",
+          autoHideDuration: 2000,
+        });
+        window.location.href = "/";
       }
       return data?.data || {};
     })
