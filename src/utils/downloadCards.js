@@ -9,6 +9,123 @@ import moment from "moment";
 //   LogoImage: <LogoImage />,
 // }
 
+// ----------------------- new logic --------------------------------------
+
+function componentToImageData({ Element, data, images }) {
+  return new Promise((resolve, reject) => {
+    try {
+      let container;
+      let root;
+      container = document.createElement("div");
+      container.setAttribute("id", `${data._id}-container`);
+      container.style.position = "absolute";
+      container.style.left = "-9999px";
+      document.body.appendChild(container);
+      root = createRoot(container);
+      root.render(
+        <Element isPrint={true} showCardTag cardData={data} images={images} />
+      );
+      const observer = new MutationObserver(async (mutationsList) => {
+        observer.disconnect();
+        await new Promise((resolve) => setTimeout(resolve, 500));
+
+        var node = document.getElementById(`${data._id}-download`);
+        const offsetHeight = node?.offsetHeight;
+        const offsetWidth = node?.offsetWidth;
+        const scale = 2;
+        // Convert the container to an image
+        const dataUrl = await domtoimage.toJpeg(node, {
+          height: offsetHeight * scale,
+          style: {
+            transform: `scale(${scale}) translate(${
+              offsetWidth / 2 / scale
+            }px, ${offsetHeight / 2 / scale}px)`,
+          },
+          width: offsetWidth * scale,
+          copyDefaultStyles: true,
+        });
+        // Clean up
+        root.unmount();
+        document.body.removeChild(container);
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        return resolve(dataUrl);
+      });
+      observer.observe(container, { childList: true, subtree: true });
+    } catch (error) {
+      reject(error);
+    }
+  });
+}
+
+// Function to divide data into chunks
+const chunkArray = (array, size = 5) => {
+  const chunks = {};
+  let index = 0;
+  for (let i = 0; i < array.length; i += size) {
+    chunks[index] = array.slice(i, i + size);
+    index += 1;
+  }
+  return chunks;
+};
+
+function processImageDataBatchs({ Element, cardsData = [], images }) {
+  return cardsData.map((data) =>
+    componentToImageData({ Element, data, images })
+  );
+}
+
+async function getCardImages({ Element, cardsData = [], images, batchSize }) {
+  try {
+    if (cardsData.length) {
+      const chunks = chunkArray(cardsData, batchSize);
+      const processedData = {};
+      for (let i in chunks) {
+        processedData[i] = processImageDataBatchs({
+          Element,
+          cardsData: chunks[i],
+          images,
+        });
+      }
+      return await Promise.all(Object.values(processedData).flat());
+    } else {
+      throw new Error("Empty cards Data.");
+    }
+  } catch (error) {
+    throw error;
+  }
+}
+
+function addCardBackSideImage({
+  doc,
+  cardPositons,
+  backSideImage,
+  addNewPage = false,
+  width = 85.6,
+  height = 54,
+  xOffset = 0,
+  yOffset = 1,
+}) {
+  doc.addPage();
+  cardPositons.forEach((postions, index) => {
+    const x = postions.x === 113 ? 10 : 115;
+    console.log("x and y values", { x: x + xOffset, y: postions.y + yOffset });
+
+    addCardInDoc({
+      doc,
+      dataUrl: backSideImage,
+      x: x + xOffset,
+      y: postions.y + yOffset,
+      width,
+      height,
+    });
+  });
+  if (addNewPage) {
+    doc.addPage();
+  }
+}
+
+// ----------------------------------old logic -----------------------------
+
 function getImageDataURLFromRef(imgRef) {
   if (imgRef) {
     const canvas = document.createElement("canvas");
@@ -238,6 +355,29 @@ function preview({ pdfBlob }) {
   document.body.appendChild(a4Div);
 }
 
+const addCardInDoc = ({
+  doc,
+  dataUrl,
+  type = "JPEG",
+  x,
+  y,
+  width = 87.6,
+  height = 57.6,
+  quality = "MEDIUM",
+}) => {
+  doc.addImage(dataUrl, type, x, y, width, height, "", quality);
+  return { x, y };
+};
+
+const addCardCountText = ({ doc, text, x, y, xOffset = 90, yOffset = 30 }) => {
+  doc.setFontSize(12);
+  doc.setFont("helvetica", "bold");
+  doc.text(text, x + xOffset, y + yOffset, {
+    angle: 90,
+    rotationDirection: 1,
+  });
+};
+
 async function downloadMultipleCard({
   Element,
   cardData,
@@ -247,117 +387,187 @@ async function downloadMultipleCard({
   tlDetails,
   secondaryImage,
 }) {
+  console.time("cardProcess");
+  // const caardImageData = await getCardImages({
+  //   Element,
+  //   cardsData: cardData,
+  //   images,
+  //   batchSize: 20,
+  // });
+  const caardImageData = await getImageData({
+    Element,
+    cardData,
+    images,
+  });
+  console.timeEnd("cardProcess");
+  console.log("caardImageData", caardImageData);
+
   const imageBackSideUrl = getImageDataURLFromRef(secondaryImage);
 
   const doc = new jsPDF("p", "mm", "", true);
   const width = 87.6;
   const height = 57.6;
-  let xposition = 10;
-  let yposition = 5;
-  let count = 0;
-  const cardCount = cardData.length;
-  let imageData = (await getImageData({ Element, cardData, images })) || [];
-  let pageCardLimit = 9;
-  let skipBackSide = [];
+  let x = 10;
+  let y = 5;
+  let yIncrementValue = 57;
+  let cardsPerPage = 10;
+  let cardPositons = [];
+  console.log("caardImageData", caardImageData);
+
   createAFENameTLName({
     doc,
     feName: agentDetails?.name,
     tlName: tlDetails?.name,
-    count: cardCount,
-    startX: xposition,
-    startY: yposition,
+    count: caardImageData.length,
+    startX: x,
+    startY: y,
   });
-  skipBackSide.push(1);
-  xposition = xposition === 10 ? 113 : 10;
-  count += 1;
+  cardsPerPage -= 1;
+  x = 113;
+  caardImageData.forEach((url, index) => {
+    // adding card on page
+    const imagePosition = addCardInDoc({ doc, dataUrl: url, x, y });
+    cardPositons.push(imagePosition);
+    cardsPerPage -= 1;
+    addCardCountText({ doc, x, y, text: String(cardPositons.length) });
+    if (cardsPerPage === 0) {
+      console.log("cardPositons", cardPositons);
 
-  imageData.forEach((dataUrl, index) => {
-    // ADD IMAGE
-    doc.addImage(
-      dataUrl,
-      "JPEG",
-      xposition,
-      yposition,
-      width,
-      height,
-      "",
-      "MEDIUM"
-    );
-
-    // doc.rect(xposition - 3, yposition, 85.6, 54);
-
-    // ADD CARD COUNT TEXT
-    doc.setFontSize(12);
-    doc.setFont("helvetica", "bold");
-    doc.text(`${index + 1}`, xposition + 90, yposition + 30, {
-      angle: 90,
-      rotationDirection: 1,
-    });
-
-    if (xposition === 113) {
-      yposition = yposition + 57;
-    }
-    if (index === imageData.length - 1 && count != 9) {
-      console.log("imageData.length", imageData.length);
-      console.log("index", index);
-      let par_count = count + 1;
-      // skipBackSide.unshift(count);
-      if (count === imageData.length) {
-        console.log("BBBB Adding Back side page", skipBackSide);
-        console.log("BBB count", count);
-        par_count += 1;
-        skipBackSide.push(imageData.length);
-      }
-      if (count === 0) {
-        par_count += 1;
-        skipBackSide.push(0);
-      }
-      console.log("Adding Back side page", skipBackSide);
-      console.log("count", count);
-
-      addBackSideImage({
+      // add the backside of the page
+      addCardBackSideImage({
         doc,
-        imgUrl: imageBackSideUrl,
-        count: par_count,
-        skipBackSide,
+        cardPositons,
+        backSideImage: imageBackSideUrl,
+        addNewPage: true,
       });
-    }
-    // ADD NEW PAGE
-    if (count === 9) {
-      console.log("Adding Back side page ---last");
 
-      addBackSideImage({
+      cardsPerPage = 10;
+      x = 10;
+      y = 5;
+      cardPositons = [];
+    } else if (caardImageData.length - 1 === index) {
+      console.log("cardPositons", cardPositons);
+
+      // add only backside and don't add another new page.
+      addCardBackSideImage({
         doc,
-        imgUrl: imageBackSideUrl,
-        count: count + 1,
-        ...(pageCardLimit === 9 && { skipBackSide: [1] }),
+        cardPositons,
+        backSideImage: imageBackSideUrl,
+        addNewPage: false,
       });
-      xposition = 10;
-      yposition = 5;
-      console.log("Adding page");
-      if (index != imageData.length - 1) {
-        doc.addPage();
-      }
-      skipBackSide = [];
-      count = 0;
-      pageCardLimit = 10;
     } else {
-      count += 1;
-      xposition = xposition === 10 ? 113 : 10;
-    }
-
-    if (index == cardData.length - 1) {
-      doc.save(
-        `${tlDetails.name.replaceAll(" ", "_")}_${
-          agentDetails?.name
-            ? agentDetails.name.replaceAll(" ", "_")
-            : agentDetails.id
-        }#${cardCount}_${moment().format("DD_MMM_YYYY_hh_mm")}.pdf`
-      );
-      // preview({ pdfBlob: doc.output("blob") });
-      handleDownloadCompleted();
+      if (x === 113) {
+        y += yIncrementValue;
+        x = 10;
+      } else {
+        x = 113;
+      }
     }
   });
+
+  // const cardCount = cardData.length;
+  // let imageData = (await getImageData({ Element, cardData, images })) || [];
+  // let pageCardLimit = 9;
+  // let skipBackSide = [];
+  // createAFENameTLName({
+  //   doc,
+  //   feName: agentDetails?.name,
+  //   tlName: tlDetails?.name,
+  //   count: cardCount,
+  //   startX: xposition,
+  //   startY: yposition,
+  // });
+  // skipBackSide.push(1);
+  // xposition = xposition === 10 ? 113 : 10;
+  // count += 1;
+
+  // imageData.forEach((dataUrl, index) => {
+  //   // ADD IMAGE
+  //   doc.addImage(
+  //     dataUrl,
+  //     "JPEG",
+  //     xposition,
+  //     yposition,
+  //     width,
+  //     height,
+  //     "",
+  //     "MEDIUM"
+  //   );
+
+  //   // doc.rect(xposition - 3, yposition, 85.6, 54);
+
+  //   // ADD CARD COUNT TEXT
+  //   doc.setFontSize(12);
+  //   doc.setFont("helvetica", "bold");
+  //   doc.text(`${index + 1}`, xposition + 90, yposition + 30, {
+  //     angle: 90,
+  //     rotationDirection: 1,
+  //   });
+
+  //   if (xposition === 113) {
+  //     yposition = yposition + 57;
+  //   }
+  //   if (index === imageData.length - 1 && count != 9) {
+  //     console.log("imageData.length", imageData.length);
+  //     console.log("index", index);
+  //     let par_count = count + 1;
+  //     // skipBackSide.unshift(count);
+  //     if (count === imageData.length) {
+  //       console.log("BBBB Adding Back side page", skipBackSide);
+  //       console.log("BBB count", count);
+  //       par_count += 1;
+  //       skipBackSide.push(imageData.length);
+  //     }
+  //     if (count === 0) {
+  //       par_count += 1;
+  //       skipBackSide.push(0);
+  //     }
+  //     console.log("Adding Back side page", skipBackSide);
+  //     console.log("count", count);
+
+  //     addBackSideImage({
+  //       doc,
+  //       imgUrl: imageBackSideUrl,
+  //       count: par_count,
+  //       skipBackSide,
+  //     });
+  //   }
+  //   // ADD NEW PAGE
+  //   if (count === 9) {
+  //     console.log("Adding Back side page ---last");
+
+  //     addBackSideImage({
+  //       doc,
+  //       imgUrl: imageBackSideUrl,
+  //       count: count + 1,
+  //       ...(pageCardLimit === 9 && { skipBackSide: [1] }),
+  //     });
+  //     xposition = 10;
+  //     yposition = 5;
+  //     console.log("Adding page");
+  //     if (index != imageData.length - 1) {
+  //       doc.addPage();
+  //     }
+  //     skipBackSide = [];
+  //     count = 0;
+  //     pageCardLimit = 10;
+  //   } else {
+  //     count += 1;
+  //     xposition = xposition === 10 ? 113 : 10;
+  //   }
+
+  //   if (index == cardData.length - 1) {
+  doc.save(
+    `${tlDetails.name.replaceAll(" ", "_")}_${
+      agentDetails?.name
+        ? agentDetails.name.replaceAll(" ", "_")
+        : agentDetails.id
+    }#${caardImageData.length}_${moment().format("DD_MMM_YYYY_hh_mm")}.pdf`
+  );
+  // preview({ pdfBlob: doc.output("blob") });
+  handleDownloadCompleted();
+  //   }
+  // });
 }
 
 function createAFENameTLName({ doc, feName, tlName, count, startX, startY }) {
@@ -379,6 +589,7 @@ function createAFENameTLName({ doc, feName, tlName, count, startX, startY }) {
     align: "center",
     maxWidth: boxWidth,
   });
+  return { x: startX, y: startY };
 }
 
 async function downloadMultipleCardWithMultipleAgent({
