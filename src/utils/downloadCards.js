@@ -1,7 +1,7 @@
 import domtoimage from "dom-to-image-more";
 import jsPDF from "jspdf";
 import { createRoot } from "react-dom/client";
-import ReactDOM from "react-dom";
+import ReactDOM, { flushSync } from "react-dom";
 import moment from "moment";
 
 // images: {
@@ -22,19 +22,24 @@ function componentToImageData({ Element, data, images }) {
       container.style.left = "-9999px";
       document.body.appendChild(container);
       root = createRoot(container);
-      root.render(
-        <Element isPrint={true} showCardTag cardData={data} images={images} />
+      // root.render(
+      //   <Element isPrint={true} showCardTag cardData={data} images={images} />
+      // );
+      flushSync(() =>
+        root.render(
+          <Element isPrint={true} showCardTag cardData={data} images={images} />
+        )
       );
-      const observer = new MutationObserver(async (mutationsList) => {
-        observer.disconnect();
-        await new Promise((resolve) => setTimeout(resolve, 500));
-
-        var node = document.getElementById(`${data._id}-download`);
-        const offsetHeight = node?.offsetHeight;
-        const offsetWidth = node?.offsetWidth;
-        const scale = 2;
-        // Convert the container to an image
-        const dataUrl = await domtoimage.toJpeg(node, {
+      // const observer = new MutationObserver(async (mutationsList) => {
+      //   observer.disconnect();
+      // await new Promise((resolve) => setTimeout(resolve, 500));
+      var node = document.getElementById(`${data._id}-download`);
+      const offsetHeight = node?.offsetHeight;
+      const offsetWidth = node?.offsetWidth;
+      const scale = 2;
+      // Convert the container to an image
+      domtoimage
+        .toJpeg(node, {
           height: offsetHeight * scale,
           style: {
             transform: `scale(${scale}) translate(${
@@ -43,14 +48,16 @@ function componentToImageData({ Element, data, images }) {
           },
           width: offsetWidth * scale,
           copyDefaultStyles: true,
+        })
+        .then((dataUrl) => {
+          // Clean up
+          root.unmount();
+          document.body.removeChild(container);
+          return resolve(dataUrl);
         });
-        // Clean up
-        root.unmount();
-        document.body.removeChild(container);
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        return resolve(dataUrl);
-      });
-      observer.observe(container, { childList: true, subtree: true });
+      // await new Promise((resolve) => setTimeout(resolve, 500));
+      // });
+      // observer.observe(container, { childList: true, subtree: true });
     } catch (error) {
       reject(error);
     }
@@ -232,64 +239,71 @@ async function downloadSingleCard({
 function getImageData({ Element, cardData = [], images }) {
   return new Promise(async (myResolve, myReject) => {
     try {
-      const elementData = [];
+      // const elementData = [];
+      let allPromises = [];
       for (let i = 0; i < cardData.length; i++) {
-        let container;
-        let root;
-        container = document.createElement("div");
-        container.setAttribute("id", `${cardData[i]._id}-container`);
-        container.style.position = "absolute";
-        container.style.left = "-9999px"; // Move off-screen
-        document.body.appendChild(container);
+        allPromises.push(
+          componentToImageData({ Element, data: cardData[i], images })
+        );
+
+        // let container;
+        // let root;
+        // container = document.createElement("div");
+        // container.setAttribute("id", `${cardData[i]._id}-container`);
+        // container.style.position = "absolute";
+        // container.style.left = "-9999px"; // Move off-screen
+        // document.body.appendChild(container);
 
         // Render the component into the container
-        root = createRoot(container);
+        // root = createRoot(container);
 
-        root.render(
-          <Element
-            isPrint={true}
-            showCardTag
-            cardData={cardData[i]}
-            images={images}
-          />
-        );
-        console.time("exampleFunctionTime", cardData[i]._id);
-        const observer = new MutationObserver(async (mutationsList) => {
-          // If any mutations are observed, assume rendering is complete
-          observer.disconnect(); // Stop observing once rendering is detected
-          // Wait for the component to be rendered'
-          await new Promise((resolve) => setTimeout(resolve, 500));
+        // root.render(
+        //   <Element
+        //     isPrint={true}
+        //     showCardTag
+        //     cardData={cardData[i]}
+        //     images={images}
+        //   />
+        // );
+        // console.time("exampleFunctionTime", cardData[i]._id);
+        // const observer = new MutationObserver(async (mutationsList) => {
+        //   // If any mutations are observed, assume rendering is complete
+        //   observer.disconnect(); // Stop observing once rendering is detected
+        //   // Wait for the component to be rendered'
+        //   await new Promise((resolve) => setTimeout(resolve, 500));
 
-          var node = document.getElementById(`${cardData[i]._id}-download`);
-          const offsetHeight = node?.offsetHeight;
-          const offsetWidth = node?.offsetWidth;
-          const scale = 2;
-          // Convert the container to an image
-          const dataUrl = await domtoimage.toJpeg(node, {
-            height: offsetHeight * scale,
-            style: {
-              transform: `scale(${scale}) translate(${
-                offsetWidth / 2 / scale
-              }px, ${offsetHeight / 2 / scale}px)`,
-            },
-            width: offsetWidth * scale,
-            copyDefaultStyles: true,
-          });
+        //   var node = document.getElementById(`${cardData[i]._id}-download`);
+        //   const offsetHeight = node?.offsetHeight;
+        //   const offsetWidth = node?.offsetWidth;
+        //   const scale = 2;
+        //   // Convert the container to an image
+        //   const dataUrl = await domtoimage.toJpeg(node, {
+        //     height: offsetHeight * scale,
+        //     style: {
+        //       transform: `scale(${scale}) translate(${
+        //         offsetWidth / 2 / scale
+        //       }px, ${offsetHeight / 2 / scale}px)`,
+        //     },
+        //     width: offsetWidth * scale,
+        //     copyDefaultStyles: true,
+        //   });
 
-          elementData[i] = dataUrl;
-          console.timeEnd("exampleFunctionTime", cardData[i]._id);
-          // Clean up
-          root.unmount();
-          ReactDOM?.unmountComponentAtNode(container);
-          document.body.removeChild(container);
-          if (cardData.length === elementData.length) {
-            await new Promise((resolve) => setTimeout(resolve, 500));
-            return myResolve(elementData);
-          }
-        });
+        //   elementData[i] = dataUrl;
+        //   console.timeEnd("exampleFunctionTime", cardData[i]._id);
+        //   // Clean up
+        //   root.unmount();
+        //   ReactDOM?.unmountComponentAtNode(container);
+        //   document.body.removeChild(container);
+        //   if (cardData.length === elementData.length) {
+        //     await new Promise((resolve) => setTimeout(resolve, 500));
+        //     return myResolve(elementData);
+        //   }
+        // });
         // Start observing the container for changes
-        observer.observe(container, { childList: true, subtree: true });
+        // observer.observe(container, { childList: true, subtree: true });
       }
+      const elementData = await Promise.all(allPromises);
+      return myResolve(elementData);
     } catch (error) {
       myReject(error);
     }
@@ -387,7 +401,7 @@ async function downloadMultipleCard({
   tlDetails,
   secondaryImage,
 }) {
-  console.time("cardProcess");
+  console.time("CardImagesData");
   // const caardImageData = await getCardImages({
   //   Element,
   //   cardsData: cardData,
@@ -399,20 +413,18 @@ async function downloadMultipleCard({
     cardData,
     images,
   });
-  console.timeEnd("cardProcess");
-  console.log("caardImageData", caardImageData);
+  console.timeEnd("CardImagesData");
 
   const imageBackSideUrl = getImageDataURLFromRef(secondaryImage);
 
   const doc = new jsPDF("p", "mm", "", true);
   const width = 87.6;
   const height = 57.6;
-  let x = 10;
+  let x = 8;
   let y = 5;
   let yIncrementValue = 57;
   let cardsPerPage = 10;
   let cardPositons = [];
-  console.log("caardImageData", caardImageData);
 
   createAFENameTLName({
     doc,
@@ -431,8 +443,6 @@ async function downloadMultipleCard({
     cardsPerPage -= 1;
     addCardCountText({ doc, x, y, text: String(cardPositons.length) });
     if (cardsPerPage === 0) {
-      console.log("cardPositons", cardPositons);
-
       // add the backside of the page
       addCardBackSideImage({
         doc,
@@ -442,12 +452,10 @@ async function downloadMultipleCard({
       });
 
       cardsPerPage = 10;
-      x = 10;
+      x = 8;
       y = 5;
       cardPositons = [];
     } else if (caardImageData.length - 1 === index) {
-      console.log("cardPositons", cardPositons);
-
       // add only backside and don't add another new page.
       addCardBackSideImage({
         doc,
@@ -458,7 +466,7 @@ async function downloadMultipleCard({
     } else {
       if (x === 113) {
         y += yIncrementValue;
-        x = 10;
+        x = 8;
       } else {
         x = 113;
       }
@@ -631,7 +639,6 @@ async function downloadMultipleCardWithMultipleAgent({
   const imageData = {};
   for (let i = 0; i < cardData.length; i++) {
     const key = cardData[i]._id.createdBy;
-    console.log("cardData[i].cards", cardData[i].cards);
 
     imageData[key] = {
       feDetails: cardData[i].userDetails,
@@ -645,7 +652,7 @@ async function downloadMultipleCardWithMultipleAgent({
     };
     cardCount += imageData[key].length;
   }
-  let xposition = 10;
+  let xposition = 8;
   let yposition = 5;
   const imageDataKeys = Object.keys(imageData);
   let skipBackSide = [];
@@ -669,9 +676,9 @@ async function downloadMultipleCardWithMultipleAgent({
           startX: xposition,
           startY: yposition,
         });
-        skipBackSide.push(xposition === 10 ? count + 1 : count - 1);
+        skipBackSide.push(xposition === 8 ? count + 1 : count - 1);
         if (count === 9) {
-          xposition = 10;
+          xposition = 8;
           yposition = 5;
           count = 0;
           doc.addPage();
@@ -679,7 +686,7 @@ async function downloadMultipleCardWithMultipleAgent({
           if (xposition === 113) {
             yposition = yposition + 57;
           }
-          xposition = xposition === 10 ? 113 : 10;
+          xposition = xposition === 8 ? 113 : 8;
           count += 1;
         }
       }
@@ -733,7 +740,7 @@ async function downloadMultipleCardWithMultipleAgent({
           skipBackSide,
         });
         skipBackSide = [];
-        xposition = 10;
+        xposition = 8;
         yposition = 5;
         if (j + 1 < dataUrl.length || i + 1 < imageDataKeys.length) {
           doc.addPage();
@@ -742,7 +749,7 @@ async function downloadMultipleCardWithMultipleAgent({
         pageCardLimit = 10;
       } else {
         count += 1;
-        xposition = xposition === 10 ? 113 : 10;
+        xposition = xposition === 8 ? 113 : 8;
       }
     }
   }

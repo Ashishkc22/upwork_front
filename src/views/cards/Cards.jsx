@@ -870,11 +870,11 @@ const Cards = () => {
             component="div"
             count={pageCount || 0}
             page={currentPage || 0}
-            disabled={
-              selectedCard === "toBePrinted"
-                ? !!Object.keys(markAsPrintPending)?.length
-                : false
-            }
+            // disabled={
+            //   selectedCard === "toBePrinted"
+            //     ? !!Object.keys(markAsPrintPending)?.length
+            //     : false
+            // }
             rowsPerPageOptions={[
               10,
               25,
@@ -892,6 +892,15 @@ const Cards = () => {
               return `${to} of ${count !== -1 ? count : `more than ${to}`}`;
             }}
             onPageChange={(e, newPage) => {
+              if (
+                selectedCard === "toBePrinted"
+                  ? !!Object.keys(markAsPrintPending)?.length
+                  : false
+              ) {
+                alert(
+                  "Some cards are downloaded but not marked as Printed, Are you sure to proceed?"
+                );
+              }
               const searchParams = new URLSearchParams(
                 window.location.search
               ).get("tab");
