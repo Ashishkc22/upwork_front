@@ -410,8 +410,8 @@ async function downloadMultipleCard({
   agentDetails,
   tlDetails,
   secondaryImage,
-  xPosition = 8,
-  xRightValue = 111,
+  xPosition = 9,
+  xRightValue = 112,
   yPosition = 5,
   yIncrement = 57,
 }) {
@@ -631,9 +631,9 @@ async function downloadMultipleCardWithMultipleAgent({
   images,
   districtName,
   secondaryImage,
-  xPosition = 8,
+  xPosition = 9,
   yPosition = 5,
-  xRightValue = 111,
+  xRightValue = 112,
   yIncrement = 57,
 }) {
   const imageBackSideUrl = getImageDataURLFromRef(secondaryImage);
