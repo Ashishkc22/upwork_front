@@ -32,29 +32,31 @@ function componentToImageData({ Element, data, images }) {
       );
       // const observer = new MutationObserver(async (mutationsList) => {
       //   observer.disconnect();
-      // await new Promise((resolve) => setTimeout(resolve, 500));
-      var node = document.getElementById(`${data._id}-download`);
-      const offsetHeight = node?.offsetHeight;
-      const offsetWidth = node?.offsetWidth;
-      const scale = 2;
-      // Convert the container to an image
-      domtoimage
-        .toJpeg(node, {
-          height: offsetHeight * scale,
-          style: {
-            transform: `scale(${scale}) translate(${
-              offsetWidth / 2 / scale
-            }px, ${offsetHeight / 2 / scale}px)`,
-          },
-          width: offsetWidth * scale,
-          copyDefaultStyles: true,
-        })
-        .then((dataUrl) => {
-          // Clean up
-          root.unmount();
-          document.body.removeChild(container);
-          return resolve(dataUrl);
-        });
+      new Promise((resolve) => setTimeout(resolve, 800)).then(() => {
+        const node = document.getElementById(`${data._id}-download`);
+        const offsetHeight = node?.offsetHeight;
+        const offsetWidth = node?.offsetWidth;
+        const scale = 2;
+        // Convert the container to an image
+        domtoimage
+          .toJpeg(node, {
+            height: offsetHeight * scale,
+            style: {
+              transform: `scale(${scale}) translate(${
+                offsetWidth / 2 / scale
+              }px, ${offsetHeight / 2 / scale}px)`,
+            },
+            width: offsetWidth * scale,
+            copyDefaultStyles: true,
+          })
+          .then((dataUrl) => {
+            // Clean up
+            root.unmount();
+            document.body.removeChild(container);
+            return resolve(dataUrl);
+          });
+      });
+
       // await new Promise((resolve) => setTimeout(resolve, 500));
       // });
       // observer.observe(container, { childList: true, subtree: true });
@@ -85,15 +87,21 @@ async function getCardImages({ Element, cardsData = [], images, batchSize }) {
   try {
     if (cardsData.length) {
       const chunks = chunkArray(cardsData, batchSize);
-      const processedData = {};
+      let processedData = [];
       for (let i in chunks) {
-        processedData[i] = processImageDataBatchs({
-          Element,
-          cardsData: chunks[i],
-          images,
-        });
+        const result = await Promise.all(
+          processImageDataBatchs({
+            Element,
+            cardsData: chunks[i],
+            images,
+          })
+        );
+        processedData = processedData.concat(result);
       }
-      return await Promise.all(Object.values(processedData).flat());
+      console.log("processedData", processedData);
+
+      return [];
+      // return await Promise.all(Object.values(processedData).flat());
     } else {
       throw new Error("Empty cards Data.");
     }
@@ -109,13 +117,15 @@ function addCardBackSideImage({
   addNewPage = false,
   width = 85.6,
   height = 54,
+  xRightValueMatchValue = 112,
+  xRightValue = 114,
   xOffset = 0,
   yOffset = 1,
 }) {
   doc.addPage();
-  cardPositons.forEach((postions, index) => {
-    const x = postions.x === 113 ? 10 : 115;
-    console.log("x and y values", { x: x + xOffset, y: postions.y + yOffset });
+  cardPositons.forEach((postions, _index) => {
+    const x = postions.x === xRightValueMatchValue ? 10 : xRightValue;
+    // console.log("x and y values", { x: x + xOffset, y: postions.y + yOffset });
 
     addCardInDoc({
       doc,
@@ -168,7 +178,7 @@ async function downloadSingleCard({
     // Render your component
     root.render(Element);
 
-    const observer = new MutationObserver(async (mutationsList) => {
+    const observer = new MutationObserver(async (_mutationsList) => {
       // If any mutations are observed, assume rendering is complete
       observer.disconnect(); // Stop observing once rendering is detected
       // Wait for the component to be rendered
@@ -400,13 +410,22 @@ async function downloadMultipleCard({
   agentDetails,
   tlDetails,
   secondaryImage,
+  xPosition = 8,
+  xRightValue = 111,
+  yPosition = 5,
+  yIncrement = 57,
 }) {
+  // cardData = require("./multipleDownloadCard(100).json");
+  console.log("cardData----------", cardData);
+  // console.log("cardData----------", testData.length);
+  // console.log("cardData----------", testData);
+
   console.time("CardImagesData");
   // const caardImageData = await getCardImages({
   //   Element,
   //   cardsData: cardData,
   //   images,
-  //   batchSize: 20,
+  //   batchSize: 10,
   // });
   const caardImageData = await getImageData({
     Element,
@@ -414,16 +433,18 @@ async function downloadMultipleCard({
     images,
   });
   console.timeEnd("CardImagesData");
+  console.log("caardImageData", caardImageData);
 
   const imageBackSideUrl = getImageDataURLFromRef(secondaryImage);
 
   const doc = new jsPDF("p", "mm", "", true);
   const width = 87.6;
   const height = 57.6;
-  let x = 8;
-  let y = 5;
-  let yIncrementValue = 57;
+  let x = xPosition;
+  let y = yPosition;
+  let yIncrementValue = yIncrement;
   let cardsPerPage = 10;
+  let count = 1;
   let cardPositons = [];
 
   createAFENameTLName({
@@ -435,13 +456,14 @@ async function downloadMultipleCard({
     startY: y,
   });
   cardsPerPage -= 1;
-  x = 113;
+  x = xRightValue;
   caardImageData.forEach((url, index) => {
     // adding card on page
     const imagePosition = addCardInDoc({ doc, dataUrl: url, x, y });
     cardPositons.push(imagePosition);
     cardsPerPage -= 1;
-    addCardCountText({ doc, x, y, text: String(cardPositons.length) });
+    count += 1;
+    addCardCountText({ doc, x, y, text: String(count) });
     if (cardsPerPage === 0) {
       // add the backside of the page
       addCardBackSideImage({
@@ -449,11 +471,12 @@ async function downloadMultipleCard({
         cardPositons,
         backSideImage: imageBackSideUrl,
         addNewPage: true,
+        xRightValueMatchValue: xRightValue,
       });
 
       cardsPerPage = 10;
-      x = 8;
-      y = 5;
+      x = xPosition;
+      y = yPosition;
       cardPositons = [];
     } else if (caardImageData.length - 1 === index) {
       // add only backside and don't add another new page.
@@ -462,13 +485,14 @@ async function downloadMultipleCard({
         cardPositons,
         backSideImage: imageBackSideUrl,
         addNewPage: false,
+        xRightValueMatchValue: xRightValue,
       });
     } else {
-      if (x === 113) {
+      if (x === xRightValue) {
         y += yIncrementValue;
         x = 8;
       } else {
-        x = 113;
+        x = xRightValue;
       }
     }
   });
@@ -607,151 +631,99 @@ async function downloadMultipleCardWithMultipleAgent({
   images,
   districtName,
   secondaryImage,
+  xPosition = 8,
+  yPosition = 5,
+  xRightValue = 111,
+  yIncrement = 57,
 }) {
-  console.log("secondaryImage", secondaryImage);
-
   const imageBackSideUrl = getImageDataURLFromRef(secondaryImage);
   const doc = new jsPDF("p", "mm", "", true);
-
-  const width = 87.6;
-  const height = 57.6;
-
-  let cardCount = 0;
-  let count = 0;
+  let x = xPosition,
+    y = yPosition;
+  let pageLimit = 10;
+  let cardPositons = [];
+  let count = 1;
   let totalCardCount = 0;
-  // ------------------------Card left
-  // card on left side values
-  // xposition = 10;
-  // yposition = 0; incr by 54
-  // ------------------------Card right
-  // card on right side values
-  // xposition = 120;
-  // yposition = 0;  incr by 54
 
-  // ------------------------Card Count right
-  // card on right side values
-  // textXposition = 215;
-  // textYposition = 35; incr by 50
-  // ------------------------Card Count left
-  // textXposition = 105;
-  // textYposition = 35; incr by 50
-
-  const imageData = {};
   for (let i = 0; i < cardData.length; i++) {
-    const key = cardData[i]._id.createdBy;
+    const element = cardData[i];
+    const [tlDetails] = element.teamLeaderDetails;
+    const userDetails = element.userDetails;
 
-    imageData[key] = {
-      feDetails: cardData[i].userDetails,
-      tlDetails: cardData[i].teamLeaderDetails,
-      url:
-        (await getImageData({
-          Element,
-          cardData: cardData[i].cards,
-          images,
-        })) || "",
-    };
-    cardCount += imageData[key].length;
-  }
-  let xposition = 8;
-  let yposition = 5;
-  const imageDataKeys = Object.keys(imageData);
-  let skipBackSide = [];
-  for (let i = 0; i < imageDataKeys.length; i++) {
-    const agentIdAndKey = imageDataKeys[i];
-    const dataUrl = imageData[agentIdAndKey].url;
-    const feDetails = imageData[agentIdAndKey].feDetails;
-    const [tlDetails] = imageData[agentIdAndKey]?.tlDetails || [];
-
-    let pageCardLimit = 9;
-    totalCardCount += dataUrl.length;
-    for (let j = 0; j < dataUrl.length; j++) {
-      // ADD BOX WITH TLNAME/FENAME
-      if (j === 0) {
-        console.log("TLFE TEXTBOX -----------------------------", j);
-        createAFENameTLName({
-          doc,
-          feName: feDetails?.name,
-          tlName: tlDetails?.name,
-          count: dataUrl.length,
-          startX: xposition,
-          startY: yposition,
-        });
-        skipBackSide.push(xposition === 8 ? count + 1 : count - 1);
-        if (count === 9) {
-          xposition = 8;
-          yposition = 5;
-          count = 0;
-          doc.addPage();
-        } else {
-          if (xposition === 113) {
-            yposition = yposition + 57;
-          }
-          xposition = xposition === 8 ? 113 : 8;
-          count += 1;
-        }
-      }
-
-      // ADD CARD IMAGE
-      doc.addImage(
-        dataUrl[j],
-        "JPEG",
-        xposition,
-        yposition,
-        width,
-        height,
-        "",
-        "MEDIUM"
-      );
-
-      // ADD CARD COUNT TEXT
-      doc.setFontSize(12);
-      doc.setFont("helvetica", "bold");
-      doc.text(`${j + 1}`, xposition + 95 - 3, yposition + 35, {
-        angle: 90,
-        rotationDirection: 1,
-      });
-
-      if (xposition === 113) {
-        yposition = yposition + 57;
-      }
-      if (
-        count < 9 &&
-        j === dataUrl.length - 1 &&
-        i === imageDataKeys.length - 1
-      ) {
-        if (count % 2 == 0) {
-          skipBackSide.push(count);
-        }
-        addBackSideImage({
-          doc,
-          imgUrl: imageBackSideUrl,
-          count: count % 2 == 0 ? count + 2 : count + 1,
-          skipBackSide,
-        });
-        skipBackSide = [];
-        count = 0;
-      }
-      // ADD NEW PAGE
-      if (count === 9) {
-        addBackSideImage({
-          doc,
-          imgUrl: imageBackSideUrl,
-          count: count + 1,
-          skipBackSide,
-        });
-        skipBackSide = [];
-        xposition = 8;
-        yposition = 5;
-        if (j + 1 < dataUrl.length || i + 1 < imageDataKeys.length) {
-          doc.addPage();
-        }
-        count = 0;
-        pageCardLimit = 10;
-      } else {
-        count += 1;
-        xposition = xposition === 8 ? 113 : 8;
-      }
+    const cardUrl = await getImageData({
+      Element,
+      cardData: element.cards,
+      images,
+    });
+    createAFENameTLName({
+      doc,
+      feName: userDetails?.name,
+      tlName: tlDetails?.name,
+      count: element.cardCount,
+      startX: x,
+      startY: y,
+    });
+    if (x === xRightValue) {
+      x = 8;
+      y += yIncrement;
+    } else {
+      x = xRightValue;
     }
+    pageLimit -= 1;
+    if (!pageLimit) {
+      addCardBackSideImage({
+        doc,
+        cardPositons,
+        backSideImage: imageBackSideUrl,
+        xRightValueMatchValue: xRightValue,
+        addNewPage: true,
+      });
+      x = xPosition;
+      y = yPosition;
+      cardPositons = [];
+      pageLimit = 10;
+    }
+    // eslint-disable-next-line no-loop-func
+    cardUrl.forEach((dataUrl, index) => {
+      const p = addCardInDoc({ doc, dataUrl, x, y });
+      cardPositons.push(p);
+      addCardCountText({ doc, text: String(count), x, y });
+      count += 1;
+      totalCardCount += 1;
+      if (x === xRightValue) {
+        x = 8;
+        y += yIncrement;
+      } else {
+        x = xRightValue;
+      }
+      pageLimit -= 1;
+      if (!pageLimit) {
+        addCardBackSideImage({
+          doc,
+          cardPositons,
+          backSideImage: imageBackSideUrl,
+          addNewPage: cardData.length - 1 !== i,
+          xRightValueMatchValue: xRightValue,
+        });
+        x = xPosition;
+        y = yPosition;
+        cardPositons = [];
+        pageLimit = 10;
+      }
+    });
+    if (cardData.length - 1 === i && cardPositons.length) {
+      addCardBackSideImage({
+        doc,
+        cardPositons,
+        backSideImage: imageBackSideUrl,
+        xRightValueMatchValue: xRightValue,
+        addNewPage: false,
+      });
+    }
+    // - loop completed putting last card now pageLimit is 0, then we have to add backImages.
+    // - loop is done putting all card (which are less then 10 e.g - 6)
+    // so addImageBackSide is triggered in loop. so we have to call it after the loop.
+    // - pageLimit reachs 0 after putting TL/FE detail card.
   }
   doc.save(
     `${districtName?.trim()}#${totalCardCount}_${moment().format(
@@ -759,7 +731,6 @@ async function downloadMultipleCardWithMultipleAgent({
     )}.pdf`
   );
   // preview({ pdfBlob: doc.output("blob") });
-
   handleDownloadCompleted();
 }
 

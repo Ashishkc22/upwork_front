@@ -143,8 +143,8 @@ const PasswordReset = ({
 
 const LoginPage = () => {
   const nav = useNavigate();
-  const [email, setEmail] = useState("7rogyam@gmail.com");
-  const [password, setPassword] = useState("123123@7489");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [errors, setErrors] = useState({ email: "", password: "" });
   const [open, setOpen] = useState(false);
   const [passwordDialogOpened, setPasswordDialogOpened] = useState(false);
