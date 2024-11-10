@@ -461,9 +461,9 @@ async function downloadMultipleCard({
     // adding card on page
     const imagePosition = addCardInDoc({ doc, dataUrl: url, x, y });
     cardPositons.push(imagePosition);
+    addCardCountText({ doc, x, y, text: String(count) });
     cardsPerPage -= 1;
     count += 1;
-    addCardCountText({ doc, x, y, text: String(count) });
     if (cardsPerPage === 0) {
       // add the backside of the page
       addCardBackSideImage({
@@ -490,7 +490,7 @@ async function downloadMultipleCard({
     } else {
       if (x === xRightValue) {
         y += yIncrementValue;
-        x = 8;
+        x = xPosition;
       } else {
         x = xRightValue;
       }
@@ -664,7 +664,7 @@ async function downloadMultipleCardWithMultipleAgent({
       startY: y,
     });
     if (x === xRightValue) {
-      x = 8;
+      x = xPosition;
       y += yIncrement;
     } else {
       x = xRightValue;
@@ -691,27 +691,32 @@ async function downloadMultipleCardWithMultipleAgent({
       count += 1;
       totalCardCount += 1;
       if (x === xRightValue) {
-        x = 8;
+        x = xPosition;
         y += yIncrement;
       } else {
         x = xRightValue;
       }
       pageLimit -= 1;
       if (!pageLimit) {
+        console.log("cardPositons", cardPositons, index);
         addCardBackSideImage({
           doc,
           cardPositons,
           backSideImage: imageBackSideUrl,
-          addNewPage: cardData.length - 1 !== i,
+          addNewPage: cardData.length - 1 !== i || cardUrl.length - 1 !== index,
           xRightValueMatchValue: xRightValue,
         });
         x = xPosition;
         y = yPosition;
         cardPositons = [];
         pageLimit = 10;
+        console.log("clearn cardPositons", cardPositons);
+        // debugger;
       }
     });
     if (cardData.length - 1 === i && cardPositons.length) {
+      console.log("Another backside triggered.", cardPositons);
+
       addCardBackSideImage({
         doc,
         cardPositons,
