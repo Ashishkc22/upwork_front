@@ -150,7 +150,7 @@ function getImageDataURLFromRef(imgRef) {
     canvas.width = imgRef.width;
     canvas.height = imgRef.height;
     ctx.drawImage(imgRef, 0, 0);
-    const imageDataUrl = canvas.toDataURL("image/jpeg");
+    const imageDataUrl = canvas.toDataURL("image/jpg");
     return imageDataUrl;
   } else {
     console.info("Image ref not found", imgRef);

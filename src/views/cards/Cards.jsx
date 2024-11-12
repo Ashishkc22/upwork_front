@@ -635,7 +635,7 @@ const Cards = () => {
   return (
     <Grid component="main" sx={{ width: "96%", overflowX: "hidden" }}>
       <img
-        src="/health-card-back.jpeg"
+        src="/health-card-back.jpg"
         ref={imageRef}
         alt="health back"
         style={{ display: "none" }}

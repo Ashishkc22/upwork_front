@@ -8,22 +8,21 @@ import {
   Box,
   IconButton,
   TextField,
-  Select,
-  FormControl,
-  Avatar,
   InputLabel,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  TableContainer,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ArogyamComponent from "../../components/ArogyaCard_v2";
-// import ArogyamComponent from "../../components/ArogyaCard_v1";
-import VerifiedUserOutlinedIcon from "@mui/icons-material/VerifiedUserOutlined";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
-import MenuItem from "@mui/material/MenuItem";
 import CardActions from "@mui/material/CardActions";
 import FileDownloadIcon from "@mui/icons-material/FileDownload";
 import RepeatOneIcon from "@mui/icons-material/RepeatOne";
 import CancelIcon from "@mui/icons-material/Cancel";
-import CardHeader from "@mui/material/CardHeader";
 import EditIcon from "@mui/icons-material/Edit";
 import { useParams } from "react-router-dom";
 import cards from "../../services/cards";
@@ -39,7 +38,6 @@ import cardService from "../../services/cards";
 import { isEmpty } from "lodash";
 import RestoreIcon from "@mui/icons-material/Restore";
 import HistoryIcon from "@mui/icons-material/History";
-import Link from "@mui/material/Link";
 import storageUtil from "../../utils/storage.util";
 import KeyboardArrowLeftIcon from "@mui/icons-material/KeyboardArrowLeft";
 import EditCardDialog from "./EditCardDialog";
@@ -55,7 +53,7 @@ import domtoimage from "dom-to-image-more";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import TransparentLoadingScreen from "../../components/LaodingScreenWithWhiteBG";
 import { enqueueSnackbar } from "notistack";
-
+import Paper from "@mui/material/Paper";
 // import waterMarkImg from "../../v1cardImages/waterMark.png";
 // import supportImg from "../../v1cardImages/support.png";
 // import locImg from "../../v1cardImages/loc.png";
@@ -340,7 +338,7 @@ const CardComponent = () => {
       canvas.width = imageUrl.width;
       canvas.height = imageUrl.height;
       ctx.drawImage(imageUrl, 0, 0);
-      const imageDataUrl = canvas.toDataURL("image/jpeg");
+      const imageDataUrl = canvas.toDataURL("image/jpg");
       setIscardLoadtion(true);
       await downloadCards.downloadSingleCard({
         Element: (
@@ -413,7 +411,7 @@ const CardComponent = () => {
       )}
 
       <img
-        src="/health-card-back.jpeg"
+        src="/health-card-back.jpg"
         ref={imageRef}
         alt="health back"
         style={{ display: "none" }}
@@ -449,6 +447,7 @@ const CardComponent = () => {
               },
               borderRadius: 2,
               boxShadow: 3,
+              p: 0,
             }}
             onClick={(e) => {
               e.stopPropagation();
@@ -627,7 +626,7 @@ const CardComponent = () => {
          
           }
         /> */}
-            <CardContent sx={{ px: 5 }}>
+            <CardContent sx={{ px: 2 }}>
               <Grid container xs={12} spacing={1} columnSpacing={1}>
                 <Grid item xs={12} md={5}>
                   <Box sx={{ display: "flex", alignItems: "center" }}>
@@ -837,7 +836,7 @@ const CardComponent = () => {
                   </Grid>
                 </Grid>
 
-                <Grid item xs={12} md={7} sm={12} sx={{ ml: 0 }}>
+                <Grid item container xs={12} md={7} sm={12} sx={{ ml: 0 }}>
                   <Grid item container xs={12}>
                     <Box sx={{ display: "flex", justifyContent: "end" }}>
                       <Box>
@@ -901,110 +900,140 @@ const CardComponent = () => {
                       />
                     </Box>
                   </Grid>
-                  <Grid item xs={12}>
-                    <Box>
-                      <TextElement label="Token no." value={cardData.s_no} />
+                  <Grid item xs={5}>
+                    <TextElement label="Token no." value={cardData.s_no} />
+                    <Box sx={{ display: "flex", columnGap: "20px" }}>
+                      <TextElement
+                        label="ID#"
+                        value={cardData?.id_proof?.type}
+                      />
+                      {cardData?.id_proof?.value && (
+                        <TextElement
+                          label=""
+                          value={`#${getLastFourDigits(
+                            cardData?.id_proof?.value
+                          )}`}
+                        />
+                      )}
                     </Box>
-                    <Box>
-                      <Grid container alignItems="end">
-                        <Grid item xs={2}>
-                          <TextElement
-                            label="ID#"
-                            value={cardData?.id_proof?.type}
-                          />
-                        </Grid>
-                        <Grid item>
-                          {cardData?.id_proof?.value && (
-                            <TextElement
-                              label=""
-                              value={`#${getLastFourDigits(
-                                cardData?.id_proof?.value
-                              )}`}
-                            />
-                          )}
-                        </Grid>
-                      </Grid>
+                    <Box
+                      sx={{ display: "flex", justifyContent: "space-between" }}
+                    >
+                      <TextElement
+                        label="Expiry"
+                        value={
+                          cardData?.expiry_date &&
+                          moment(cardData.expiry_date).format("MMM YYYY")
+                        }
+                      />
+                      <Button
+                        size="midum"
+                        startIcon={<RepeatOneIcon />}
+                        sx={{
+                          display: "inline-flex",
+                          color: "#ff5722",
+                          p: 1,
+                          m: 0,
+                          mr: 3,
+                        }}
+                        onClick={() => {
+                          setDialogType("renew");
+                          const issueDate = new Date(cardData.expiry_date);
+
+                          setRenewCalculation(
+                            moment(issueDate)
+                              .add(1, "years")
+                              .format("DD-MM-YYYY")
+                          );
+                          setIsDialogOpen(true);
+                        }}
+                      >
+                        Renew
+                      </Button>
                     </Box>
-                    <Box>
-                      <Grid container alignItems="center">
-                        <Grid item xs={3}>
-                          <TextElement
-                            label="Expiry"
-                            value={
-                              cardData?.expiry_date &&
-                              moment(cardData.expiry_date).format("MMM YYYY")
-                            }
-                          />
-                        </Grid>
-                        <Grid item>
-                          <Button
-                            size="midum"
-                            startIcon={<RepeatOneIcon />}
-                            sx={{
-                              display: "inline-flex",
-                              color: "#ff5722",
-                              p: 1,
-                              m: 0,
-                              mr: 3,
-                            }}
-                            onClick={() => {
-                              setDialogType("renew");
-                              const issueDate = new Date(cardData.expiry_date);
-
-                              setRenewCalculation(
-                                moment(issueDate)
-                                  .add(1, "years")
-                                  .format("DD-MM-YYYY")
-                              );
-                              setIsDialogOpen(true);
-                            }}
-                          >
-                            Renew
-                          </Button>
-                        </Grid>
-                      </Grid>
-                      <Grid item xs={6}>
-                        <Grid
-                          container
-                          alignItems="end"
-                          columnSpacing={1}
-                          sx={{ my: 1 }}
-                        >
-                          <Grid item>
-                            {/* `/field-executives/${cardData.created_by_uid}` */}
-                            <TextElement
-                              label="TL Name"
-                              value={TLDetails.name}
-                              path={`/field-executives/${TLDetails.tl_id}?isTL=true`}
-                              subText={`UID: ${TLDetails.tl_id}`}
-                            />
-                          </Grid>
-
-                          <Grid item>
-                            <IconButton>
-                              <PhoneIcon
-                                onClick={() =>
-                                  window.open(`tel:${TLDetails.phone}`)
-                                }
-                              />
-                            </IconButton>
-                          </Grid>
-
-                          <Grid item>
-                            <IconButton
-                              sx={{ color: "#23e223" }}
-                              onClick={() =>
-                                window.open(
-                                  `https://wa.me/+91${TLDetails.phone}?text=token no. ${cardData.s_no}`
-                                )
-                              }
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                      }}
+                    >
+                      <TextElement
+                        label="TL Name"
+                        value={TLDetails.name}
+                        path={`/field-executives/${TLDetails.tl_id}?isTL=true`}
+                        subText={`UID: ${TLDetails.tl_id}`}
+                      />
+                      <PhoneIcon
+                        onClick={() => window.open(`tel:${TLDetails.phone}`)}
+                      />
+                      <IconButton
+                        sx={{ color: "#23e223" }}
+                        onClick={() =>
+                          window.open(
+                            `https://wa.me/+91${TLDetails.phone}?text=token no. ${cardData.s_no}`
+                          )
+                        }
+                      >
+                        <WhatsAppIcon />
+                      </IconButton>
+                    </Box>
+                  </Grid>
+                  <Grid item xs={7}>
+                    {cardData?.card_type === "Family" && (
+                      <Typography
+                        sx={{
+                          color: "#00000070",
+                          mt: 1,
+                          fontSize: "13px",
+                        }}
+                      >
+                        Family Members
+                      </Typography>
+                    )}
+                    {cardData?.card_type === "Family" && (
+                      <TableContainer>
+                        <Table sx={{ width: "100%" }}>
+                          <TableRow>
+                            <TableCell
+                              size="small"
+                              sx={{ px: 1, width: "fit-content" }}
                             >
-                              <WhatsAppIcon />
-                            </IconButton>
-                          </Grid>
-                        </Grid>
-                      </Grid>
-                    </Box>
+                              Name
+                            </TableCell>
+                            <TableCell size="small" sx={{ px: 1 }}>
+                              Gender
+                            </TableCell>
+                            <TableCell size="small" sx={{ px: 1 }}>
+                              Birth year
+                            </TableCell>
+                            <TableCell size="small" sx={{ px: 1 }}>
+                              Relation
+                            </TableCell>
+                          </TableRow>
+                          <TableBody>
+                            {cardData.family_members.map((mem) => (
+                              <TableRow>
+                                <TableCell size="small" sx={{ px: 1 }}>
+                                  {mem.name}
+                                </TableCell>
+                                <TableCell size="small" sx={{ px: 1 }}>
+                                  {mem.gender}
+                                </TableCell>
+                                <TableCell size="small" sx={{ px: 1 }}>
+                                  {mem.birth_year}
+                                </TableCell>
+                                <TableCell size="small" sx={{ px: 1 }}>
+                                  {mem.relation}
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </TableContainer>
+                    )}
+                    {/* Lorem ipsum dolor sit, amet consectetur adipisicing elit.
+                    Doloremque in officiis deleniti et saepe! */}
                   </Grid>
                 </Grid>
               </Grid>

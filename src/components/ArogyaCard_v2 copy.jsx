@@ -7,29 +7,21 @@ import Barcode from "react-barcode";
 
 const ArogyamComponent = ({
   cardData,
+  showCardTag = false,
   isPrint = false,
   enableClick = false,
   handleClick,
   images,
   passRef,
   style,
-  members = [
-    { name: "Vishal Mishra djshdiushidsud", gender: "male", birthYear: 1999 },
-    { name: "Abhishek Choudhari dskdsiudh", gender: "male", birthYear: 2003 },
-    { name: "Vishal Mishra djshdiushidsud", gender: "male", birthYear: 2005 },
-    { name: "Vedant dsihdoifhdohsodih", gender: "male", birthYear: 1897 },
-  ],
 }) => {
-  function calculateAge(birthYear) {
-    const currentYear = new Date().getFullYear();
-    const birthYearNumber = parseInt(birthYear, 10);
-    return birthYearNumber ? currentYear - birthYearNumber : null;
+  function calculateAge({ row, keymap, birthYear }) {
+    const currentYear = new Date().getFullYear(); // Get the current year
+    const birthYearNumber = parseInt(birthYear, 10); // Convert birth year to a number
+    return birthYearNumber ? currentYear - birthYearNumber : null; // Calculate and return age, or null if birth year is invalid
   }
   const divRef = useRef(null);
-  const isIndividual = () => cardData.card_type !== "Family";
-  const charLimit = (str = "", limit = 20) =>
-    str.length > limit ? str.slice(0, limit) : str;
-  const getGenderInitial = (str = "") => str[0].toUpperCase();
+
   const formatNumberWithSpaces = (number = 0) => {
     // Convert the number to a string
     const numberStr = number.toString();
@@ -144,58 +136,19 @@ const ArogyamComponent = ({
 
         <div className="text-container">
           <div className="text-group">
-            <div style={{ color: "#666666", fontSize: "9px" }}>
-              {isIndividual() ? "Name" : "Primary menber"}
-            </div>
+            <div style={{ color: "#666666", fontSize: "9px" }}>Name</div>
             <div>{cardData.name}</div>
           </div>
-          {isIndividual() ? (
-            <div className="text-group">
-              <div style={{ color: "#666666", fontSize: "9px" }}>
-                Father/Husband
-              </div>
-              <div> {cardData.father_husband_name}</div>
+          <div className="text-group">
+            <div style={{ color: "#666666", fontSize: "9px" }}>
+              Father/Husband
             </div>
-          ) : (
-            <div className="text-group" style={{ width: "300px" }}>
-              <div style={{ color: "#666666", fontSize: "9px" }}>Members</div>
-              <div
-                style={{
-                  display: "flex",
-                  // justifyContent: "space-between",
-                  columnGap: "8px",
-                  rowGap: "1px",
-                  flexWrap: "wrap",
-                }}
-              >
-                {cardData?.family_members?.map((member) => (
-                  <div
-                    key={member?._id || member?.name + member?.gender}
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                    }}
-                  >
-                    <span style={{ width: "116px" }}>
-                      {charLimit(member.name, 18)}
-                    </span>
-                    <span>
-                      {getGenderInitial(member.gender) +
-                        "/" +
-                        (calculateAge(member?.birth_year) || "NA")}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+            <div> {cardData.father_husband_name}</div>
+          </div>
         </div>
 
         {/* Contact */}
-        <div
-          className="contact-container"
-          style={{ ...(!isIndividual() && { top: "168px" }) }}
-        >
+        <div className="contact-container">
           <div
             style={{
               display: "inline-flex",
@@ -259,29 +212,27 @@ const ArogyamComponent = ({
           />
         </div>
 
-        {isIndividual() && (
-          <div className="gender-blood-info">
-            <div className="gender-text-group">
-              <div style={{ color: "#666666", fontSize: "9px" }}>Gender</div>
-              <div style={{ fontSize: "11px", color: "Black" }}>{`${
-                cardData.gender || ""
-              }/${
-                cardData?.birth_year &&
-                calculateAge(cardData?.birth_year) + "Yrs"
-              }`}</div>
-            </div>
-            {cardData?.blood_group && cardData?.blood_group != "null" && (
-              <div className="gender-text-group">
-                <div style={{ color: "#666666", fontSize: "9px" }}>
-                  Blood group
-                </div>
-                <div style={{ fontSize: "11px", color: "Black" }}>
-                  {cardData?.blood_group}
-                </div>
-              </div>
-            )}
+        <div className="gender-blood-info">
+          <div className="gender-text-group">
+            <div style={{ color: "#666666", fontSize: "9px" }}>Gender</div>
+            <div style={{ fontSize: "11px", color: "Black" }}>{`${
+              cardData.gender || ""
+            }/${
+              cardData?.birth_year &&
+              calculateAge({ birthYear: cardData?.birth_year }) + "Yrs"
+            }`}</div>
           </div>
-        )}
+          {cardData?.blood_group && cardData?.blood_group != "null" && (
+            <div className="gender-text-group">
+              <div style={{ color: "#666666", fontSize: "9px" }}>
+                Blood group
+              </div>
+              <div style={{ fontSize: "11px", color: "Black" }}>
+                {cardData?.blood_group}
+              </div>
+            </div>
+          )}
+        </div>
 
         {cardData?.emergency_contact && (
           <div className="emergence-contact">
@@ -324,9 +275,9 @@ const ArogyamComponent = ({
                 fontFamily: "Inter",
                 fontSize: "11px",
                 fontWeight: "600",
-                // position: "absolute",
-                // right: "83px",
-                // bottom: "49px",
+                position: "absolute",
+                right: "83px",
+                bottom: "49px",
               }}
             >
               {formatNumberWithSpaces(cardData.unique_number)}
@@ -342,20 +293,10 @@ const ArogyamComponent = ({
                 margin={0}
               />
             )}
+            <div className="opp_vertical-text">{cardData.s_no}</div>
           </div>
         </div>
-        <div
-          style={{
-            position: "absolute",
-            display: "flex",
-            alignItems: "center",
-            width: "fit-content",
-            right: "14px",
-            bottom: "34px",
-          }}
-        >
-          <div className="opp_vertical-text">{cardData?.s_no}</div>
-        </div>
+
         <div
           className="footer"
           style={{

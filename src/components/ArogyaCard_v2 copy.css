@@ -183,12 +183,11 @@
   /* right: -3px; */
   position: relative;
   color: #00000082;
-  /* width: 221px; */
+  width: 221px;
   /* background: red; */
   height: fit-content;
-  /* top: -25px;
-  left: 77px; */
-  width: fit-content;
+  top: -25px;
+  left: 77px;
 }
 
 .user-details-container {
@@ -199,8 +198,7 @@
 .text-container {
   position: absolute;
   top: 83px;
-  /* right: 140px; */
-  left: 150px
+  right: 140px;
 }
 
 .text-group {
@@ -282,8 +280,8 @@
 
 .barcode-container {
   position: absolute;
-  bottom: 23px;
-  right: 32px;
+  bottom: 8px;
+  right: -8px;
   text-align: center;
 }
 

@@ -92,7 +92,7 @@ const TableWithExtraElements = ({
   return (
     <Grid container sx={{ mx: 2 }} rowGap={2}>
       <img
-        src="/health-card-back.jpeg"
+        src="/health-card-back.jpg"
         ref={imageRef}
         alt="health back"
         style={{ display: "none" }}
