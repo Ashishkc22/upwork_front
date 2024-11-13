@@ -710,13 +710,13 @@ const CardComponent = () => {
                   </Box>
 
                   <Box>
-                    <Grid container sx={{ minHeight: "80px" }}>
+                    <Grid container sx={{ minHeight: "60px" }}>
                       <Grid item xs={6}>
                         {cardData.blood_group &&
                           cardData.blood_group != "null" && (
                             <TextElement
                               label="Blood Group"
-                              value={cardData?.blood_group || ""}
+                              value={cardData?.blood_group}
                             />
                           )}
                       </Grid>
@@ -725,7 +725,7 @@ const CardComponent = () => {
                           <IconButton
                             sx={{ height: "40px", mt: 1 }}
                             onClick={() =>
-                              window.open(`tel:${FEDetails.phone}`)
+                              window.open(`tel:${cardData.emergency_contact}`)
                             }
                           >
                             <PhoneIcon />
