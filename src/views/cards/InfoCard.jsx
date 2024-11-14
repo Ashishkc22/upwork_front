@@ -98,6 +98,9 @@ const CardComponent = () => {
 
   const navigate = useNavigate();
 
+  const calculateAge = (birthYear) => {
+    return birthYear ? new Date().getFullYear() - parseInt(birthYear) : 0;
+  };
   let { id } = useParams();
 
   function getLastFourDigits(number) {
@@ -232,7 +235,7 @@ const CardComponent = () => {
     };
   }, []);
 
-  const TextElement = ({ label, value, path, subText }) => {
+  const TextElement = ({ label, value, path, subText, fontWeight = 500 }) => {
     return (
       <Box
         {...(path && {
@@ -250,7 +253,7 @@ const CardComponent = () => {
         >
           {label}
         </Typography>
-        <Typography variant="h6" component="div" sx={{ fontWeight: 500 }}>
+        <Typography variant="h6" component="div" sx={{ fontWeight }}>
           {value}
         </Typography>
         {subText && (
@@ -435,7 +438,7 @@ const CardComponent = () => {
             }}
           />
         </Grid>
-        <Grid item>
+        <Grid item sx={{ pb: 1 }}>
           <Card
             sx={{
               maxWidth: "870px",
@@ -626,7 +629,12 @@ const CardComponent = () => {
          
           }
         /> */}
-            <CardContent sx={{ px: 2 }}>
+            <CardContent
+              sx={{
+                px: 2,
+                paddingBottom: "5px!important",
+              }}
+            >
               <Grid container xs={12} spacing={1} columnSpacing={1}>
                 <Grid item xs={12} md={5}>
                   <Box sx={{ display: "flex", alignItems: "center" }}>
@@ -661,43 +669,220 @@ const CardComponent = () => {
                       {/* <TextElement label="UID" value={cardData.unique_number} /> */}
                     </Box>
                   </Box>
-                  <Box>
-                    <TextElement
-                      label="Name"
-                      value={capitalizeFirstLetter(cardData?.name || "")}
-                    />
-                  </Box>
 
-                  <Box>
-                    <TextElement
-                      label="Father/Husband Name"
-                      value={cardData.father_husband_name}
-                    />
-                  </Box>
-                  <Box>
-                    <Grid container col>
-                      <Grid item xs={6}>
-                        <TextElement label="Gender" value={cardData.gender} />
-                      </Grid>
-                      <Grid item>
-                        <TextElement
-                          label="Birth Year"
-                          value={cardData.birth_year}
-                        />
-                      </Grid>
-                    </Grid>
-                  </Box>
-
-                  <Box sx={{ display: "flex", alignItems: "end" }}>
-                    <TextElement label="Phone" value={cardData.phone} />
-                    <IconButton
-                      sx={{ color: "#23e223", ml: 2 }}
-                      onClick={() =>
-                        window.open(`https://wa.me/+91${cardData.phone}`)
-                      }
+                  <Box
+                    display="flex"
+                    columnGap={2}
+                    alignItems="center"
+                    sx={{ my: 2 }}
+                  >
+                    <Typography
+                      component="div"
+                      sx={{
+                        fontWeight: 600,
+                        fontSize: "small",
+                        ml: 2,
+                      }}
                     >
-                      <WhatsAppIcon />
-                    </IconButton>
+                      Plan:
+                    </Typography>
+                    <Typography
+                      variant="h6"
+                      component="div"
+                      sx={{
+                        fontWeight: 600,
+                        fontSize: "small",
+                      }}
+                    >
+                      {cardData?.card_type || "Single"}
+                    </Typography>
+                    <Typography
+                      variant="h6"
+                      component="div"
+                      sx={{
+                        fontWeight: 600,
+                        fontSize: "small",
+                      }}
+                    >
+                      {(cardData?.plan_validity?.value || "") +
+                        " " +
+                        (cardData?.plan_validity?.type || "")}
+                    </Typography>
+                  </Box>
+
+                  {cardData.card_type !== "Family" ? (
+                    <Box>
+                      <TextElement
+                        label="Name"
+                        value={capitalizeFirstLetter(cardData?.name || "")}
+                      />
+                    </Box>
+                  ) : (
+                    <Box sx={{ my: 1 }}>
+                      <Typography component="div">Name</Typography>
+                      <Box
+                        display="flex"
+                        columnGap={3}
+                        alignItems="center"
+                        sx={{ ml: 2 }}
+                      >
+                        <Typography
+                          variant="h6"
+                          component="div"
+                          sx={{
+                            fontWeight: 600,
+                            fontSize: "small",
+                          }}
+                        >
+                          {capitalizeFirstLetter(cardData?.name || "")}
+                        </Typography>
+                        <Typography
+                          variant="h6"
+                          component="div"
+                          sx={{
+                            fontWeight: 600,
+                            fontSize: "small",
+                          }}
+                        >
+                          {cardData?.gender &&
+                            cardData?.gender?.[0]?.toUpperCase() +
+                              "/" +
+                              calculateAge(cardData.birth_year)}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  )}
+
+                  <Box>
+                    {cardData.card_type !== "Family" ? (
+                      <TextElement
+                        label="Father/Husband Name"
+                        value={cardData.father_husband_name}
+                      />
+                    ) : (
+                      <div>
+                        <Typography
+                          variant="h6"
+                          component="div"
+                          sx={{
+                            fontWeight: 600,
+                            fontSize: "small",
+                          }}
+                        >
+                          Members : {cardData?.family_members?.length || 0}
+                        </Typography>
+                        <Box>
+                          <TableContainer
+                            sx={{ ml: 2, py: 1, minHeight: "91px" }}
+                          >
+                            <Table sx={{ width: "100%" }} padding="none">
+                              <TableBody>
+                                {cardData.family_members.map((mem, index) => (
+                                  <TableRow key={mem._id}>
+                                    <TableCell
+                                      size="small"
+                                      sx={{
+                                        fontWeight: 600,
+                                        fontSize: "small",
+                                        borderBottom: "none",
+                                        p: 0,
+                                      }}
+                                    >
+                                      {index + 1 + "."}
+                                    </TableCell>
+                                    <TableCell
+                                      size="small"
+                                      sx={{
+                                        px: 1,
+                                        fontWeight: 600,
+                                        fontSize: "small",
+                                        borderBottom: "none",
+                                        p: 0,
+                                      }}
+                                    >
+                                      {mem.name}
+                                    </TableCell>
+                                    <TableCell
+                                      size="small"
+                                      sx={{
+                                        px: 1,
+                                        fontWeight: 600,
+                                        fontSize: "small",
+                                        borderBottom: "none",
+                                      }}
+                                    >
+                                      {mem?.gender &&
+                                        mem?.gender?.[0]?.toUpperCase() +
+                                          "/" +
+                                          calculateAge(mem.birth_year)}
+                                    </TableCell>
+                                    <TableCell
+                                      size="small"
+                                      sx={{
+                                        px: 1,
+                                        fontWeight: 600,
+                                        fontSize: "small",
+                                        borderBottom: "none",
+                                      }}
+                                    >
+                                      {mem.relation}
+                                    </TableCell>
+                                  </TableRow>
+                                ))}
+                              </TableBody>
+                            </Table>
+                          </TableContainer>
+                        </Box>
+                      </div>
+                    )}
+                  </Box>
+                  {cardData.card_type !== "Family" && (
+                    <Box>
+                      <Grid container col>
+                        <Grid item xs={6}>
+                          <TextElement label="Gender" value={cardData.gender} />
+                        </Grid>
+                        <Grid item>
+                          <TextElement
+                            label="Birth Year"
+                            value={cardData.birth_year}
+                          />
+                        </Grid>
+                      </Grid>
+                    </Box>
+                  )}
+                  <Box
+                    sx={{ display: "flex", justifyContent: "space-between" }}
+                  >
+                    <Box sx={{ display: "flex", alignItems: "end" }}>
+                      <TextElement label="Phone" value={cardData.phone} />
+                      <IconButton
+                        sx={{ color: "#23e223", ml: 2 }}
+                        onClick={() =>
+                          window.open(`https://wa.me/+91${cardData.phone}`)
+                        }
+                      >
+                        <WhatsAppIcon />
+                      </IconButton>
+                    </Box>
+                    <Box sx={{ display: "flex" }}>
+                      {cardData.emergency_contact && (
+                        <IconButton
+                          sx={{ height: "40px", mt: 1 }}
+                          onClick={() =>
+                            window.open(`tel:${cardData.emergency_contact}`)
+                          }
+                        >
+                          <PhoneIcon />
+                        </IconButton>
+                      )}
+                      {cardData.emergency_contact && (
+                        <TextElement
+                          label="Emergency Contact"
+                          value={cardData.emergency_contact || ""}
+                        />
+                      )}
+                    </Box>
                   </Box>
 
                   <Box sx={{ display: "flex" }}>
@@ -709,83 +894,61 @@ const CardComponent = () => {
                     </div>
                   </Box>
 
-                  <Box>
-                    <Grid container sx={{ minHeight: "60px" }}>
-                      <Grid item xs={6}>
-                        {cardData.blood_group &&
-                          cardData.blood_group != "null" && (
-                            <TextElement
-                              label="Blood Group"
-                              value={cardData?.blood_group}
-                            />
-                          )}
-                      </Grid>
-                      <Grid item xs={6} sx={{ display: "flex" }}>
-                        {cardData.emergency_contact && (
-                          <IconButton
-                            sx={{ height: "40px", mt: 1 }}
-                            onClick={() =>
-                              window.open(`tel:${cardData.emergency_contact}`)
-                            }
-                          >
-                            <PhoneIcon />
-                          </IconButton>
-                        )}
-                        {cardData.emergency_contact && (
+                  <Grid container sx={{ minHeight: "60px" }}>
+                    <Grid item xs={6}>
+                      {!cardData.blood_group &&
+                        cardData.blood_group != "null" && (
                           <TextElement
-                            label="Emergency Contact"
-                            value={cardData.emergency_contact || ""}
+                            label="Blood Group"
+                            value={cardData?.blood_group || "AB"}
                           />
                         )}
-                      </Grid>
                     </Grid>
-                  </Box>
-                  <Box>
-                    <Grid container alignItems="end">
-                      <Grid item xs={6}>
-                        <Box>
-                          <TextElement label="Status" value={cardData.status} />
-                          {cardData.discard_reason &&
-                            cardData?.status === "DISCARDED" && (
-                              <span
-                                label=""
-                                style={{ fontSize: 12, color: "#00000075" }}
-                              >
-                                {cardData.discard_reason}
-                              </span>
-                            )}
-                          {cardData.status_updated_at && (
-                            <div style={{ fontSize: 12, color: "#00000075" }}>
-                              {moment(cardData.status_updated_at).format(
-                                "DD-MM-YYYY HH:mm:ss"
-                              )}
-                            </div>
+                  </Grid>
+                  <Grid container alignItems="end">
+                    <Grid item xs={6}>
+                      <Box>
+                        <TextElement label="Status" value={cardData.status} />
+                        {cardData.discard_reason &&
+                          cardData?.status === "DISCARDED" && (
+                            <span
+                              label=""
+                              style={{ fontSize: 12, color: "#00000075" }}
+                            >
+                              {cardData.discard_reason}
+                            </span>
                           )}
-                        </Box>
-                      </Grid>
-                      <Grid item>
-                        <Button
-                          aria-controls={
-                            isMenuOpened ? "demo-positioned-menu" : undefined
-                          }
-                          disabled={!Boolean(isTimeLineData.length)}
-                          onClick={() => setIsTimeLineOpened(true)}
-                          aria-haspopup="true"
-                          aria-expanded={isMenuOpened ? "true" : undefined}
-                          sx={{
-                            display: "inline-flex",
-                            color: !Boolean(isTimeLineData.length)
-                              ? "gray"
-                              : "#ff5722 !important",
-                          }}
-                          variant="standard"
-                          startIcon={<HistoryIcon />}
-                        >
-                          History
-                        </Button>
-                      </Grid>
+                        {cardData.status_updated_at && (
+                          <div style={{ fontSize: 12, color: "#00000075" }}>
+                            {moment(cardData.status_updated_at).format(
+                              "DD-MM-YYYY HH:mm:ss"
+                            )}
+                          </div>
+                        )}
+                      </Box>
                     </Grid>
-                  </Box>
+                    <Grid item>
+                      <Button
+                        aria-controls={
+                          isMenuOpened ? "demo-positioned-menu" : undefined
+                        }
+                        disabled={!Boolean(isTimeLineData.length)}
+                        onClick={() => setIsTimeLineOpened(true)}
+                        aria-haspopup="true"
+                        aria-expanded={isMenuOpened ? "true" : undefined}
+                        sx={{
+                          display: "inline-flex",
+                          color: !Boolean(isTimeLineData.length)
+                            ? "gray"
+                            : "#ff5722 !important",
+                        }}
+                        variant="standard"
+                        startIcon={<HistoryIcon />}
+                      >
+                        History
+                      </Button>
+                    </Grid>
+                  </Grid>
                   <Box>
                     <TextElement
                       label="Created At"
@@ -978,62 +1141,6 @@ const CardComponent = () => {
                         <WhatsAppIcon />
                       </IconButton>
                     </Box>
-                  </Grid>
-                  <Grid item xs={7}>
-                    {cardData?.card_type === "Family" && (
-                      <Typography
-                        sx={{
-                          color: "#00000070",
-                          mt: 1,
-                          fontSize: "13px",
-                        }}
-                      >
-                        Family Members
-                      </Typography>
-                    )}
-                    {cardData?.card_type === "Family" && (
-                      <TableContainer>
-                        <Table sx={{ width: "100%" }}>
-                          <TableRow>
-                            <TableCell
-                              size="small"
-                              sx={{ px: 1, width: "fit-content" }}
-                            >
-                              Name
-                            </TableCell>
-                            <TableCell size="small" sx={{ px: 1 }}>
-                              Gender
-                            </TableCell>
-                            <TableCell size="small" sx={{ px: 1 }}>
-                              Birth year
-                            </TableCell>
-                            <TableCell size="small" sx={{ px: 1 }}>
-                              Relation
-                            </TableCell>
-                          </TableRow>
-                          <TableBody>
-                            {cardData.family_members.map((mem) => (
-                              <TableRow>
-                                <TableCell size="small" sx={{ px: 1 }}>
-                                  {mem.name}
-                                </TableCell>
-                                <TableCell size="small" sx={{ px: 1 }}>
-                                  {mem.gender}
-                                </TableCell>
-                                <TableCell size="small" sx={{ px: 1 }}>
-                                  {mem.birth_year}
-                                </TableCell>
-                                <TableCell size="small" sx={{ px: 1 }}>
-                                  {mem.relation}
-                                </TableCell>
-                              </TableRow>
-                            ))}
-                          </TableBody>
-                        </Table>
-                      </TableContainer>
-                    )}
-                    {/* Lorem ipsum dolor sit, amet consectetur adipisicing elit.
-                    Doloremque in officiis deleniti et saepe! */}
                   </Grid>
                 </Grid>
               </Grid>

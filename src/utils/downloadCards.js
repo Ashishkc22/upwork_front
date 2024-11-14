@@ -589,11 +589,14 @@ async function downloadMultipleCard({
   //   }
 
   //   if (index == cardData.length - 1) {
+  console.log("agentDetails", tlDetails);
+  console.log("tlDetails", tlDetails);
+
   doc.save(
-    `${tlDetails.name.replaceAll(" ", "_")}_${
+    `${tlDetails?.name?.replaceAll(" ", "_")}_${
       agentDetails?.name
-        ? agentDetails.name.replaceAll(" ", "_")
-        : agentDetails.id
+        ? agentDetails?.name?.replaceAll(" ", "_")
+        : agentDetails?.id
     }#${caardImageData.length}_${moment().format("DD_MMM_YYYY_hh_mm")}.pdf`
   );
   // preview({ pdfBlob: doc.output("blob") });
