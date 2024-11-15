@@ -100,7 +100,7 @@ async function getCardImages({ Element, cardsData = [], images, batchSize }) {
       }
       console.log("processedData", processedData);
 
-      return [];
+      return processedData;
       // return await Promise.all(Object.values(processedData).flat());
     } else {
       throw new Error("Empty cards Data.");
@@ -421,17 +421,17 @@ async function downloadMultipleCard({
   // console.log("cardData----------", testData);
 
   console.time("CardImagesData");
-  // const caardImageData = await getCardImages({
-  //   Element,
-  //   cardsData: cardData,
-  //   images,
-  //   batchSize: 10,
-  // });
-  const caardImageData = await getImageData({
+  const caardImageData = await getCardImages({
     Element,
-    cardData,
+    cardsData: cardData,
     images,
+    batchSize: 10,
   });
+  // const caardImageData = await getImageData({
+  //   Element,
+  //   cardData,
+  //   images,
+  // });
   console.timeEnd("CardImagesData");
   console.log("caardImageData", caardImageData);
 

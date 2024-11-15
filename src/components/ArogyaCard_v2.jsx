@@ -53,7 +53,11 @@ const ArogyamComponent = ({
       className="wrapper"
     >
       <div
-        style={{ ...(style && style) }}
+        style={{
+          ...(style && style),
+          backgroundImage: `url(/card_water_mark.svg)`,
+          backgroundSize: "150%",
+        }}
         className={"card-container " + clsx(enableClick && "cursor")}
         onClick={() => {
           if (enableClick) {
@@ -163,7 +167,7 @@ const ArogyamComponent = ({
                 style={{
                   display: "flex",
                   // justifyContent: "space-between",
-                  columnGap: "8px",
+                  columnGap: "14px",
                   rowGap: "1px",
                   flexWrap: "wrap",
                 }}
@@ -174,11 +178,10 @@ const ArogyamComponent = ({
                     style={{
                       display: "flex",
                       justifyContent: "space-between",
+                      columnGap: "8px",
                     }}
                   >
-                    <span style={{ width: "116px" }}>
-                      {charLimit(member.name, 18)}
-                    </span>
+                    <span>{charLimit(member.name, 18)}</span>
                     <span>
                       {getGenderInitial(member.gender) +
                         "/" +
@@ -329,7 +332,7 @@ const ArogyamComponent = ({
                 // bottom: "49px",
               }}
             >
-              {formatNumberWithSpaces(cardData.unique_number)}
+              {"BH" + formatNumberWithSpaces(cardData.unique_number)}
             </div>
           )}
           <div>
@@ -348,10 +351,13 @@ const ArogyamComponent = ({
           style={{
             position: "absolute",
             display: "flex",
-            alignItems: "center",
-            width: "fit-content",
-            right: "14px",
-            bottom: "34px",
+            justifyContent: "end",
+            // alignItems: "center",
+            // width: "fit-content",
+            right: "0px",
+            bottom: "45px",
+            width: "46px",
+            transform: "rotate(90deg)",
           }}
         >
           <div className="opp_vertical-text">{cardData?.s_no}</div>

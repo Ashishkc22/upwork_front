@@ -211,9 +211,6 @@ const CardComponent = () => {
         if (key === "ArrowRight" && indexOf === idList?.length - 1) {
           return;
         }
-        console.log("CLICKED");
-        console.log("indexOf", indexOf);
-        console.log("idList", idList);
 
         if (key == "ArrowLeft") {
           indexOf = indexOf - 1;
@@ -670,6 +667,7 @@ const CardComponent = () => {
                     </Box>
                   </Box>
 
+                  {/* Plan section */}
                   <Box
                     display="flex"
                     columnGap={2}
@@ -710,8 +708,9 @@ const CardComponent = () => {
                     </Typography>
                   </Box>
 
+                  {/* --Name section */}
                   {cardData.card_type !== "Family" ? (
-                    <Box>
+                    <Box sx={{ my: 1 }}>
                       <TextElement
                         label="Name"
                         value={capitalizeFirstLetter(cardData?.name || "")}
@@ -719,31 +718,22 @@ const CardComponent = () => {
                     </Box>
                   ) : (
                     <Box sx={{ my: 1 }}>
-                      <Typography component="div">Name</Typography>
+                      <Typography
+                        component="div"
+                        sx={{ color: "#00000070", mt: 1, fontSize: "13px" }}
+                      >
+                        Name
+                      </Typography>
                       <Box
                         display="flex"
                         columnGap={3}
                         alignItems="center"
                         sx={{ ml: 2 }}
                       >
-                        <Typography
-                          variant="h6"
-                          component="div"
-                          sx={{
-                            fontWeight: 600,
-                            fontSize: "small",
-                          }}
-                        >
+                        <Typography variant="h6" component="div">
                           {capitalizeFirstLetter(cardData?.name || "")}
                         </Typography>
-                        <Typography
-                          variant="h6"
-                          component="div"
-                          sx={{
-                            fontWeight: 600,
-                            fontSize: "small",
-                          }}
-                        >
+                        <Typography variant="h6" component="div">
                           {cardData?.gender &&
                             cardData?.gender?.[0]?.toUpperCase() +
                               "/" +
@@ -753,7 +743,8 @@ const CardComponent = () => {
                     </Box>
                   )}
 
-                  <Box>
+                  {/* fathers name Or family members */}
+                  <Box sx={{ my: 1 }}>
                     {cardData.card_type !== "Family" ? (
                       <TextElement
                         label="Father/Husband Name"
@@ -765,11 +756,13 @@ const CardComponent = () => {
                           variant="h6"
                           component="div"
                           sx={{
-                            fontWeight: 600,
-                            fontSize: "small",
+                            color: "#00000070",
+                            mt: 1,
+                            fontWeight: 500,
+                            fontSize: "13px",
                           }}
                         >
-                          Members : {cardData?.family_members?.length || 0}
+                          Members :{cardData?.family_members?.length || 0}
                         </Typography>
                         <Box>
                           <TableContainer
@@ -782,7 +775,6 @@ const CardComponent = () => {
                                     <TableCell
                                       size="small"
                                       sx={{
-                                        fontWeight: 600,
                                         fontSize: "small",
                                         borderBottom: "none",
                                         p: 0,
@@ -794,7 +786,6 @@ const CardComponent = () => {
                                       size="small"
                                       sx={{
                                         px: 1,
-                                        fontWeight: 600,
                                         fontSize: "small",
                                         borderBottom: "none",
                                         p: 0,
@@ -806,7 +797,6 @@ const CardComponent = () => {
                                       size="small"
                                       sx={{
                                         px: 1,
-                                        fontWeight: 600,
                                         fontSize: "small",
                                         borderBottom: "none",
                                       }}
@@ -820,7 +810,6 @@ const CardComponent = () => {
                                       size="small"
                                       sx={{
                                         px: 1,
-                                        fontWeight: 600,
                                         fontSize: "small",
                                         borderBottom: "none",
                                       }}
@@ -836,8 +825,20 @@ const CardComponent = () => {
                       </div>
                     )}
                   </Box>
+
+                  <Box sx={{ my: 1 }}>
+                    {cardData.blood_group && cardData.blood_group != "null" && (
+                      <TextElement
+                        label="Blood Group"
+                        value={cardData?.blood_group}
+                      />
+                    )}
+                    {cardData.abha_id && cardData.blood_group != "null" && (
+                      <TextElement label="Abha ID" value={cardData?.abha_id} />
+                    )}
+                  </Box>
                   {cardData.card_type !== "Family" && (
-                    <Box>
+                    <Box sx={{ my: 1 }}>
                       <Grid container col>
                         <Grid item xs={6}>
                           <TextElement label="Gender" value={cardData.gender} />
@@ -852,7 +853,11 @@ const CardComponent = () => {
                     </Box>
                   )}
                   <Box
-                    sx={{ display: "flex", justifyContent: "space-between" }}
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      my: 1,
+                    }}
                   >
                     <Box sx={{ display: "flex", alignItems: "end" }}>
                       <TextElement label="Phone" value={cardData.phone} />
@@ -867,6 +872,12 @@ const CardComponent = () => {
                     </Box>
                     <Box sx={{ display: "flex" }}>
                       {cardData.emergency_contact && (
+                        <TextElement
+                          label="Emergency Contact"
+                          value={cardData.emergency_contact || ""}
+                        />
+                      )}
+                      {cardData.emergency_contact && (
                         <IconButton
                           sx={{ height: "40px", mt: 1 }}
                           onClick={() =>
@@ -876,16 +887,10 @@ const CardComponent = () => {
                           <PhoneIcon />
                         </IconButton>
                       )}
-                      {cardData.emergency_contact && (
-                        <TextElement
-                          label="Emergency Contact"
-                          value={cardData.emergency_contact || ""}
-                        />
-                      )}
                     </Box>
                   </Box>
 
-                  <Box sx={{ display: "flex" }}>
+                  <Box sx={{ display: "flex", my: 1 }}>
                     <div>
                       <TextElement
                         label="Address"
@@ -894,20 +899,9 @@ const CardComponent = () => {
                     </div>
                   </Box>
 
-                  <Grid container sx={{ minHeight: "60px" }}>
-                    <Grid item xs={6}>
-                      {!cardData.blood_group &&
-                        cardData.blood_group != "null" && (
-                          <TextElement
-                            label="Blood Group"
-                            value={cardData?.blood_group || "AB"}
-                          />
-                        )}
-                    </Grid>
-                  </Grid>
                   <Grid container alignItems="end">
                     <Grid item xs={6}>
-                      <Box>
+                      <Box sx={{ my: 1 }}>
                         <TextElement label="Status" value={cardData.status} />
                         {cardData.discard_reason &&
                           cardData?.status === "DISCARDED" && (

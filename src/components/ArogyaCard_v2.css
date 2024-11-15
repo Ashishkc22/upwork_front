@@ -177,7 +177,7 @@
 
 .opp_vertical-text {
   font-family: "Inter";
-  transform: rotate(90deg);
+ 
   margin: 0;
   font-size: 12px;
   /* right: -3px; */
@@ -185,10 +185,10 @@
   color: #00000082;
   /* width: 221px; */
   /* background: red; */
-  height: fit-content;
+  /* height: fit-content; */
   /* top: -25px;
   left: 77px; */
-  width: fit-content;
+  /* width: fit-content; */
 }
 
 .user-details-container {

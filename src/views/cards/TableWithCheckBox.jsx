@@ -209,7 +209,6 @@ const TableWithCheckBox = ({
                 startIcon={<DownloadIcon />}
                 onClick={(e) => {
                   e.stopPropagation();
-                  console.log("groupedData", groupedData);
                   setIsCardDownload(true);
                   downloadCards.downloadMultipleCard({
                     cardData: groupedData,
@@ -220,7 +219,7 @@ const TableWithCheckBox = ({
                     },
                     images: images,
                     agentDetails: { name: agentName, id },
-                    tlDetails: tlDetails,
+                    tlDetails: tlDetails || {},
                     secondaryImage: imageRef.current,
                   });
                   setMarkAsPrintPending((pre) => ({
