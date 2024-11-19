@@ -56,7 +56,7 @@ const ArogyamComponent = ({
         style={{
           ...(style && style),
           backgroundImage: `url(/card_water_mark.svg)`,
-          backgroundSize: "150%",
+          backgroundSize: "120%",
         }}
         className={"card-container " + clsx(enableClick && "cursor")}
         onClick={() => {
@@ -66,13 +66,15 @@ const ArogyamComponent = ({
         }}
       >
         <div className="support-header">
-          <img
-            id={`${cardData._id}-support`}
-            src={images?.support || "/v1cardImages/support.png"}
-            alt="support"
-            style={{ width: "40px", height: "40px" }}
-            className="support-image"
-          />
+          <div style={{ position: "relative", top: "8px" }}>
+            <img
+              id={`${cardData._id}-support`}
+              src={images?.support || "/v1cardImages/support.png"}
+              alt="support"
+              style={{ width: "40px", height: "40px" }}
+              className="support-image"
+            />
+          </div>
           <div className="header-text">
             <div style={{ marginLeft: "6px" }}>
               हेल्पलाइन नंबर (10 AM - 6 PM)
@@ -136,7 +138,7 @@ const ArogyamComponent = ({
         {/* User details and issue date */}
 
         <div className="vertical-text">
-          Issued on :{" "}
+          Printed on :{" "}
           {moment(cardData.issue_date, "DD/MM/YYYY").format("MMM/YY")}
         </div>
         <img

@@ -394,8 +394,8 @@ const addCardInDoc = ({
 };
 
 const addCardCountText = ({ doc, text, x, y, xOffset = 90, yOffset = 30 }) => {
-  doc.setFontSize(12);
-  doc.setFont("helvetica", "bold");
+  doc.setFontSize(10);
+  doc.setFont("helvetica");
   doc.text(text, x + xOffset, y + yOffset, {
     angle: 90,
     rotationDirection: 1,
@@ -609,7 +609,7 @@ function createAFENameTLName({ doc, feName, tlName, count, startX, startY }) {
   const pxToPt = (px) => px * 0.75;
   const boxWidth = pxToPt(111.8); // 340.5 pt
   const boxHeight = pxToPt(72); // 210.75 pt
-  doc.rect(startX, startY, boxWidth, boxHeight);
+  // doc.rect(startX, startY, boxWidth, boxHeight);
   doc.setFont("helvetica", "Normal");
   doc.setFontSize(20);
   const combinedText = `${tlName}\n${feName}\n${count}`;

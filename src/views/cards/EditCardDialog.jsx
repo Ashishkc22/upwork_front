@@ -311,7 +311,7 @@ const EditDialog = ({ open, onClose, cardData, setIscardLoadtion }) => {
       <Dialog open={open} maxWidth="md">
         <DialogTitle>Edit Details</DialogTitle>
         <DialogContent sx={{ p: 0, m: 0 }}>
-          <Grid container spacing={2} sx={{ px: 2 }}>
+          <Grid container spacing={2} sx={{ px: 2, py: 1 }}>
             <Grid container item xs={6} spacing={2}>
               <Grid item xs={12}>
                 <TextField
@@ -406,6 +406,45 @@ const EditDialog = ({ open, onClose, cardData, setIscardLoadtion }) => {
                     label="Father/Husband's Name"
                     name="father_husband_name"
                     value={formData?.father_husband_name}
+                    onChange={handleChange}
+                  />
+                )}
+              </Grid>
+              {formData.card_type !== "Family" && (
+                <Grid item xs={6}>
+                  <FormControl fullWidth>
+                    <InputLabel id="blood_group-helper-label">
+                      Blood Group
+                    </InputLabel>
+                    <Select
+                      labelId="blood_group-helper-label"
+                      id="blood_group-dropdown"
+                      label="Blood Group"
+                      name="blood_group"
+                      fullWidth
+                      onChange={handleChange}
+                      defaultValue={formData?.blood_group}
+                      value={formData?.blood_group}
+                    >
+                      <MenuItem value="A+">A+</MenuItem>
+                      <MenuItem value="A-">A-</MenuItem>
+                      <MenuItem value="B+">B+</MenuItem>
+                      <MenuItem value="B-">B-</MenuItem>
+                      <MenuItem value="AB+">AB+</MenuItem>
+                      <MenuItem value="AB-">AB-</MenuItem>
+                      <MenuItem value="O+">O+</MenuItem>
+                      <MenuItem value="O-">O-</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Grid>
+              )}
+              <Grid item xs={6}>
+                {formData?.card_type !== "Family" && (
+                  <TextField
+                    fullWidth
+                    label="Abha ID"
+                    name="Abha ID"
+                    value={formData?.abha_id}
                     onChange={handleChange}
                   />
                 )}
@@ -522,34 +561,6 @@ const EditDialog = ({ open, onClose, cardData, setIscardLoadtion }) => {
               </Grid>
             )}
 
-            {formData.card_type !== "Family" && (
-              <Grid item xs={6}>
-                <FormControl fullWidth>
-                  <InputLabel id="blood_group-helper-label">
-                    Blood Group
-                  </InputLabel>
-                  <Select
-                    labelId="blood_group-helper-label"
-                    id="blood_group-dropdown"
-                    label="Blood Group"
-                    name="blood_group"
-                    fullWidth
-                    onChange={handleChange}
-                    defaultValue={formData?.blood_group}
-                    value={formData?.blood_group}
-                  >
-                    <MenuItem value="A+">A+</MenuItem>
-                    <MenuItem value="A-">A-</MenuItem>
-                    <MenuItem value="B+">B+</MenuItem>
-                    <MenuItem value="B-">B-</MenuItem>
-                    <MenuItem value="AB+">AB+</MenuItem>
-                    <MenuItem value="AB-">AB-</MenuItem>
-                    <MenuItem value="O+">O+</MenuItem>
-                    <MenuItem value="O-">O-</MenuItem>
-                  </Select>
-                </FormControl>
-              </Grid>
-            )}
             {/* {Boolean(stateOption?.length) && (
             <Grid item xs={12} sm={6}>
               <FormControl fullWidth>

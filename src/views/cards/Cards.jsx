@@ -1,6 +1,14 @@
 import React, { useEffect, useState, useRef, useContext } from "react";
 import Header from "../../components/Header";
-import { Grid, Typography, useTheme, Box, Card, Button } from "@mui/material";
+import {
+  Grid,
+  Typography,
+  useTheme,
+  Box,
+  Card,
+  Button,
+  Paper,
+} from "@mui/material";
 import CustomTable from "../../components/CustomTable";
 import { tokens } from "../../theme";
 import cards from "../../services/cards";
@@ -32,6 +40,9 @@ import supportImg from "../../v1cardImages/support.png";
 import locImg from "../../v1cardImages/loc.png";
 import phoneImg from "../../v1cardImages/phone.png";
 import cardLogoImg from "../../v1cardImages/cardLogo.png";
+import Slide from "@mui/material/Slide";
+import useScrollTrigger from "@mui/material/useScrollTrigger";
+import CssBaseline from "@mui/material/CssBaseline";
 
 // // Storing all memoized components in an object
 const images = {
@@ -43,6 +54,7 @@ const images = {
 };
 
 let useEffectTypingTimer;
+let lastScrollValue = 0;
 
 const tableHeaders = [
   { label: "SNO", key: "index" },
@@ -115,10 +127,10 @@ const Cards = () => {
   const [statusCount, setStatusCount] = useState({});
   const [apiPayload, setApiPayload] = useState({});
   const [rowPerPage, setRowPerPage] = useState(100);
+  const [scroll, setScrolly] = useState(window.scrollY);
 
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
-
   const highlightedRow = storageUtil.getStorageData("highlightedRow");
   let [urlDateType, setUrlDateType] = useSearchParams();
   // const [isPrintMode, setIsPrintMode] = useState(
@@ -336,8 +348,6 @@ const Cards = () => {
           storageUtil.setStorageData(data.idList, "cards_ids");
         }
         if (selectedCard === "toBePrinted") {
-          console.log("data.groupedData", data.groupedData);
-
           setCardsDataGroupBy(() => data.groupedData);
           setTotalCardsAndToBePrinted({
             totalCards: data.totalCards,
@@ -530,6 +540,12 @@ const Cards = () => {
 
     const searchParams = new URLSearchParams(window.location.search).get("tab");
     const handleScroll = () => {
+      if (window.scrollY < lastScrollValue && window.scrollY > 12) {
+        setScrolly(true);
+      } else {
+        setScrolly(false);
+      }
+      lastScrollValue = window.scrollY;
       if (window.scrollY > 0) {
         storageUtil.setStorageData(
           window.scrollY,
@@ -543,20 +559,45 @@ const Cards = () => {
     };
   }, [selectedCard, page]);
 
-  const customPrevioudButton = (porps) => (
-    <Button
-      {...porps}
-      sx={{ mx: 1 }}
-      size="small"
-      variant="standard"
-      startIcon={<ArrowBackIcon />}
-    >
-      Previous
-    </Button>
-  );
-
-  const customNextButton = (porps) => {
+  const customPrevioudButton = (porps) => {
+    console.log("porps", porps.onClick);
     console.log("porps", porps);
+
+    return (
+      <span>
+        <Button
+          onClick={(event) => {
+            const searchParams = new URLSearchParams(
+              window.location.search
+            ).get("tab");
+            storageUtil.setStorageData(
+              0,
+              `${location.pathname}-${searchParams}`
+            );
+            addDataToURL({ page: 0 });
+            setPage(0);
+          }}
+          sx={{ mx: 1 }}
+          disabled={currentPage == 0}
+          size="small"
+          variant="standard"
+          startIcon={<ArrowBackIcon />}
+        >
+          First page
+        </Button>
+        <Button
+          {...porps}
+          sx={{ mx: 1 }}
+          size="small"
+          variant="standard"
+          startIcon={<ArrowBackIcon />}
+        >
+          Previous
+        </Button>
+      </span>
+    );
+  };
+  const customNextButton = (porps) => {
     return (
       <Button
         {...porps}
@@ -632,6 +673,7 @@ const Cards = () => {
       top: 0,
     });
   };
+  const trigger = useScrollTrigger();
   return (
     <Grid component="main" sx={{ width: "96%", overflowX: "hidden" }}>
       <img
@@ -661,85 +703,96 @@ const Cards = () => {
       </Fab>
 
       <Grid item sx={{ mb: 2 }}>
-        {isCardDownloading && <LoadingScreen />}
-        <Header
-          currentComponentName="Cards"
-          statusCount={statusCount}
-          toTalScoreDetails={{
-            totalScore: totalCardsAndToBePrinted?.totalCards || 0,
-            totalScoreToshow: totalCardsAndToBePrinted?.totalShowing || 0,
-            text: "Total Cards",
-            name: "totalCards",
-          }}
-          secondaryTotalDetails={{
-            secondaryTotalScore: totalCardsAndToBePrinted.toBePrinted,
-            secondaryTotalScoreToshow:
-              totalCardsAndToBePrinted.totalPrintCardsShowing,
-            text: "To Be Printed",
-            name: "toBePrinted",
-          }}
-          showPrintMode={selectedCard === "toBePrinted"}
-          {...(selectedCard === "totalCards" && {
-            statusOption: isEmpty(statusCount)
-              ? [
-                  { label: "SUBMITTED" },
-                  { label: "PRINTED" },
-                  { label: "UNDELIVERED" },
-                  { label: "DELIVERED" },
-                  { label: "DISCARDED" },
-                  { label: "RTO" },
-                ]
-              : Object.keys(statusCount).map((k) => ({
-                  label: `${k} (${statusCount[k]})`,
-                })),
-          })}
-          defaultSelectedCard="toBePrinted"
-          pSelectedCard={selectedCard}
-          showSecondaryScoreCard
-          createdByOptions={userDropdownOptions || []}
-          createdByKeyMap={{ labelKey: "name", codeKey: "uid" }}
-          // tehsilCounts={tehsilCounts}
-          handleSelectCard={handleCardSelect}
-          isNavAllowed={() => {
-            return (
-              isEmpty(markAsPrintPending) || selectedCard !== "toBePrinted"
-            );
-          }}
-          isImageMode={isImageMode}
-          handleViewChange={() => setIsImageMode(!isImageMode)}
-          apiCallBack={getTableData}
-        />
-        {Boolean(Object.keys(downloadCardMaps).length) && (
-          <Stack
-            spacing={2}
-            direction="row"
-            sx={{
-              position: "fixed",
-              bottom: 60,
-              right: 50,
-              alignItems: "center",
+        {isCardDownloading && <LoadingScreen />} <CssBaseline />
+        <Slide appear={false} direction="down" in={!trigger}>
+          <div
+            style={{
+              position: scroll ? "fixed" : "static",
               zIndex: 2,
+              width: "-webkit-fill-available",
+              background: "white",
             }}
           >
-            <Fab
-              sx={{
-                background: colors.primary[200],
-                color: colors.primary[500],
+            <Header
+              currentComponentName="Cards"
+              statusCount={statusCount}
+              toTalScoreDetails={{
+                totalScore: totalCardsAndToBePrinted?.totalCards || 0,
+                totalScoreToshow: totalCardsAndToBePrinted?.totalShowing || 0,
+                text: "Total Cards",
+                name: "totalCards",
               }}
-              variant="extended"
-              size="large"
-              onClick={handleGroupCardsDownload}
-            >
-              <Typography variant="h6">[</Typography>
+              secondaryTotalDetails={{
+                secondaryTotalScore: totalCardsAndToBePrinted.toBePrinted,
+                secondaryTotalScoreToshow:
+                  totalCardsAndToBePrinted.totalPrintCardsShowing,
+                text: "To Be Printed",
+                name: "toBePrinted",
+              }}
+              showPrintMode={selectedCard === "toBePrinted"}
+              {...(selectedCard === "totalCards" && {
+                statusOption: isEmpty(statusCount)
+                  ? [
+                      { label: "SUBMITTED" },
+                      { label: "PRINTED" },
+                      { label: "UNDELIVERED" },
+                      { label: "DELIVERED" },
+                      { label: "DISCARDED" },
+                      { label: "RTO" },
+                    ]
+                  : Object.keys(statusCount).map((k) => ({
+                      label: `${k} (${statusCount[k]})`,
+                    })),
+              })}
+              defaultSelectedCard="toBePrinted"
+              pSelectedCard={selectedCard}
+              showSecondaryScoreCard
+              createdByOptions={userDropdownOptions || []}
+              createdByKeyMap={{ labelKey: "name", codeKey: "uid" }}
+              // tehsilCounts={tehsilCounts}
+              handleSelectCard={handleCardSelect}
+              isNavAllowed={() => {
+                return (
+                  isEmpty(markAsPrintPending) || selectedCard !== "toBePrinted"
+                );
+              }}
+              isImageMode={isImageMode}
+              handleViewChange={() => setIsImageMode(!isImageMode)}
+              apiCallBack={getTableData}
+            />
+            {Boolean(Object.keys(downloadCardMaps).length) && (
+              <Stack
+                spacing={2}
+                direction="row"
+                sx={{
+                  position: "fixed",
+                  bottom: 60,
+                  right: 50,
+                  alignItems: "center",
+                  zIndex: 2,
+                }}
+              >
+                <Fab
+                  sx={{
+                    background: colors.primary[200],
+                    color: colors.primary[500],
+                  }}
+                  variant="extended"
+                  size="large"
+                  onClick={handleGroupCardsDownload}
+                >
+                  <Typography variant="h6">[</Typography>
 
-              <Typography variant="h6">Download</Typography>
-              <Typography variant="h6" sx={{ ml: 1, fontWeight: "600" }}>
-                {downloadCardCount}
-              </Typography>
-              <Typography variant="h6">]</Typography>
-            </Fab>
-          </Stack>
-        )}
+                  <Typography variant="h6">Download</Typography>
+                  <Typography variant="h6" sx={{ ml: 1, fontWeight: "600" }}>
+                    {downloadCardCount}
+                  </Typography>
+                  <Typography variant="h6">]</Typography>
+                </Fab>
+              </Stack>
+            )}
+          </div>
+        </Slide>
       </Grid>
       {/* {selectedCard === "toBePrinted" && (
         <Box sx={{ m: 1 }} display="flex" flexDirection="row-reverse">
@@ -854,14 +907,9 @@ const Cards = () => {
         <Card
           sx={{
             position: "fixed",
-            bottom: "5px",
+            bottom: "1px",
             mx: 2,
-            width: {
-              lg: "50%",
-              md: "60%",
-              sm: "100%",
-              xs: "100%",
-            },
+            width: "fit-content",
             right: "1px",
             zIndex: 10,
           }}
@@ -875,14 +923,9 @@ const Cards = () => {
             //     ? !!Object.keys(markAsPrintPending)?.length
             //     : false
             // }
-            rowsPerPageOptions={[
-              10,
-              25,
-              50,
-              100,
-              ...(rowPerPage != 100 ? [rowPerPage] : []),
-            ]}
+            rowsPerPageOptions={[...(rowPerPage != 100 ? [rowPerPage] : [100])]}
             rowsPerPage={rowPerPage}
+            labelRowsPerPage={""}
             labelDisplayedRows={({ from, to, count }) => {
               if (selectedCard === "toBePrinted") {
                 return `${rowPerPage} of ${
@@ -909,10 +952,6 @@ const Cards = () => {
                 `${location.pathname}-${searchParams}`
               );
               addDataToURL({ page: newPage });
-              console.log("newPage >>>>", newPage);
-              console.log("currentPage >>>>", currentPage);
-
-              // getTableData({ _page: newPage });
               setPage(newPage);
             }}
             onRowsPerPageChange={() => {}}
