@@ -230,7 +230,7 @@ const Header = memo(
         setState(data);
         getAddressData({
           type: "district",
-          params: { stateId: data._id },
+          params: { refId: data._id },
         });
       } else {
         setState(null);
@@ -264,7 +264,7 @@ const Header = memo(
       if (data?.name) {
         getAddressData({
           type: "tehsil",
-          params: { districtId: data._id },
+          params: { refId: data._id },
         });
         setDistrict(data);
       } else {
@@ -280,9 +280,9 @@ const Header = memo(
         getAddressData({
           type: "gram",
           params: {
-            tehsilId: data?._id,
+            refId: data?._id,
             showHidden: true,
-            display: "Gram",
+            // display: "Gram",
           },
         });
       }
@@ -453,7 +453,7 @@ const Header = memo(
 
     function getAddressData(payload) {
       if (payload?.type == "district") {
-        const params = { stateId: "63c681806072b29c2133326e" };
+        const params = { refId: "63c681806072b29c2133326e" };
         payload.params = params;
       }
       common.getAddressData(payload).then((data) => {
@@ -524,7 +524,7 @@ const Header = memo(
       if (urlDateType.get("districtId")) {
         getAddressData({
           type: "district",
-          params: { stateId: urlDateType.get("stateId") },
+          params: { refId: urlDateType.get("stateId") },
         });
       }
       // if (urlDateType.get("printMode")) {
@@ -536,7 +536,7 @@ const Header = memo(
       if (urlDateType?.get("tehsilId") || urlDateType?.get("districtId")) {
         getAddressData({
           type: "tehsil",
-          params: { districtId: urlDateType?.get("districtId") },
+          params: { refId: urlDateType?.get("districtId") },
         });
       }
 
@@ -544,9 +544,9 @@ const Header = memo(
         getAddressData({
           type: "gram",
           params: {
-            tehsilId: urlDateType?.get("tehsilId"),
+            refId: urlDateType?.get("tehsilId"),
             showHidden: true,
-            display: "Gram",
+            // display: "Gram",
           },
         });
       }

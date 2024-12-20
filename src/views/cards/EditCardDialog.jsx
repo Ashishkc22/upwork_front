@@ -123,7 +123,7 @@ const EditDialog = ({ open, onClose, cardData, setIscardLoadtion }) => {
       if (selectedState) {
         getAddressData({
           type: "district",
-          params: { stateId: selectedState._id },
+          params: { refId: selectedState._id },
         });
       } else {
       }
@@ -138,7 +138,7 @@ const EditDialog = ({ open, onClose, cardData, setIscardLoadtion }) => {
       if (selectedDistrict) {
         getAddressData({
           type: "tehsil",
-          params: { districtId: selectedDistrict._id },
+          params: { refId: selectedDistrict._id },
         });
       } else {
       }
@@ -153,7 +153,11 @@ const EditDialog = ({ open, onClose, cardData, setIscardLoadtion }) => {
       if (selected) {
         getAddressData({
           type: "gram",
-          params: { tehsilId: selected._id, showHidden: true, display: "Gram" },
+          params: {
+            refId: selected._id,
+            showHidden: true,
+            // display: "Gram"
+          },
         });
       } else {
       }
@@ -162,7 +166,13 @@ const EditDialog = ({ open, onClose, cardData, setIscardLoadtion }) => {
 
   const handleRotateLeft = () => setRotation((prev) => prev - 90);
   const handleRotateRight = () => setRotation((prev) => prev + 90);
-
+  function removeEmptyValues(obj) {
+    return Object.fromEntries(
+      Object.entries(obj).filter(
+        ([key, value]) => value != null && value !== "" && value.length
+      )
+    );
+  }
   const handleSave = async (status) => {
     // // Send the image to another API
     let image;
@@ -170,8 +180,22 @@ const EditDialog = ({ open, onClose, cardData, setIscardLoadtion }) => {
       image = profilePic;
     }
     let newFormData = {
-      ...formData,
+      id: formData._id,
+      ...removeEmptyValues(formData),
     };
+    delete newFormData._id;
+    delete newFormData.status_updated_at;
+    delete newFormData.created_at;
+    delete newFormData.created_by;
+    delete newFormData.created_by_uid;
+    delete newFormData.issue_date;
+    delete newFormData.unique_number;
+    delete newFormData.s_no;
+    delete newFormData.status_history;
+    delete newFormData.__v;
+    delete newFormData.address;
+    delete newFormData.status;
+    delete newFormData.created_by_name;
     if (status) {
       newFormData.status = status;
     }

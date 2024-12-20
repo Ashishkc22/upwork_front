@@ -69,6 +69,15 @@ const advanceFacilities = [
   "Ayushman Card Accepted",
 ];
 
+function removeEmptyValues(obj, keys = []) {
+  return Object.fromEntries(
+    Object.entries(obj).filter(
+      ([key, value]) =>
+        !keys.includes(key) && value != null && value !== "" && value.length
+    )
+  );
+}
+
 const EditCardDialog = ({ open, onClose, data, mode = "Edit" }) => {
   const [categoryOption, setCategoryOption] = useState([]);
   const [specializtionOptions, setSpecializtionOptions] = useState([]);
@@ -211,13 +220,26 @@ const EditCardDialog = ({ open, onClose, data, mode = "Edit" }) => {
 
   const handleFormSubmit = () => {
     if (mode === "Edit") {
-      hospitals.saveFormData({ id: data._id, formData }).then((data) => {
-        if (!data.error) {
-          onClose(true);
-        }
-      });
+      const newFormData = removeEmptyValues(formData, [
+        "_id",
+        "created_by",
+        "created_by_name",
+        "created_by_uid",
+        "contactPersonName",
+        "contactPersonPhone",
+        "uid",
+        "signatureImageUrl",
+      ]);
+      hospitals
+        .saveFormData({ id: data._id, formData: newFormData })
+        .then((data) => {
+          if (!data.error) {
+            onClose(true);
+          }
+        });
     } else {
-      hospitals.addHospital({ formData }).then((data) => {
+      const newFormData = removeEmptyValues(formData);
+      hospitals.addHospital({ formData: newFormData }).then((data) => {
         if (!data.error) {
           onClose(true);
         }
@@ -811,7 +833,7 @@ const EditCardDialog = ({ open, onClose, data, mode = "Edit" }) => {
                               e.preventDefault();
                               getAddressData({
                                 type: "district",
-                                params: { stateId: data._id },
+                                params: { refId: data._id },
                               });
                               setFormData((pre) => {
                                 return {

@@ -95,7 +95,7 @@ const SettingsPage = () => {
     getAddress({
       type: "district",
       params: {
-        stateId: "63c681806072b29c2133326e",
+        refId: "63c681806072b29c2133326e",
         ...(showHidden && { showHidden }),
       },
     }).then((district) => {
@@ -110,7 +110,7 @@ const SettingsPage = () => {
     setSelectedStates(state);
     getAddress({
       type: "district",
-      params: { stateId: state._id, ...(showHidden && { showHidden }) },
+      params: { refId: state._id, ...(showHidden && { showHidden }) },
     }).then((data) => {
       setDistrict(data);
     });
@@ -120,7 +120,7 @@ const SettingsPage = () => {
     setDistrictStates(district);
     getAddress({
       type: "tehsil",
-      params: { districtId: district._id, ...(showHidden && { showHidden }) },
+      params: { refId: district._id, ...(showHidden && { showHidden }) },
       showHidden: false,
     }).then((data) => {
       console.log("data tehsil", data);
@@ -130,7 +130,7 @@ const SettingsPage = () => {
     // janpad
     getAddress({
       type: "janPanchayat",
-      params: { districtId: district._id, ...(showHidden && { showHidden }) },
+      params: { refId: district._id, ...(showHidden && { showHidden }) },
       showHidden: false,
     }).then((data) => {
       setJanpad(data);
@@ -143,7 +143,7 @@ const SettingsPage = () => {
 
     getAddress({
       type: "gramPanchayat",
-      params: { tehsilId: tehsil._id, ...(showHidden && { showHidden }) },
+      params: { refId: tehsil._id, ...(showHidden && { showHidden }) },
     }).then((data) => {
       console.log("gram", data);
       if (data?.length) {
@@ -159,7 +159,7 @@ const SettingsPage = () => {
     setJanpadStates(janpad);
     getAddress({
       type: "gramPanchayat",
-      params: { janPanchayatId: janpad._id, ...(showHidden && { showHidden }) },
+      params: { refId: janpad._id, ...(showHidden && { showHidden }) },
     }).then((data) => {
       if (!isEmpty(selectedGramPanchayat)) {
         const newData = data.find((g) => g._id === selectedGramPanchayat._id);
@@ -176,7 +176,7 @@ const SettingsPage = () => {
     setGramPanchayatStates(gramP);
     getAddress({
       type: "gram",
-      params: { gramPanchayatId: gramP._id, ...(showHidden && { showHidden }) },
+      params: { refId: gramP._id, ...(showHidden && { showHidden }) },
     }).then((data) => {
       setGram(data);
     });

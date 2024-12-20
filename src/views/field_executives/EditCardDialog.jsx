@@ -283,7 +283,7 @@ const EditProfileDialog = ({
           console.log("district ap call", selectedState);
           getAddressData({
             type: "district",
-            params: { stateId: selectedState?._id },
+            params: { refId: selectedState?._id },
           });
         }
       } else if (isEmpty(janPanchayatOptions)) {
@@ -293,7 +293,7 @@ const EditProfileDialog = ({
           );
           getAddressData({
             type: "janPanchayat",
-            params: { districtId: selectedJanPanchyat?._id },
+            params: { refId: selectedJanPanchyat?._id },
           });
         }
       }
@@ -333,7 +333,7 @@ const EditProfileDialog = ({
         });
     } else {
       field_executives
-        .saveFieldExecutiveForm({
+        .updateUserData({
           ...(data._id && { id: data._id }),
           name: name || data?.name,
           phone: phone || data?.phone,
@@ -422,7 +422,7 @@ const EditProfileDialog = ({
           if (draftData.janPanchayat) {
             getAddressData({
               type: "janPanchayat",
-              params: { districtId: draftData.district._id },
+              params: { refId: draftData.district._id },
             }).then(() => {
               setJanPanchayat(draftData.janPanchayat);
             });
@@ -431,7 +431,7 @@ const EditProfileDialog = ({
       } else {
         getAddressData({
           type: "district",
-          params: { stateId: "63c681806072b29c2133326e" },
+          params: { refId: "63c681806072b29c2133326e" },
         });
       }
     } else {
@@ -613,7 +613,7 @@ const EditProfileDialog = ({
                         getAddressData({
                           type: "district",
                           params: {
-                            stateId: _state._id,
+                            refId: _state._id,
                           },
                         });
                       }}
@@ -635,7 +635,7 @@ const EditProfileDialog = ({
                   if (data) {
                     getAddressData({
                       type: "janPanchayat",
-                      params: { districtId: data._id },
+                      params: { refId: data._id },
                     });
                   }
                 }}

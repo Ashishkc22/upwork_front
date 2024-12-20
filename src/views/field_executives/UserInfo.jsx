@@ -58,29 +58,26 @@ const UserInfoCard = () => {
 
   const fetchCardData = () => {
     const isTL = urlDateType.get("isTL");
-    console.log("isTL", cancelIdleCallback);
-    if (Boolean(isTL)) {
-      fieldExecutives
-        .getTLById({ tl_id: id, showExtra: true })
-        .then((tlDetails) => {
-          setTeamLeaderDetails(tlDetails);
-          setUserData(tlDetails);
-          setRole(tlDetails.role);
-        });
-    } else {
+    console.log("isTL", id);
+    if (Boolean(isTL) && id) {
+      fieldExecutives.getUserById({ tlId: id }).then((tlDetails) => {
+        setTeamLeaderDetails(tlDetails);
+        setUserData(tlDetails);
+        setRole(tlDetails.role);
+      });
+    } else if (id) {
       fieldExecutives.getUserById({ uid: id }).then((data) => {
         setUserData(data);
         setRole(data.role);
-        console.log("data", data);
-        fieldExecutives
-          .getTeamLeaderDetailsById({
-            tlId: data?.team_leader_id,
-          })
-          .then((data) => {
-            console.log("_____data", data);
-
-            setTeamLeaderDetails(data);
-          });
+        if (data.team_leader_id) {
+          fieldExecutives
+            .getUserById({
+              tlId: data?.team_leader_id,
+            })
+            .then((data) => {
+              setTeamLeaderDetails(data);
+            });
+        }
       });
     }
   };
@@ -88,7 +85,7 @@ const UserInfoCard = () => {
   useEffect(() => {
     // Fetch the data from the API
     fetchCardData();
-  }, [id]);
+  }, []);
 
   const TextGroup = ({ title, value, subText }) => (
     <Box mb={1}>

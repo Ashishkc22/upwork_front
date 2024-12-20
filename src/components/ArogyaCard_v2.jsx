@@ -13,12 +13,7 @@ const ArogyamComponent = ({
   images,
   passRef,
   style,
-  members = [
-    { name: "Vishal Mishra djshdiushidsud", gender: "male", birthYear: 1999 },
-    { name: "Abhishek Choudhari dskdsiudh", gender: "male", birthYear: 2003 },
-    { name: "Vishal Mishra djshdiushidsud", gender: "male", birthYear: 2005 },
-    { name: "Vedant dsihdoifhdohsodih", gender: "male", birthYear: 1897 },
-  ],
+  members = [],
 }) => {
   function calculateAge(birthYear) {
     const currentYear = new Date().getFullYear();
@@ -54,8 +49,24 @@ const ArogyamComponent = ({
     >
       <div
         style={{
+          position: "absolute",
+          zIndex: 1,
+          fontSize: "8.6px",
+          opacity: 0.3,
+          width: "461px",
+        }}
+      >
+        {Array.from({ length: 22 }, (_, index) => (
+          <p key={`water_mark_${index}`}>
+            © 7ROGYAM HEALTHCARE PVT. LTD © 7ROGYAM HEALTHCARE PVT. LTD ©
+            7ROGYAM HEALTHCARE PVT. LTD
+          </p>
+        ))}
+      </div>
+      <div
+        style={{
           ...(style && style),
-          backgroundImage: `url(/card_water_mark.svg)`,
+          // backgroundImage: `url(/card_water_mark.svg)`,
           backgroundSize: "120%",
         }}
         className={"card-container " + clsx(enableClick && "cursor")}
@@ -92,10 +103,10 @@ const ArogyamComponent = ({
                 style={{
                   position: "absolute",
                   width: "92.7%",
-                  height: "114%",
+                  height: "102%",
                   background: "rgb(253, 163, 48)",
                   clipPath: "ellipse(70.6% 95% at 70% -1%)",
-                  top: "-10px",
+                  top: "0px",
                   left: "26.8px",
                 }}
               ></div>
@@ -139,7 +150,9 @@ const ArogyamComponent = ({
 
         <div className="vertical-text">
           Printed on :{" "}
-          {moment(cardData.issue_date, "DD/MM/YYYY").format("MMM/YY")}
+          <span style={{ fontWeight: "bold" }}>
+            {moment(cardData.issue_date, "DD/MM/YYYY").format("MMM/YY")}
+          </span>
         </div>
         <img
           id={`${cardData._id}-profile`}
@@ -239,7 +252,12 @@ const ArogyamComponent = ({
               id={`${cardData._id}-loc`}
               src={images?.loc || "/v1cardImages/loc.png"}
               alt="Location"
-              style={{ width: "10px", height: "10px", marginRight: "9px" }}
+              style={{
+                width: "10px",
+                height: "10px",
+                marginRight: "9px",
+                marginTop: "7px",
+              }}
             />
 
             <div className="user-loc">
@@ -251,18 +269,17 @@ const ArogyamComponent = ({
           </div>
         </div>
 
-        <div className="water-mark">
-          <img
-            id={`${cardData._id}-waterMark`}
-            src={images?.waterMark || "/v1cardImages/waterMark.png"}
-            alt="Watermark"
-            style={{
-              width: "118px",
-              right: "29px",
-              zIndex: 0,
-            }}
-          />
-        </div>
+        <img
+          id={`${cardData._id}-waterMark`}
+          src={images?.waterMark || "/v1cardImages/waterMark.png"}
+          alt="Watermark"
+          style={{
+            width: "118px",
+            right: "29px",
+            zIndex: 2,
+          }}
+          className="water-mark"
+        />
 
         {isIndividual() && (
           <div className="gender-blood-info">
@@ -367,7 +384,11 @@ const ArogyamComponent = ({
         <div
           className="footer"
           style={{
-            ...(isPrint && { bottom: "-4px", height: "28.4px", width: "102%" }),
+            ...(isPrint && {
+              bottom: "-14px",
+              height: "38.4px",
+              width: "102%",
+            }),
           }}
         >
           ।। खुश है वही जिसने पाया, स्वस्थ मन और निरोगी काया ।।

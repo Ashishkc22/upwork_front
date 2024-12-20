@@ -5,7 +5,6 @@ import cookiesUtil from "../utils/cookies.util";
 
 async function getDashboardData(payload) {
   const _payload = {
-    token: tokenUtil.getAuthToken(),
     type: "ADMIN",
     ...(payload?.duration && { duration: payload.duration }),
     ...(payload?.till_duration && { till_duration: payload.till_duration }),
@@ -28,7 +27,6 @@ async function getDashboardData(payload) {
 
 async function getTreeChartData({ type = "district", payload } = {}) {
   const _payload = {
-    token: tokenUtil.getAuthToken(),
     ...(payload?.duration && { duration: payload.duration }),
     ...(payload?.till_duration && { till_duration: payload.till_duration }),
   };

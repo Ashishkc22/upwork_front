@@ -4,11 +4,6 @@ import { createRoot } from "react-dom/client";
 import ReactDOM, { flushSync } from "react-dom";
 import moment from "moment";
 
-// images: {
-//   SupportImage: <SupportImage />,
-//   LogoImage: <LogoImage />,
-// }
-
 // ----------------------- new logic --------------------------------------
 
 function componentToImageData({ Element, data, images }) {
@@ -394,12 +389,61 @@ const addCardInDoc = ({
 };
 
 const addCardCountText = ({ doc, text, x, y, xOffset = 90, yOffset = 30 }) => {
-  doc.setFontSize(10);
+  doc.setFontSize(7);
   doc.setFont("helvetica");
   doc.text(text, x + xOffset, y + yOffset, {
     angle: 90,
     rotationDirection: 1,
   });
+};
+
+const addVerticalLines = ({ doc, lineEndText = "" }) => {
+  // Get the page width and height
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+
+  // Calculate the center X of the page
+  const centerX = pageWidth / 2;
+
+  // Define the line width, offset, and line height
+  const lineWidth = 0.5; // Thickness of the line
+  const offset = 0; // Distance from the center for the lines
+  const lineHeight = 30; // Total height for the line
+  const middleHeight = 40; // Height of the middle part to hide
+
+  // Set text properties
+  const textOffset = 2; // Distance between the line and the text
+
+  // Set line style
+  doc.setLineWidth(lineWidth); // Set the line width
+  doc.setDrawColor(0, 0, 0); // Set the color to black
+
+  // Draw the visible top part of the left line (from 50 to middle)
+  doc.line(
+    centerX - offset,
+    0,
+    centerX - offset,
+    20 + (lineHeight - middleHeight) / 2
+  );
+
+  // Draw the visible bottom part of the left line (from below middle to the end)
+  doc.line(
+    centerX - offset,
+    130 + pageHeight / 2,
+    centerX - offset,
+    pageHeight
+  );
+
+  // Add text after the lines
+  doc.text(
+    centerX - textOffset,
+    22 + (lineHeight - middleHeight) / 2,
+    lineEndText,
+    {
+      angle: -90,
+      rotationDirection: 1,
+    }
+  ); // Text after the left line
 };
 
 async function downloadMultipleCard({
@@ -446,7 +490,7 @@ async function downloadMultipleCard({
   let cardsPerPage = 10;
   let count = 1;
   let cardPositons = [];
-
+  addVerticalLines({ doc, lineEndText: `#${count}` });
   createAFENameTLName({
     doc,
     feName: agentDetails?.name,
@@ -458,6 +502,10 @@ async function downloadMultipleCard({
   cardsPerPage -= 1;
   x = xRightValue;
   caardImageData.forEach((url, index) => {
+    if (index % 2 !== 0) {
+      addVerticalLines({ doc });
+    }
+
     // adding card on page
     const imagePosition = addCardInDoc({ doc, dataUrl: url, x, y });
     cardPositons.push(imagePosition);
@@ -497,112 +545,15 @@ async function downloadMultipleCard({
     }
   });
 
-  // const cardCount = cardData.length;
-  // let imageData = (await getImageData({ Element, cardData, images })) || [];
-  // let pageCardLimit = 9;
-  // let skipBackSide = [];
-  // createAFENameTLName({
-  //   doc,
-  //   feName: agentDetails?.name,
-  //   tlName: tlDetails?.name,
-  //   count: cardCount,
-  //   startX: xposition,
-  //   startY: yposition,
-  // });
-  // skipBackSide.push(1);
-  // xposition = xposition === 10 ? 113 : 10;
-  // count += 1;
-
-  // imageData.forEach((dataUrl, index) => {
-  //   // ADD IMAGE
-  //   doc.addImage(
-  //     dataUrl,
-  //     "JPEG",
-  //     xposition,
-  //     yposition,
-  //     width,
-  //     height,
-  //     "",
-  //     "MEDIUM"
-  //   );
-
-  //   // doc.rect(xposition - 3, yposition, 85.6, 54);
-
-  //   // ADD CARD COUNT TEXT
-  //   doc.setFontSize(12);
-  //   doc.setFont("helvetica", "bold");
-  //   doc.text(`${index + 1}`, xposition + 90, yposition + 30, {
-  //     angle: 90,
-  //     rotationDirection: 1,
-  //   });
-
-  //   if (xposition === 113) {
-  //     yposition = yposition + 57;
-  //   }
-  //   if (index === imageData.length - 1 && count != 9) {
-  //     console.log("imageData.length", imageData.length);
-  //     console.log("index", index);
-  //     let par_count = count + 1;
-  //     // skipBackSide.unshift(count);
-  //     if (count === imageData.length) {
-  //       console.log("BBBB Adding Back side page", skipBackSide);
-  //       console.log("BBB count", count);
-  //       par_count += 1;
-  //       skipBackSide.push(imageData.length);
-  //     }
-  //     if (count === 0) {
-  //       par_count += 1;
-  //       skipBackSide.push(0);
-  //     }
-  //     console.log("Adding Back side page", skipBackSide);
-  //     console.log("count", count);
-
-  //     addBackSideImage({
-  //       doc,
-  //       imgUrl: imageBackSideUrl,
-  //       count: par_count,
-  //       skipBackSide,
-  //     });
-  //   }
-  //   // ADD NEW PAGE
-  //   if (count === 9) {
-  //     console.log("Adding Back side page ---last");
-
-  //     addBackSideImage({
-  //       doc,
-  //       imgUrl: imageBackSideUrl,
-  //       count: count + 1,
-  //       ...(pageCardLimit === 9 && { skipBackSide: [1] }),
-  //     });
-  //     xposition = 10;
-  //     yposition = 5;
-  //     console.log("Adding page");
-  //     if (index != imageData.length - 1) {
-  //       doc.addPage();
-  //     }
-  //     skipBackSide = [];
-  //     count = 0;
-  //     pageCardLimit = 10;
-  //   } else {
-  //     count += 1;
-  //     xposition = xposition === 10 ? 113 : 10;
-  //   }
-
-  //   if (index == cardData.length - 1) {
-  console.log("agentDetails", tlDetails);
-  console.log("tlDetails", tlDetails);
-
-  doc.save(
-    `${tlDetails?.name?.replaceAll(" ", "_")}_${
-      agentDetails?.name
-        ? agentDetails?.name?.replaceAll(" ", "_")
-        : agentDetails?.id
-    }#${caardImageData.length}_${moment().format("DD_MMM_YYYY_hh_mm")}.pdf`
-  );
-  // preview({ pdfBlob: doc.output("blob") });
+  // doc.save(
+  //   `${tlDetails?.name?.replaceAll(" ", "_")}_${
+  //     agentDetails?.name
+  //       ? agentDetails?.name?.replaceAll(" ", "_")
+  //       : agentDetails?.id
+  //   }#${caardImageData.length}_${moment().format("DD_MMM_YYYY_hh_mm")}.pdf`
+  // );
+  preview({ pdfBlob: doc.output("blob") });
   handleDownloadCompleted();
-  //   }
-  // });
 }
 
 function createAFENameTLName({ doc, feName, tlName, count, startX, startY }) {
@@ -612,7 +563,7 @@ function createAFENameTLName({ doc, feName, tlName, count, startX, startY }) {
   // doc.rect(startX, startY, boxWidth, boxHeight);
   doc.setFont("helvetica", "Normal");
   doc.setFontSize(20);
-  const combinedText = `${tlName}\n${feName}\n${count}`;
+  const combinedText = `${tlName}/\n${feName} #${count}`;
   const textWidth = doc.getTextWidth(
     combinedText.split("\n").reduce((a, b) => (a.length > b.length ? a : b))
   );

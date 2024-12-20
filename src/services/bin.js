@@ -13,7 +13,6 @@ async function getBinData(payload) {
   } = await axiosUtil.get({
     path: "bin",
     params: {
-      token: tokenUtil.getAuthToken(),
       ...payload?.params,
     },
   });
@@ -38,7 +37,7 @@ async function restoreData(payload) {
     message,
     error = "",
   } = await axiosUtil.post({
-    path: `bin/restore?token=${tokenUtil.getAuthToken()}`,
+    path: `bin/restore`,
     body: payload,
   });
   if (status === "failed") {
@@ -63,7 +62,7 @@ async function deleteData(id, type) {
     error = "",
   } = await axiosUtil.delete({
     path: `bin/${type}`,
-    params: { token: tokenUtil.getAuthToken(), id },
+    params: { id },
   });
   if (status === "failed") {
     return { status, error: error || message };

@@ -175,7 +175,7 @@ const Header = ({
       } else {
         getAddressData({
           type: "district",
-          params: { stateId: data.newValue._id },
+          params: { refId: data.newValue._id },
         });
         payload["state"] = data.newValue.name;
         setState(data.newValue);
@@ -188,7 +188,7 @@ const Header = ({
       } else {
         getAddressData({
           type: "tehsil",
-          params: { districtId: data.newValue._id },
+          params: { refId: data.newValue._id },
         });
         payload["district"] = data.newValue.name;
         console.log("data.newValue", data.newValue);
@@ -204,9 +204,9 @@ const Header = ({
         getAddressData({
           type: "gram",
           params: {
-            tehsilId: data.newValue?._id,
+            refId: data.newValue?._id,
             showHidden: true,
-            display: "Gram",
+            // display: "Gram",
           },
         });
         payload["tehsil"] = data.newValue.name;

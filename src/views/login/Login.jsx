@@ -197,8 +197,10 @@ const LoginPage = () => {
         if (data?.role === "ADMIN") {
           setIsLoginButtonLoading(false);
           nav("/dashboard");
-        } else {
+        } else if (data?.role === "SUBADMIN") {
           nav("/hospitals?status=ENABLE");
+        } else {
+          setIsLoginButtonLoading(false);
         }
       } else {
         setIsLoginButtonLoading(false);
@@ -244,12 +246,13 @@ const LoginPage = () => {
     } else if (otp) {
       setIsOtpButtonLoading(true);
       const resp = await authServices.verifyOTP({
-        code: otp,
+        otp: otp,
+        email: _email,
         verificationId: token,
       });
       if (resp) {
-        addDataToURL({ otpToken: resp });
-        setOtpToken(resp);
+        addDataToURL({ otpToken: resp?.token });
+        setOtpToken(resp?.token);
         setOpen(false);
         setPasswordDialogOpened(true);
       }
@@ -264,13 +267,17 @@ const LoginPage = () => {
         return;
       }
       addDataToURL({ email: _email });
-      const data = await authServices.passwordReset({ email: _email });
-      if (!data.message) {
-        console.log("data", data);
-        addDataToURL({ token: data });
-        setToken(data);
-        setShowOTPText(true);
-      }
+      authServices
+        .passwordReset({ email: _email })
+        .then((data) => {
+          if (!data?.message) {
+            console.log("data", data);
+            addDataToURL({ token: data });
+            setToken(data);
+            setShowOTPText(true);
+          }
+        })
+        .catch(() => {});
     }
   };
 

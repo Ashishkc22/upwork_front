@@ -12,9 +12,8 @@ async function getHospitals({ params } = {}) {
     total,
     total_results,
   } = await axiosUtil.get({
-    path: `hospitals`,
+    path: `hospitals/get-hospitals`,
     params: {
-      token: tokenUtil.getAuthToken(),
       mode: "ADMIN",
       ...params,
     },
@@ -39,7 +38,7 @@ async function getHospitalCategory({ params } = {}) {
     total,
     total_results,
   } = await axiosUtil.get({
-    path: `settings`,
+    path: `settings/get-settings`,
     params: {
       responseType: "ADMIN",
     },
@@ -58,9 +57,9 @@ async function getHospitalById({ id } = {}) {
     message,
     error = "",
   } = await axiosUtil.get({
-    path: `hospitals/${id}`,
+    path: `hospitals/get-hospital-by-id`,
     params: {
-      token: tokenUtil.getAuthToken(),
+      id,
     },
   });
   if (status === "failed") {
@@ -141,8 +140,8 @@ async function saveFormData({ id, formData }) {
     message,
     error = "",
   } = await axiosUtil.patch({
-    path: `hospitals/${id}?token=${tokenUtil.getAuthToken()}`,
-    body: formData,
+    path: `hospitals/update-hospital-by-id`,
+    body: { id, ...formData },
   });
   if (status === "failed") {
     return { message, status, error: error || message };

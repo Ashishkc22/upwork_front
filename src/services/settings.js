@@ -30,8 +30,8 @@ async function addAddressType({ type, body }) {
       total,
       total_results,
     } = await axiosUtil.post({
-      path: `address/${type}`,
-      body,
+      path: `address/add-address`,
+      body: { type, ...body },
     });
   } catch (error) {}
 }
@@ -61,7 +61,7 @@ async function getHospitalAndContactSettings({ params } = {}) {
     total,
     total_results,
   } = await axiosUtil.get({
-    path: `settings`,
+    path: `settings/get-settings`,
     params: {
       responseType: "ADMIN",
     },
@@ -80,7 +80,7 @@ async function saveHospitalAndContactSettings({ body } = {}) {
     message,
     error = "",
   } = await axiosUtil.post({
-    path: `settings`,
+    path: `settings/get-settings`,
     params: {
       token: tokenUtil.getAuthToken(),
     },

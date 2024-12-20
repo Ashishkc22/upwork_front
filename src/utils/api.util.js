@@ -10,11 +10,8 @@ import cookiesUtil from "./cookies.util";
 // const BODY = ["post"];
 
 const { getApiUrl } = envUtil;
-const _getAuthToken = (isFormData) => {
+const _getAuthToken = () => {
   const token = tokenUtil.getAuthToken();
-  if (isFormData && token) {
-    return {};
-  }
   if (token) {
     return { Authorization: token };
   }
@@ -41,7 +38,7 @@ function request({
       ...(!skipNgrokHeader && { "ngrok-skip-browser-warning": "69420" }),
       "Content-Type": isFormData ? "multipart/form-data" : "application/json",
       ...(options?.headers && options.headers),
-      ..._getAuthToken(isFormData),
+      ...(!isFormData && _getAuthToken()),
     },
     ...(params && { params }),
     ...(!isEmpty(body) && { data: body }),
@@ -63,6 +60,15 @@ function request({
     })
     .catch((error) => {
       console.error("err", error);
+      enqueueSnackbar(
+        error?.response?.data?.message ||
+          error?.message ||
+          "Something went wrong.",
+        {
+          variant: "error",
+          autoHideDuration: 2000,
+        }
+      );
       // if (
       //   error.response.data.error === "jwt expired" ||
       //   error.response.data.error === "Missing access token."
@@ -73,7 +79,7 @@ function request({
       // if (error.response?.data && error.response.status === 404) {
       //   return { error: "Not Found" };
       // }
-      return { error: error };
+      return { error: error?.response?.data || error };
     });
 }
 

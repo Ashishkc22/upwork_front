@@ -247,106 +247,109 @@ async function downloadMultipleCard({
   tlDetails,
   secondaryImage,
 }) {
-  const imageBackSideUrl = getImageDataURLFromRef(secondaryImage);
-
-  const doc = new jsPDF("p", "mm", "", true);
-  const width = 87.6;
-  const height = 57.6;
-  let xposition = 10;
-  let yposition = 5;
-  let count = 0;
-  const cardCount = cardData.length;
-  let imageData = (await getImageData({ Element, cardData, images })) || [];
-  let pageCardLimit = 9;
-  let skipBackSide = [];
-  createAFENameTLName({
-    doc,
-    feName: agentDetails?.name,
-    tlName: tlDetails?.name,
-    count: cardCount,
-    startX: xposition,
-    startY: yposition,
-  });
-  skipBackSide.push(1);
-  xposition = xposition === 10 ? 113 : 10;
-  count += 1;
-
-  imageData.forEach((dataUrl, index) => {
-    // ADD IMAGE
-    doc.addImage(
-      dataUrl,
-      "JPEG",
-      xposition,
-      yposition,
-      width,
-      height,
-      "",
-      "MEDIUM"
-    );
-
-    // doc.rect(xposition - 3, yposition, 85.6, 54);
-
-    // ADD CARD COUNT TEXT
-    doc.setFontSize(12);
-    doc.setFont("helvetica", "bold");
-    doc.text(`${index + 1}`, xposition + 90, yposition + 30, {
-      angle: 90,
-      rotationDirection: 1,
-    });
-
-    if (xposition === 113) {
-      yposition = yposition + 57;
-    }
-    if (index === imageData.length - 1 && count != 9) {
-      console.log("imageData.length", imageData.length);
-      console.log("count", count);
-      console.log("index", index);
-
-      // skipBackSide.unshift(count);
-      console.log("Adding Back side page", skipBackSide);
-      addBackSideImage({
-        doc,
-        imgUrl: imageBackSideUrl,
-        count: count + 1,
-        skipBackSide,
-      });
-    }
-    // ADD NEW PAGE
-    if (count === 9) {
-      console.log("Adding Back side page ---last");
-
-      addBackSideImage({
-        doc,
-        imgUrl: imageBackSideUrl,
-        count: count + 1,
-        ...(pageCardLimit === 9 && { skipBackSide: [1] }),
-      });
-      xposition = 10;
-      yposition = 5;
-      console.log("Adding page");
-      if (index != imageData.length - 1) {
-        doc.addPage();
-      }
-      skipBackSide = [];
-      count = 0;
-      pageCardLimit = 10;
-    } else {
-      count += 1;
-      xposition = xposition === 10 ? 113 : 10;
-    }
-
-    if (index == cardData.length - 1) {
-      doc.save(
-        `${tlDetails.name.replaceAll(" ", "_")}_${
-          agentDetails?.name
-            ? agentDetails.name.replaceAll(" ", "_")
-            : agentDetails.id
-        }#${cardCount}_${moment().format("DD_MMM_YYYY_hh_mm")}.pdf`
-      );
-      // preview({ pdfBlob: doc.output("blob") });
-      handleDownloadCompleted();
-    }
-  });
+  // const imageBackSideUrl = getImageDataURLFromRef(secondaryImage);
+  // const doc = new jsPDF("p", "mm", "", true);
+  // const width = 87.6;
+  // const height = 57.6;
+  // let xposition = 10;
+  // let yposition = 5;
+  // let count = 0;
+  // const cardCount = cardData.length;
+  // let imageData = (await getImageData({ Element, cardData, images })) || [];
+  // let pageCardLimit = 9;
+  // let skipBackSide = [];
+  // createAFENameTLName({
+  //   doc,
+  //   feName: agentDetails?.name,
+  //   tlName: tlDetails?.name,
+  //   count: cardCount,
+  //   startX: xposition,
+  //   startY: yposition,
+  // });
+  // skipBackSide.push(1);
+  // xposition = xposition === 10 ? 113 : 10;
+  // count += 1;
+  // imageData.forEach((dataUrl, index) => {
+  //   // ADD IMAGE
+  //   doc.addImage(
+  //     dataUrl,
+  //     "JPEG",
+  //     xposition,
+  //     yposition,
+  //     width,
+  //     height,
+  //     "",
+  //     "MEDIUM"
+  //   );
+  //   // doc.rect(xposition - 3, yposition, 85.6, 54);
+  //   // ADD CARD COUNT TEXT
+  //   doc.setFontSize(12);
+  //   doc.setFont("helvetica", "bold");
+  //   doc.text(`${index + 1}`, xposition + 90, yposition + 30, {
+  //     angle: 90,
+  //     rotationDirection: 1,
+  //   });
+  //   if (xposition === 113) {
+  //     yposition = yposition + 57;
+  //   }
+  //   if (index === imageData.length - 1 && count != 9) {
+  //     console.log("imageData.length", imageData.length);
+  //     console.log("index", index);
+  //     let par_count = count + 1;
+  //     // skipBackSide.unshift(count);
+  //     if (count === imageData.length) {
+  //       console.log("BBBB Adding Back side page", skipBackSide);
+  //       console.log("BBB count", count);
+  //       par_count += 1;
+  //       skipBackSide.push(imageData.length);
+  //     }
+  //     if (count === 0) {
+  //       par_count += 1;
+  //       skipBackSide.push(0);
+  //     }
+  //     console.log("Adding Back side page", skipBackSide);
+  //     console.log("count", count);
+  //     addBackSideImage({
+  //       doc,
+  //       imgUrl: imageBackSideUrl,
+  //       count: par_count,
+  //       skipBackSide,
+  //     });
+  //   }
+  //   // ADD NEW PAGE
+  //   if (count === 9) {
+  //     console.log("Adding Back side page ---last");
+  //     addBackSideImage({
+  //       doc,
+  //       imgUrl: imageBackSideUrl,
+  //       count: count + 1,
+  //       ...(pageCardLimit === 9 && { skipBackSide: [1] }),
+  //     });
+  //     xposition = 10;
+  //     yposition = 5;
+  //     console.log("Adding page");
+  //     if (index != imageData.length - 1) {
+  //       doc.addPage();
+  //     }
+  //     skipBackSide = [];
+  //     count = 0;
+  //     pageCardLimit = 10;
+  //   } else {
+  //     count += 1;
+  //     xposition = xposition === 10 ? 113 : 10;
+  //   }
+  //   if (index == cardData.length - 1) {
+  //     doc.save(
+  //       `${tlDetails.name.replaceAll(" ", "_")}_${
+  //         agentDetails?.name
+  //           ? agentDetails.name.replaceAll(" ", "_")
+  //           : agentDetails.id
+  //       }#${cardCount}_${moment().format("DD_MMM_YYYY_hh_mm")}.pdf`
+  //     );
+  //     // preview({ pdfBlob: doc.output("blob") });
+  //     handleDownloadCompleted();
+  //   }
+  // });
 }
 
 function createAFENameTLName({ doc, feName, tlName, count, startX, startY }) {

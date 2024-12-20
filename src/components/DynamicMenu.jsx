@@ -41,12 +41,12 @@ const ThreeDotsDynamicMenu = ({ row, handleMenuSelect }) => {
       icon: "DELIVERED",
       onClick: () => console.log("Contact clicked"),
     },
-    // {
-    //   key: "DISCARDED",
-    //   label: "DISCARDED",
-    //   icon: "DISCARDED",
-    //   onClick: () => console.log("Contact clicked"),
-    // },
+    {
+      key: "DISCARDED",
+      label: "DISCARDED",
+      icon: "DISCARDED",
+      onClick: () => console.log("Contact clicked"),
+    },
     {
       key: "RTO",
       label: "RTO",
@@ -56,6 +56,12 @@ const ThreeDotsDynamicMenu = ({ row, handleMenuSelect }) => {
     {
       key: "REPRINT",
       label: "REPRINT",
+      icon: "REPRINT",
+      onClick: () => console.log("Contact clicked"),
+    },
+    {
+      key: "DELETE",
+      label: "DELETE",
       icon: "REPRINT",
       onClick: () => console.log("Contact clicked"),
     },
@@ -87,7 +93,7 @@ const ThreeDotsDynamicMenu = ({ row, handleMenuSelect }) => {
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
         onClose={handleClose}
-        PaperProps={{ style: { maxHeight: 300, width: "200px" } }}
+        // PaperProps={{ style: { maxHeight: 300, width: "200px" } }}
       >
         {menuItems.map((item) => (
           <MenuItem

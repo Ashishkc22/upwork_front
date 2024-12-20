@@ -13,9 +13,8 @@ async function getUsers({ params } = {}) {
     total,
     total_results,
   } = await axiosUtil.get({
-    path: `auth/users`,
+    path: `user/get-users`,
     params: {
-      token: tokenUtil.getAuthToken(),
       mode: "ADMIN",
       ...params,
     },
@@ -31,16 +30,17 @@ async function getUsers({ params } = {}) {
   }
 }
 
-async function getUserById({ uid }) {
+async function getUserById({ uid, tlId }) {
   const {
     status,
     data,
     message,
     error = "",
   } = await axiosUtil.get({
-    path: `auth/single/${uid}`,
+    path: `user/get-user-by-id`,
     params: {
-      token: tokenUtil.getAuthToken(),
+      uid,
+      tlId,
     },
   });
   if (status === "failed") {
@@ -57,7 +57,7 @@ async function getTLById({ tl_id, showExtra }) {
     error = "",
     ...data
   } = await axiosUtil.get({
-    path: `auth/teamLeaderId`,
+    path: `user/get-user-by-id`,
     params: {
       // token: tokenUtil.getAuthToken(),
       tlId: tl_id,
@@ -73,7 +73,7 @@ async function getTLById({ tl_id, showExtra }) {
 
 async function getTeamLeaderDetailsById({ tlId }) {
   const data = await axiosUtil.get({
-    path: `auth/teamLeaderId`,
+    path: `user/teamLeaderId`,
     params: {
       tlId: tlId,
     },
@@ -87,11 +87,8 @@ async function getTeamLeaderDetailsById({ tlId }) {
 
 async function updateUserRole({ formData, id }) {
   const data = await axiosUtil.patch({
-    path: `auth/user/${id}`,
-    params: {
-      token: tokenUtil.getAuthToken(),
-    },
-    body: formData,
+    path: `user/update-user-by-id`,
+    body: { id, ...formData },
     // isFormData: true,
   });
   if (data.status === "failed") {
@@ -137,67 +134,41 @@ async function uploadImage(image, skipBlob) {
   return url;
 }
 
-async function saveFieldExecutiveForm(formData, mode = "EDIT", id) {
+async function updateUserData(formData) {
   const { images, updatedImagesNames, signatureDataUrl } = formData;
-  if (mode === "EDIT") {
-    const keyMapper = {
-      Profile: "image",
-      aFront: "id_proof.front",
-      aBack: "id_proof.back",
-      Passport: "passportImage",
-      RegistrationForm: "registrationFormImage",
-      Agreement: "agreementImage",
-      PanCard: "panCardImage",
-    };
-    const updatedImages = Object.keys(updatedImagesNames);
-    for (const [name, image] of Object.entries(images)) {
-      if (updatedImages.includes(name)) {
-        if (name === "aFront") {
-          if (isEmpty(formData.id_proof)) formData.id_proof = {};
-          formData.id_proof.front = await uploadImage(image);
-        } else if (name === "aBack") {
-          if (isEmpty(formData.id_proof)) formData.id_proof = {};
-          formData.id_proof.back = await uploadImage(image);
-        } else {
-          formData[keyMapper[name]] = await uploadImage(image);
-        }
+
+  const keyMapper = {
+    Profile: "image",
+    aFront: "id_proof.front",
+    aBack: "id_proof.back",
+    Passport: "passportImage",
+    RegistrationForm: "registrationFormImage",
+    Agreement: "agreementImage",
+    PanCard: "panCardImage",
+  };
+  const updatedImages = Object.keys(updatedImagesNames);
+  for (const [name, image] of Object.entries(images)) {
+    if (updatedImages.includes(name)) {
+      if (name === "aFront") {
+        if (isEmpty(formData.id_proof)) formData.id_proof = {};
+        formData.id_proof.front = await uploadImage(image);
+      } else if (name === "aBack") {
+        if (isEmpty(formData.id_proof)) formData.id_proof = {};
+        formData.id_proof.back = await uploadImage(image);
+      } else {
+        formData[keyMapper[name]] = await uploadImage(image);
       }
     }
-    // Object.entries(images).forEach(async (data) => {
-    //   const [name, image] = data;
-    //   if (updatedImages.includes(name)) {
-    //     if (name === "aFront") {
-    //       if (isEmpty(formData.id_proof)) formData.id_proof = {};
-    //       formData.id_proof.front = await uploadImage(image);
-    //     }
-    //     if (name === "aBack") {
-    //       if (isEmpty(formData.id_proof)) formData.id_proof = {};
-    //       formData.id_proof.back = await uploadImage(image);
-    //     } else {
-    //       formData[keyMapper[name]] = await uploadImage(image);
-    //     }
-    //   }
-    // });
-    if (updatedImages.includes("signature") && signatureDataUrl) {
-      formData.signatureImage = await uploadImage(formData.signatureDataUrl);
-    }
-    delete formData.signatureDataUrl;
-    delete formData.updatedImagesNames;
-    delete formData.images;
-    console.log("formData", formData);
   }
-  let path = `auth/user/${formData.id}`;
-
-  if (mode === "STATSUPDATE") {
-    path = `auth/user/${id}`;
+  if (updatedImages.includes("signature") && signatureDataUrl) {
+    formData.signatureImage = await uploadImage(formData.signatureDataUrl);
   }
+  delete formData.signatureDataUrl;
+  delete formData.updatedImagesNames;
+  delete formData.images;
   const data = await axiosUtil.patch({
-    path,
-    params: {
-      token: tokenUtil.getAuthToken(),
-    },
+    path: `user/update-user-by-id`,
     body: formData,
-    // isFormData: mode == "STATSUPDATE",
   });
   if (data.status === "failed") {
     return {};
@@ -232,29 +203,14 @@ async function saveTLDetails(formData) {
         formData[keyMapper[name]] = await uploadImage(image);
       }
     }
-    // Object.entries(imagesToUpload).forEach(async (data) => {
-    //   const [name, image] = data;
-    //   if (name === "aFront") {
-    //     if (isEmpty(formData.id_proof)) formData.id_proof = {};
-    //     formData.id_proof.back = await uploadImage(image);
-    //   }
-    //   if (name === "aBack") {
-    //     if (isEmpty(formData.id_proof)) formData.id_proof = {};
-    //     formData.id_proof.front = await uploadImage(image);
-    //   } else {
-    //     formData[keyMapper[name]] = await uploadImage(image);
-    //   }
-    // });
     if (signatureDataUrl) {
       formData.signatureImage = await uploadImage(formData.signatureDataUrl);
     }
     delete formData.signatureDataUrl;
     delete formData.imagesToUpload;
-    formData.token = tokenUtil.getAuthToken();
-    console.log("formData", formData);
 
     const data = await axiosUtil.post({
-      path: "auth/add-tl",
+      path: "user/add-tl",
       body: formData,
     });
     if (data.status === "failed") {
@@ -272,7 +228,7 @@ async function saveTLDetails(formData) {
 }
 
 async function changeUserStatus(formData, id) {
-  let path = `auth/user/suspend/${id}`;
+  let path = `user/suspend/${id}`;
   const data = await axiosUtil.patch({
     path,
     params: {
@@ -291,7 +247,7 @@ export default {
   getUserById,
   getTeamLeaderDetailsById,
   updateUserRole,
-  saveFieldExecutiveForm,
+  updateUserData,
   getTLById,
   changeUserStatus,
   saveTLDetails,

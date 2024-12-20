@@ -43,6 +43,7 @@ import cardLogoImg from "../../v1cardImages/cardLogo.png";
 import Slide from "@mui/material/Slide";
 import useScrollTrigger from "@mui/material/useScrollTrigger";
 import CssBaseline from "@mui/material/CssBaseline";
+import bin from "../../services/bin";
 
 // // Storing all memoized components in an object
 const images = {
@@ -410,10 +411,11 @@ const Cards = () => {
   };
 
   const handleMenuSelect = async (item, selectedCard) => {
-    const updatedCardData = await cardService.changeStatus(
-      { status: item },
-      selectedCard._id
-    );
+    if (item === "DELETE") {
+      await bin.deleteData(selectedCard._id, "card");
+    } else {
+      await cardService.changeStatus({ status: item }, selectedCard._id);
+    }
     const search = urlDateType.get("search");
     getTableData({ _status: status, search: search || null });
   };

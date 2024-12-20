@@ -21,7 +21,6 @@ async function getCardsData({
   sortBy,
 } = {}) {
   const _payload = {
-    token: tokenUtil.getAuthToken(),
     mode: "ADMIN",
     limit,
     page,
@@ -209,7 +208,6 @@ async function getToBePrintedCards({
   isPrintMode,
 } = {}) {
   const _payload = {
-    token: tokenUtil.getAuthToken(),
     mode: "ADMIN",
     limit,
     page,
@@ -270,7 +268,6 @@ async function getUsersByIds({ ids = [] } = {}) {
   } = await axiosUtil.get({
     path: "auth/users-by-ids",
     params: {
-      token: tokenUtil.getAuthToken(),
       ids: Array.from(ids).join(","),
     },
   });
@@ -291,7 +288,6 @@ async function getUsersList({ ids = [], _status } = {}) {
   } = await axiosUtil.get({
     path: "cards/card-users",
     params: {
-      token: tokenUtil.getAuthToken(),
       ...(_status && { status: _status }),
     },
   });
@@ -312,9 +308,9 @@ async function getCardById({ id = "" } = {}) {
     message,
     error = "",
   } = await axiosUtil.get({
-    path: `cards/${id}`,
+    path: `cards/get-card-by-id`,
     params: {
-      token: tokenUtil.getAuthToken(),
+      id,
     },
   });
   if (status === "failed") {
@@ -331,8 +327,8 @@ async function getDistrictData({ stateId }) {
     message,
     error = "",
   } = await axiosUtil.get({
-    path: "address/district",
-    params: { stateId: stateId, type: "ADMIN" },
+    path: "address",
+    params: { stateId: stateId, type: "ADMIN", responseType: "district" },
   });
   if (status === "failed") {
     return { status, error: error || message };
@@ -350,8 +346,8 @@ async function renewCard(payload) {
     message,
     error = "",
   } = await axiosUtil.patch({
-    path: `cards/${id}?token=${tokenUtil.getAuthToken()}`,
-    body: payload,
+    path: `cards/update-card-by-id`,
+    body: { id, ...payload },
   });
   if (status === "failed") {
     return { status, error: error || message };
@@ -361,8 +357,6 @@ async function renewCard(payload) {
 }
 
 async function changeStatus(payload, id) {
-  console.log("payload", payload);
-
   const bodyFormData = new FormData();
   Object.entries(payload).forEach(([key, value]) => {
     bodyFormData.append(key, value);
@@ -374,10 +368,8 @@ async function changeStatus(payload, id) {
     message,
     error = "",
   } = await axiosUtil.patch({
-    path: `cards/${id}?token=${tokenUtil.getAuthToken()}`,
-    body: payload,
-    // isFormData: true,
-    // options: { headers: { "Content-Type": "multipart/form-data" } },
+    path: `cards/update-card-status-by-id`,
+    body: { id, ...payload },
   });
   if (status === "failed") {
     return { status, error: error || message };
@@ -433,8 +425,8 @@ async function updateCard(payload, id, image) {
     message,
     error = "",
   } = await axiosUtil.patch({
-    path: `cards/${id}?token=${tokenUtil.getAuthToken()}`,
-    body: payload,
+    path: `cards/update-card-by-id`,
+    body: { id, ...payload },
   });
   if (status === "failed") {
     return { status, error: error || message };
@@ -468,7 +460,7 @@ async function markAsPrint(ids) {
       message,
       error = "",
     } = await axiosUtil.post({
-      path: `cards/moveStatus?token=${tokenUtil.getAuthToken()}`,
+      path: `cards/mark-cards-as-printed`,
       body: { uids: ids },
     });
     if (status === "failed") {

@@ -10,10 +10,10 @@ async function getAddressData({ type = "state", params = {} } = {}) {
     message,
     error = "",
   } = await axiosUtil.get({
-    path: `address/${type}`,
+    path: `address/get-address-by-type`,
     params: {
-      type: "ADMIN",
       ...params,
+      type,
     },
   });
   if (status === "failed") {
