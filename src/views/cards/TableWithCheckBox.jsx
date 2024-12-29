@@ -13,7 +13,7 @@ import CheckIcon from "@mui/icons-material/Check";
 import storageUtil from "../../utils/storage.util";
 import cardService from "../../services/cards";
 
-import waterMarkImg from "../../v1cardImages/waterMark.png";
+import waterMarkImg from "../../v1cardImages/waterMark.svg";
 import supportImg from "../../v1cardImages/support.png";
 import locImg from "../../v1cardImages/loc.png";
 import phoneImg from "../../v1cardImages/phone.png";
@@ -119,7 +119,7 @@ const TableWithCheckBox = ({
   return (
     <Grid container>
       <img
-        src="/health-card-back.jpg"
+        src="/health-card-back.svg"
         ref={imageRef}
         alt="health back"
         style={{ display: "none" }}

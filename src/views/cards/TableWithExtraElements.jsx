@@ -13,7 +13,7 @@ import cardService from "../../services/cards";
 
 import TableWithCheckBox from "./TableWithCheckBox";
 
-import waterMarkImg from "../../v1cardImages/waterMark.png";
+import waterMarkImg from "../../v1cardImages/waterMark.svg";
 import supportImg from "../../v1cardImages/support.png";
 import locImg from "../../v1cardImages/loc.png";
 import phoneImg from "../../v1cardImages/phone.png";
@@ -92,7 +92,7 @@ const TableWithExtraElements = ({
   return (
     <Grid container sx={{ mx: 2 }} rowGap={2}>
       <img
-        src="/health-card-back.jpg"
+        src="/health-card-back.svg"
         ref={imageRef}
         alt="health back"
         style={{ display: "none" }}

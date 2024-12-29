@@ -35,7 +35,7 @@ import { UNSAFE_NavigationContext as NavigationContext } from "react-router-dom"
 import LeavePageDialog from "./LeaveDialog";
 import Backdrop from "@mui/material/Backdrop";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
-import waterMarkImg from "../../v1cardImages/waterMark.png";
+import waterMarkImg from "../../v1cardImages/waterMark.svg";
 import supportImg from "../../v1cardImages/support.png";
 import locImg from "../../v1cardImages/loc.png";
 import phoneImg from "../../v1cardImages/phone.png";
@@ -679,7 +679,7 @@ const Cards = () => {
   return (
     <Grid component="main" sx={{ width: "96%", overflowX: "hidden" }}>
       <img
-        src="/health-card-back.jpg"
+        src="/health-card-back.svg"
         ref={imageRef}
         alt="health back"
         style={{ display: "none" }}

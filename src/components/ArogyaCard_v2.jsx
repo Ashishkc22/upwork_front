@@ -51,7 +51,7 @@ const ArogyamComponent = ({
         style={{
           position: "absolute",
           zIndex: 1,
-          fontSize: "8.6px",
+          fontSize: "8.5px",
           opacity: 0.3,
           width: "461px",
         }}
@@ -59,7 +59,7 @@ const ArogyamComponent = ({
         {Array.from({ length: 22 }, (_, index) => (
           <p key={`water_mark_${index}`}>
             © 7ROGYAM HEALTHCARE PVT. LTD © 7ROGYAM HEALTHCARE PVT. LTD ©
-            7ROGYAM HEALTHCARE PVT. LTD
+            7ROGYAM HEALTHCARE PVT. LTD ©
           </p>
         ))}
       </div>
@@ -103,10 +103,10 @@ const ArogyamComponent = ({
                 style={{
                   position: "absolute",
                   width: "92.7%",
-                  height: "102%",
+                  height: "105%",
                   background: "rgb(253, 163, 48)",
                   clipPath: "ellipse(70.6% 95% at 70% -1%)",
-                  top: "0px",
+                  top: "-3px",
                   left: "26.8px",
                 }}
               ></div>
@@ -271,12 +271,13 @@ const ArogyamComponent = ({
 
         <img
           id={`${cardData._id}-waterMark`}
-          src={images?.waterMark || "/v1cardImages/waterMark.png"}
+          src={images?.waterMark || "/v1cardImages/waterMark.svg"}
           alt="Watermark"
           style={{
             width: "118px",
             right: "29px",
             zIndex: 2,
+            opacity: "0.8",
           }}
           className="water-mark"
         />

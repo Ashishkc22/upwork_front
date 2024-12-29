@@ -228,13 +228,10 @@ async function saveTLDetails(formData) {
 }
 
 async function changeUserStatus(formData, id) {
-  let path = `user/suspend/${id}`;
+  let path = `user/suspend`;
   const data = await axiosUtil.patch({
     path,
-    params: {
-      token: tokenUtil.getAuthToken(),
-    },
-    body: formData,
+    body: { id, ...formData },
   });
   if (data.status === "failed") {
     return {};

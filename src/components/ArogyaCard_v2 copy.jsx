@@ -202,7 +202,7 @@ const ArogyamComponent = ({
         <div className="water-mark">
           <img
             id={`${cardData._id}-waterMark`}
-            src={images?.waterMark || "/v1cardImages/waterMark.png"}
+            src={images?.waterMark || "/v1cardImages/waterMark.svg"}
             alt="Watermark"
             style={{
               width: "118px",

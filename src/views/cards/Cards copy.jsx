@@ -44,7 +44,7 @@ const Loc = memo(() => (
 
 const WaterMark = memo(() => (
   <img
-    src="/v1cardImages/waterMark.png"
+    src="/v1cardImages/waterMark.svg"
     alt="Watermark"
     style={{
       width: "118px",

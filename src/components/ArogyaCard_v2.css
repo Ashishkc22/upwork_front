@@ -286,6 +286,7 @@
   bottom: 28px;
   right: 32px;
   text-align: center;
+  z-index: 2;
 }
 
 .barcode {

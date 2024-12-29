@@ -116,6 +116,7 @@ function addCardBackSideImage({
   xRightValue = 114,
   xOffset = 0,
   yOffset = 1,
+  pageCount = 0,
 }) {
   doc.addPage();
   cardPositons.forEach((postions, _index) => {
@@ -133,6 +134,7 @@ function addCardBackSideImage({
   });
   if (addNewPage) {
     doc.addPage();
+    addVerticalLines({ doc, lineEndText: `#${pageCount + 1}` });
   }
 }
 
@@ -434,6 +436,9 @@ const addVerticalLines = ({ doc, lineEndText = "" }) => {
     pageHeight
   );
 
+  // Set the desired font size
+  const fontSize = 16; // Example: Set font size to 16
+  doc.setFontSize(fontSize);
   // Add text after the lines
   doc.text(
     centerX - textOffset,
@@ -444,6 +449,8 @@ const addVerticalLines = ({ doc, lineEndText = "" }) => {
       rotationDirection: 1,
     }
   ); // Text after the left line
+  // reset to previous  font
+  doc.setFontSize(7);
 };
 
 async function downloadMultipleCard({
@@ -490,7 +497,8 @@ async function downloadMultipleCard({
   let cardsPerPage = 10;
   let count = 1;
   let cardPositons = [];
-  addVerticalLines({ doc, lineEndText: `#${count}` });
+  let pageCount = 1;
+  // addVerticalLines({ doc, lineEndText: `#${count}` });
   createAFENameTLName({
     doc,
     feName: agentDetails?.name,
@@ -501,11 +509,11 @@ async function downloadMultipleCard({
   });
   cardsPerPage -= 1;
   x = xRightValue;
+  if (pageCount % 2 !== 0) {
+    addVerticalLines({ doc, lineEndText: `#${count}` });
+    pageCount += 1;
+  }
   caardImageData.forEach((url, index) => {
-    if (index % 2 !== 0) {
-      addVerticalLines({ doc });
-    }
-
     // adding card on page
     const imagePosition = addCardInDoc({ doc, dataUrl: url, x, y });
     cardPositons.push(imagePosition);
@@ -520,8 +528,9 @@ async function downloadMultipleCard({
         backSideImage: imageBackSideUrl,
         addNewPage: true,
         xRightValueMatchValue: xRightValue,
+        pageCount,
       });
-
+      pageCount += 1;
       cardsPerPage = 10;
       x = xPosition;
       y = yPosition;
@@ -534,7 +543,9 @@ async function downloadMultipleCard({
         backSideImage: imageBackSideUrl,
         addNewPage: false,
         xRightValueMatchValue: xRightValue,
+        pageCount,
       });
+      pageCount += 1;
     } else {
       if (x === xRightValue) {
         y += yIncrementValue;
@@ -545,14 +556,14 @@ async function downloadMultipleCard({
     }
   });
 
-  // doc.save(
-  //   `${tlDetails?.name?.replaceAll(" ", "_")}_${
-  //     agentDetails?.name
-  //       ? agentDetails?.name?.replaceAll(" ", "_")
-  //       : agentDetails?.id
-  //   }#${caardImageData.length}_${moment().format("DD_MMM_YYYY_hh_mm")}.pdf`
-  // );
-  preview({ pdfBlob: doc.output("blob") });
+  doc.save(
+    `${tlDetails?.name?.replaceAll(" ", "_")}_${
+      agentDetails?.name
+        ? agentDetails?.name?.replaceAll(" ", "_")
+        : agentDetails?.id
+    }#${caardImageData.length}_${moment().format("DD_MMM_YYYY_hh_mm")}.pdf`
+  );
+  // preview({ pdfBlob: doc.output("blob") });
   handleDownloadCompleted();
 }
 
@@ -597,7 +608,13 @@ async function downloadMultipleCardWithMultipleAgent({
   let pageLimit = 10;
   let cardPositons = [];
   let count = 1;
+  let pageCount = 1;
   let totalCardCount = 0;
+
+  if (pageCount % 2 !== 0) {
+    addVerticalLines({ doc, lineEndText: `#${count}` });
+    pageCount += 1;
+  }
 
   for (let i = 0; i < cardData.length; i++) {
     const element = cardData[i];
@@ -631,7 +648,9 @@ async function downloadMultipleCardWithMultipleAgent({
         backSideImage: imageBackSideUrl,
         xRightValueMatchValue: xRightValue,
         addNewPage: true,
+        pageCount,
       });
+      pageCount += 1;
       x = xPosition;
       y = yPosition;
       cardPositons = [];
@@ -659,7 +678,9 @@ async function downloadMultipleCardWithMultipleAgent({
           backSideImage: imageBackSideUrl,
           addNewPage: cardData.length - 1 !== i || cardUrl.length - 1 !== index,
           xRightValueMatchValue: xRightValue,
+          pageCount,
         });
+        pageCount += 1;
         x = xPosition;
         y = yPosition;
         cardPositons = [];
@@ -677,7 +698,9 @@ async function downloadMultipleCardWithMultipleAgent({
         backSideImage: imageBackSideUrl,
         xRightValueMatchValue: xRightValue,
         addNewPage: false,
+        pageCount,
       });
+      pageCount += 1;
     }
     // - loop completed putting last card now pageLimit is 0, then we have to add backImages.
     // - loop is done putting all card (which are less then 10 e.g - 6)

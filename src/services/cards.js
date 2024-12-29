@@ -49,7 +49,7 @@ async function getCardsData({
     total_showing = 0,
     total_print_card_showing = 0,
   } = await axiosUtil.get({
-    path: "cards",
+    path: "cards/get-cards",
     params: _payload,
   });
   if (status === "failed") {

@@ -143,7 +143,11 @@ const SettingsPage = () => {
 
     getAddress({
       type: "gramPanchayat",
-      params: { refId: tehsil._id, ...(showHidden && { showHidden }) },
+      params: {
+        refId: tehsil._id,
+        // isTeshilId: true,
+        ...(showHidden && { showHidden }),
+      },
     }).then((data) => {
       console.log("gram", data);
       if (data?.length) {

@@ -411,7 +411,7 @@ const CardComponent = () => {
       )}
 
       <img
-        src="/health-card-back.jpg"
+        src="/health-card-back.svg"
         ref={imageRef}
         alt="health back"
         style={{ display: "none" }}
