@@ -51,12 +51,12 @@ const ArogyamComponent = ({
         style={{
           position: "absolute",
           zIndex: 1,
-          fontSize: "8.5px",
+          fontSize: "8.4px",
           opacity: 0.3,
           width: "461px",
         }}
       >
-        {Array.from({ length: 22 }, (_, index) => (
+        {Array.from({ length: 23 }, (_, index) => (
           <p key={`water_mark_${index}`}>
             © 7ROGYAM HEALTHCARE PVT. LTD © 7ROGYAM HEALTHCARE PVT. LTD ©
             7ROGYAM HEALTHCARE PVT. LTD ©
@@ -277,7 +277,7 @@ const ArogyamComponent = ({
             width: "118px",
             right: "29px",
             zIndex: 2,
-            opacity: "0.8",
+            opacity: "0.5",
           }}
           className="water-mark"
         />
@@ -306,38 +306,43 @@ const ArogyamComponent = ({
           </div>
         )}
 
-        {cardData?.emergency_contact && (
-          <div className="emergence-contact">
-            <div>
-              <div style={{ fontSize: "10px", color: "Black" }}>
-                Emergency contact
-              </div>
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <img
-                  id={`${cardData._id}-phone-2`}
-                  src={images?.phone || "/v1cardImages/phone.png"}
-                  alt="Phone"
-                  style={{ width: "10px", height: "10px", marginRight: "5px" }}
-                />
+        {cardData?.emergency_contact &&
+          cardData.emergency_contact !== cardData.phone && (
+            <div className="emergence-contact">
+              <div>
+                <div style={{ fontSize: "10px", color: "Black" }}>
+                  Emergency contact
+                </div>
                 <div
                   style={{
-                    fontSize: "11px",
-                    fontWeight: 600,
-                    color: "red",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
                   }}
                 >
-                  {cardData.emergency_contact}
+                  <img
+                    id={`${cardData._id}-phone-2`}
+                    src={images?.phone || "/v1cardImages/phone.png"}
+                    alt="Phone"
+                    style={{
+                      width: "10px",
+                      height: "10px",
+                      marginRight: "5px",
+                    }}
+                  />
+                  <div
+                    style={{
+                      fontSize: "11px",
+                      fontWeight: 600,
+                      color: "red",
+                    }}
+                  >
+                    {cardData.emergency_contact}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
         {/* barcode */}
         <div className="barcode-container">

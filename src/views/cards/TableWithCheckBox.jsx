@@ -119,7 +119,7 @@ const TableWithCheckBox = ({
   return (
     <Grid container>
       <img
-        src="/health-card-back.svg"
+        src="/health-card-back.png"
         ref={imageRef}
         alt="health back"
         style={{ display: "none" }}

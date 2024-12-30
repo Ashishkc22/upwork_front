@@ -136,7 +136,7 @@
   font-weight: 600;
   color: #cc0000;
   left: 80px;
-  top: 18px;
+  top: 16px;
   z-index: 1;
 }
 
@@ -147,7 +147,7 @@
   font-weight: 600;
   color: white;
   left: 110px;
-  top: 18px;
+  top: 16px;
   z-index: 1;
 }
 
@@ -239,7 +239,8 @@
   position: absolute;
   font-size: 73.5%;
   left: 19px;
-  width: 100%
+  width: 100%;
+  z-index: 3;
 }
 
 .user-loc-2 {
@@ -247,7 +248,8 @@
   font-size: 73.5%;
   left: 19px;
   top: 33px;
-  width: 100%
+  width: 100%;
+  z-index: 3;
 
 }
 
