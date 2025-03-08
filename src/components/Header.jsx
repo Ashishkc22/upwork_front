@@ -93,6 +93,8 @@ const Header = memo(
     secondaryTotalDetails = {},
     showSecondaryScoreCard = false,
     apiCallBack,
+    pendingCount = 0,
+    handlePendingCardClick = () => {},
     // tehsilCounts = {},
     showStatusDropDown = true,
     statusOption = [],
@@ -722,6 +724,19 @@ const Header = memo(
 
             {showSecondaryScoreCard && (
               <>
+                <Divider
+                  orientation="vertical"
+                  flexItem
+                  sx={{ my: 3, mx: 2 }}
+                />
+                <ScoreCard
+                  value={pendingCount || 0}
+                  text="Pending Cards"
+                  bgcolor="#ffeee8"
+                  secondValue={0}
+                  isCardSelected={selectedCard === "pendingCards"}
+                  emitCardSelect={handlePendingCardClick}
+                />
                 <Divider
                   orientation="vertical"
                   flexItem

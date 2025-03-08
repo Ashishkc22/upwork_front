@@ -18,11 +18,12 @@ import supportImg from "../../v1cardImages/support.png";
 import locImg from "../../v1cardImages/loc.png";
 import phoneImg from "../../v1cardImages/phone.png";
 import cardLogoImg from "../../v1cardImages/cardLogo.png";
-import storageUtil from "../../utils/storage.util";
 import ExpandLess from "@mui/icons-material/ExpandLess";
 import ExpandMore from "@mui/icons-material/ExpandMore";
 import ListItemButton from "@mui/material/ListItemButton";
 import Collapse from "@mui/material/Collapse";
+import { isEmpty, isEqual, difference } from "lodash";
+import { useCardContext } from "./context/CardContext";
 // Storing all memoized components in an object
 const images = {
   waterMark: waterMarkImg,
@@ -38,8 +39,10 @@ function markAsPrint({ ids = [] }) {
 
 // Extra Elements
 const TableWithExtraElements = ({
-  groupName = "",
-  groupedData = {},
+  groupName = {},
+  cardCount = 0,
+  getCardsData,
+  feList = [],
   isImageMode,
   handleMultipleCheckBox,
   isDownloadCompleted = {},
@@ -54,40 +57,35 @@ const TableWithExtraElements = ({
   setIsCardDownload,
   handleMarkAsPrintApiCall,
 }) => {
+  const {
+    toBePrintedCards,
+    FEDetails,
+    currentActiveLocation,
+    setCurrentActiveLocation,
+    TLDetails,
+    getCardsByLocation,
+    allLocationUIDlist,
+  } = useCardContext();
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
-  const [districtCheckbox, setDistrictCheckbox] = useState(false);
-  const [tableCheckedBox, setTableCheckedBox] = useState({});
+  const [locationFEUidList, setLocationFEUidList] = useState([]); //For checkbox
+
   const [open, setOpen] = useState(false);
+  const [totalCardCount, setTotalCardCount] = useState({});
   const imageRef = useRef(null);
 
-  const getGroupDataLenght = () => {
-    return groupedData.reduce((value, data) => data.cardCount + value, 0);
-  };
-
+  // const getGroupDataLenght = () => {
+  //   return groupedData.reduce((value, data) => data.cardCount + value, 0);
+  // };
   useEffect(() => {
     if (isDownloadCompleted) {
-      setDistrictCheckbox(false);
-      if (groupedData.length) {
-        const newCheckedBox = {};
-        groupedData.forEach(
-          (cardData) => (newCheckedBox[cardData._id.createdBy] = false)
-        );
-        setTableCheckedBox(newCheckedBox);
-      }
+      setLocationFEUidList([]);
     }
   }, [isDownloadCompleted]);
 
-  useEffect(() => {
-    if (groupedData.length) {
-      const newCheckedBox = {};
-      groupedData.forEach(
-        (cardData) => (newCheckedBox[cardData._id.createdBy] = false)
-      );
-
-      setTableCheckedBox(newCheckedBox);
-    }
-  }, []);
+  const isCurrentGroupOpen = () =>
+    currentActiveLocation?.district === groupName.district &&
+    currentActiveLocation?.tehsil === groupName.tehsil;
 
   return (
     <Grid container sx={{ mx: 2 }} rowGap={2}>
@@ -109,58 +107,58 @@ const TableWithExtraElements = ({
             sx={{ background: colors.grey[100], px: 1 }}
             startIcon={
               <Checkbox
-                checked={districtCheckbox}
+                checked={
+                  isEmpty(locationFEUidList)
+                    ? false
+                    : allLocationUIDlist[
+                        `${groupName.district} ${groupName.tehsil}`
+                      ]?.every((k) => locationFEUidList.includes(k))
+                }
                 indeterminate={
-                  Object.entries(tableCheckedBox).every(
-                    ([key, value]) => value === true
-                  ) !=
-                  Object.entries(tableCheckedBox).some(
-                    ([key, value]) => value === true
-                  )
+                  isEmpty(locationFEUidList)
+                    ? false
+                    : !allLocationUIDlist[
+                        `${groupName.district} ${groupName.tehsil}`
+                      ]?.every((k) => locationFEUidList.includes(k))
                 }
               />
             }
             onClick={() => {
-              if (!districtCheckbox) {
-                handleMultipleCheckBox({
-                  type: "all",
-                  value: groupedData.map((d) => d._id.createdBy),
-                  groupName,
-                });
-
-                increaseDownloadCardCount(
-                  groupedData.reduce((total, cardData) => {
-                    if (tableCheckedBox[cardData._id.createdBy]) {
-                      return total;
+              if (
+                !toBePrintedCards[`${groupName.district} ${groupName.tehsil}`]
+              ) {
+                getCardsByLocation({ location: groupName, feList }).then(
+                  (data) => {
+                    const allCurrentKey = Object.keys(data).map(
+                      (k) => `${groupName.district} ${groupName.tehsil}/${k}`
+                    );
+                    if (isEmpty(locationFEUidList)) {
+                      setLocationFEUidList(allCurrentKey);
+                      increaseDownloadCardCount(cardCount);
+                    } else {
+                      increaseDownloadCardCount(-cardCount);
+                      setLocationFEUidList([]);
                     }
-                    return total + cardData.cardCount;
-                  }, 0)
+                    handleMultipleCheckBox(allCurrentKey);
+                  }
                 );
+              } else {
+                const allCurrentKey =
+                  allLocationUIDlist[
+                    `${groupName.district} ${groupName.tehsil}`
+                  ];
+                console.log("allCurrentKey", allCurrentKey);
+                if (isEmpty(locationFEUidList)) {
+                  setLocationFEUidList(allCurrentKey);
+                  increaseDownloadCardCount(cardCount);
+                } else {
+                  increaseDownloadCardCount(-cardCount);
+                  setLocationFEUidList([]);
+                }
+                handleMultipleCheckBox(allCurrentKey);
               }
-
-              if (!!districtCheckbox) {
-                handleMultipleCheckBox({ type: "all", value: [], groupName });
-                const unSelectedCount = groupedData.reduce(
-                  (total, cardData) => {
-                    if (!tableCheckedBox[cardData._id.createdBy]) {
-                      return total;
-                    }
-                    return total + cardData.cardCount;
-                  },
-                  0
-                );
-                increaseDownloadCardCount(-unSelectedCount);
-              }
-
-              // reset value
-              const newCheckedBox = {};
-              Object.keys(tableCheckedBox).forEach(
-                (key) => (newCheckedBox[key] = !districtCheckbox)
-              );
-              setTableCheckedBox(newCheckedBox);
-              setDistrictCheckbox(!districtCheckbox);
             }}
-          >{`${groupName} (Total: ${getGroupDataLenght()})`}</Button>
+          >{`${groupName.district} / ${groupName.tehsil} (Total: ${cardCount})`}</Button>
           <Tooltip title="Download full tehsil">
             <IconButton
               aria-label="Download full tehsil"
@@ -169,19 +167,40 @@ const TableWithExtraElements = ({
               }}
               onClick={() => {
                 setIsCardDownload(true);
-                const splitName = groupName.split("/");
-                const districtName = splitName[splitName.length - 1];
+                const downloadCardData = [];
+                Object.keys(
+                  toBePrintedCards?.[
+                    `${groupName.district} ${groupName.tehsil}`
+                  ]
+                ).forEach((key) => {
+                  const _FEDetails = FEDetails[key] || {};
+                  const _TLDetails = TLDetails[_FEDetails.team_leader_id] || {};
+                  const cards =
+                    toBePrintedCards[
+                      `${groupName.district} ${groupName.tehsil}`
+                    ][key] || [];
+                  debugger;
+                  downloadCardData.push({
+                    cards,
+                    teamLeaderDetails: [_TLDetails || {}],
+                    userDetails: _FEDetails,
+                    cardCount: cards.length,
+                  });
+                });
+                const districtName = groupName.district;
                 downloadCards.downloadMultipleCardWithMultipleAgent({
                   Element: ArogyamComponent,
-                  cardData: groupedData,
+                  cardData: downloadCardData,
                   secondaryImage: imageRef.current,
                   handleDownloadCompleted: () => {
                     const keys = {};
-                    groupedData.forEach((cardData) => {
-                      keys[`${groupName}/${cardData._id.createdBy}`] = true;
-                    });
+                    // toBePrintedCards?.[
+                    //   `${groupName.district} ${groupName.tehsil}`
+                    // ].forEach((cardData) => {
+                    //   keys[`${groupName}/${cardData._id.createdBy}`] = true;
+                    // });
                     setIsCardDownload(false);
-                    setIsDownloadCompleted({ [groupName]: true });
+                    // setIsDownloadCompleted({ [groupName]: true });
                     setMarkAsPrintPending((pre) => ({ ...pre, ...keys }));
                   },
                   images: images,
@@ -193,7 +212,7 @@ const TableWithExtraElements = ({
             </IconButton>
           </Tooltip>
 
-          {groupedData.every((feData) =>
+          {/* {groupedData.every((feData) =>
             Object.keys(markAsPrintPending).includes(
               `${groupName}/${feData.userDetails.uid}`
             )
@@ -239,71 +258,75 @@ const TableWithExtraElements = ({
                 MARK PRINTED
               </Typography>
             </Button>
-          )}
+          )} */}
         </Box>
         <ListItemButton
           sx={{ mr: 4, justifyContent: "end" }}
-          onClick={() => setOpen(!open)}
+          onClick={() => {
+            if (!isCurrentGroupOpen()) {
+              getCardsData(groupName, feList);
+              setCurrentActiveLocation(groupName);
+            } else {
+              setCurrentActiveLocation({});
+            }
+          }}
         >
-          {open ? <ExpandLess /> : <ExpandMore />}
+          {isCurrentGroupOpen() ? <ExpandLess /> : <ExpandMore />}
         </ListItemButton>
       </Grid>
       <Grid item xs={12}>
-        <Collapse in={open} timeout="auto">
-          {groupedData.map((feCards, index) => {
+        <Collapse in={isCurrentGroupOpen()} timeout="auto">
+          {Object.keys(
+            toBePrintedCards?.[`${groupName.district} ${groupName.tehsil}`] ||
+              {}
+          )?.map((feUidKey, index) => {
             // const groupByDistrict = groupedData[key];
+            console.log("isCurrentGroupOpen()", isCurrentGroupOpen());
+            console.log("currentActiveLocation", currentActiveLocation);
+            console.log("groupName", groupName);
+            // console.log("FEDetails", FEDetails);
+            // console.log("feUidKey", feUidKey);
             const firtsData = {
-              created_by_uid: feCards.userDetails.uid,
-              created_by_name: feCards.userDetails.name,
+              created_by_uid: FEDetails[feUidKey].uid,
+              created_by_name: FEDetails[feUidKey].name,
             };
-            const key = feCards._id.createdBy;
-
+            const key = feUidKey;
             // const dataLength = groupedData[key].length;
             return (
               <TableWithCheckBox
-                key={feCards.uid + index + firtsData.created_by_uid}
+                key={feUidKey + index}
                 firtsData={firtsData}
-                dataLength={feCards.cardCount}
+                dataLength={
+                  toBePrintedCards?.[
+                    `${groupName.district} ${groupName.tehsil}`
+                  ][feUidKey].length
+                }
                 colors={colors}
-                groupedData={feCards.cards}
-                id={feCards._id.location}
+                groupedData={
+                  toBePrintedCards?.[
+                    `${groupName.district} ${groupName.tehsil}`
+                  ][feUidKey]
+                }
+                id={feUidKey}
                 actions={[]}
-                isCheckBoxChecked={tableCheckedBox[key]}
-                tlDetails={feCards.teamLeaderDetails[0]}
+                isCheckBoxChecked={locationFEUidList.includes(
+                  `${groupName.district} ${groupName.tehsil}/${feUidKey}`
+                )}
+                tlDetails={TLDetails[FEDetails[feUidKey].team_leader_id]}
                 checkBoxClicked={(id, value) => {
-                  handleMultipleCheckBox({
-                    type: value ? "add" : "remove",
-                    value: key,
-                    groupName,
-                  });
-                  let isEveryValueFalse = true;
-                  groupedData.forEach((lockey) => {
-                    if (key != lockey._id.createdBy) {
-                      isEveryValueFalse =
-                        !tableCheckedBox[lockey._id.createdBy];
-                    } else {
-                      isEveryValueFalse = !value;
+                  const key = `${groupName.district} ${groupName.tehsil}/${id}`;
+                  setLocationFEUidList((prev) => {
+                    if (!prev.includes(key)) {
+                      const newArray = [...prev];
+                      newArray.push(key);
+                      return newArray;
+                    } else if (!value && prev.includes(key)) {
+                      const newArray = prev.filter((k) => k !== key);
+                      return newArray;
                     }
+                    return prev;
                   });
-                  if (isEveryValueFalse) {
-                    setDistrictCheckbox(false);
-                  }
-
-                  let isEveryValueTrue = false;
-                  groupedData.forEach((lockey) => {
-                    if (key != lockey._id.createdBy) {
-                      isEveryValueTrue = tableCheckedBox[lockey._id.createdBy];
-                    } else {
-                      isEveryValueTrue = value;
-                    }
-                  });
-                  if (isEveryValueTrue) {
-                    setDistrictCheckbox(true);
-                  }
-                  setTableCheckedBox({
-                    ...tableCheckedBox,
-                    [key]: value,
-                  });
+                  handleMultipleCheckBox([key]);
                 }}
                 highlightedRow={highlightedRow}
                 handleMenuSelect={handleMenuSelect}
@@ -313,7 +336,9 @@ const TableWithExtraElements = ({
                 increaseDownloadCardCount={increaseDownloadCardCount}
                 setMarkAsPrintPending={setMarkAsPrintPending}
                 markAsPrintPending={markAsPrintPending}
-                handleSort={handleSort}
+                handleSort={(data) => {
+                  handleSort({ ...data, location: groupName, feUid: feUidKey });
+                }}
                 setIsCardDownload={setIsCardDownload}
                 groupName={groupName}
                 handleMarkAsPrintApiCall={handleMarkAsPrintApiCall}

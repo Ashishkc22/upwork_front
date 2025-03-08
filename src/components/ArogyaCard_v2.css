@@ -19,7 +19,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  top: 28px;
+  top: 23px;
   /* left: 79px; */
   right: 157px;
   z-index: 1;
@@ -27,7 +27,7 @@
 @media print {
   .circle-container {
     box-shadow: inset 0 0 0px #ffffff36, inset 0 6px 5px #4f4f4f30,
-      inset 0 0px 0px #ffffff00;
+      inset 0 0px 0px #c9101000;
     position: absolute;
     width: 44px;
     height: 44px;
@@ -114,7 +114,7 @@
   font-size: 14px !important;
   color: #1191d0;
   position: absolute;
-  left: 33px;
+  left: 39px;
 }
 
 .fill-container {
@@ -136,7 +136,7 @@
   font-weight: 600;
   color: #cc0000;
   left: 80px;
-  top: 16px;
+  top: 21px;
   z-index: 1;
 }
 
@@ -147,7 +147,7 @@
   font-weight: 600;
   color: white;
   left: 110px;
-  top: 16px;
+  top: 21px;
   z-index: 1;
 }
 

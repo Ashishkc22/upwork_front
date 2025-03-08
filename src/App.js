@@ -16,7 +16,9 @@ import InfoHospital from "./views/hospitals/InfoHospital";
 import FieldExecutives from "./views/field_executives/FieldExecutives";
 import UserInfo from "./views/field_executives/UserInfo";
 import Settings from "./views/settings/Settings";
-import RouteWrapper from "./components/RedirectionMonitor";
+import Users from "./views/users/Users";
+import CustomerDetails from "./views/users/CustomerDetails";
+import { CardContextProvider } from "./views/cards/context/CardContext";
 import Bin from "./views/bin/Bin";
 // import { loadFontFromCache, cacheGoogleFont } from "./utils/cache.util";
 
@@ -95,14 +97,31 @@ function App() {
           <Route element={<Protected />}>
             <Route element={<HomeLayout />}>
               <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/cards" element={<Cards />} />
-              <Route path="/cards/:id" element={<InfoCard />} />
+              <Route
+                path="/cards"
+                element={
+                  <CardContextProvider>
+                    <Cards />
+                  </CardContextProvider>
+                }
+              />
+
+              <Route
+                path="/cards/:id"
+                element={
+                  <CardContextProvider>
+                    <InfoCard />
+                  </CardContextProvider>
+                }
+              />
               <Route path="/hospitals" element={<HospitalPage />} />
               <Route path="/hospitals/:id" element={<InfoHospital />} />
               <Route path="/field-executives" element={<FieldExecutives />} />
               <Route path="/field-executives/:id" element={<UserInfo />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/bin" element={<Bin />} />
+              <Route path="/users" element={<Users />} />
+              <Route path="/users/:id" element={<CustomerDetails />} />
             </Route>
           </Route>
           <Route path="*" element={<PageNotFound />} />

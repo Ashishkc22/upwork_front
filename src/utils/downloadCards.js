@@ -115,7 +115,7 @@ function addCardBackSideImage({
   xRightValueMatchValue = 112,
   xRightValue = 114,
   xOffset = 0,
-  yOffset = 1,
+  yOffset = 2,
   pageCount = 0,
 }) {
   doc.addPage();

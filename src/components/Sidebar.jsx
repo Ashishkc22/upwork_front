@@ -8,6 +8,7 @@ import Typography from "@mui/material/Typography";
 import Divider from "@mui/material/Divider";
 import IconButton from "@mui/material/IconButton";
 import MenuIcon from "@mui/icons-material/Menu";
+import PeopleOutlineIcon from '@mui/icons-material/PeopleOutline';
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import cookiesUtil from "../utils/cookies.util";
 import ListItem from "@mui/material/ListItem";
@@ -166,6 +167,12 @@ const navList = [
     allowedRole: ["ADMIN"],
   },
   {
+    title: "Users",
+    icon: <PeopleOutlineIcon />,
+    path: "users",
+    allowedRole: ["ADMIN"],
+  },
+  {
     title: "Settings",
     icon: <SettingsOutlinedIcon />,
     path: "settings",
@@ -177,6 +184,7 @@ const navList = [
     path: "/",
     allowedRole: ["ADMIN", "SUBADMIN"],
   },
+  
 ];
 
 export default function MiniDrawer() {

@@ -1,5 +1,15 @@
 import React, { useEffect, useState, useRef } from "react";
-import { Grid, Typography, Button, Box, Link } from "@mui/material";
+import {
+  Grid,
+  Typography,
+  Button,
+  Box,
+  Link,
+  Card,
+  TablePagination,
+} from "@mui/material";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import DownloadIcon from "@mui/icons-material/Download";
 import Checkbox from "@mui/material/Checkbox";
 import CustomTable from "../../components/CustomTable";
@@ -19,6 +29,7 @@ import locImg from "../../v1cardImages/loc.png";
 import phoneImg from "../../v1cardImages/phone.png";
 import cardLogoImg from "../../v1cardImages/cardLogo.png";
 import { isEmpty } from "lodash";
+import { useCardContext } from "./context/CardContext";
 
 // Storing all memoized components in an object
 const images = {
@@ -27,6 +38,46 @@ const images = {
   loc: locImg,
   phone: phoneImg,
   logo: cardLogoImg,
+};
+
+const customPrevioudButton = (porps) => {
+  return (
+    <span>
+      <Button
+        {...porps}
+        sx={{ mx: 1 }}
+        name="FirstPage"
+        // disabled={currentPage == 0}
+        size="small"
+        variant="standard"
+        startIcon={<ArrowBackIcon />}
+      >
+        First page
+      </Button>
+      <Button
+        {...porps}
+        sx={{ mx: 1 }}
+        size="small"
+        variant="standard"
+        startIcon={<ArrowBackIcon />}
+      >
+        Previous
+      </Button>
+    </span>
+  );
+};
+const customNextButton = (porps) => {
+  return (
+    <Button
+      {...porps}
+      sx={{ mx: 1 }}
+      size="small"
+      variant="standard"
+      startIcon={<ArrowForwardIcon />}
+    >
+      Next
+    </Button>
+  );
 };
 
 function markAsPrint({ ids = [] }) {
@@ -76,6 +127,11 @@ const TableWithCheckBox = ({
   handleMarkAsPrintApiCall,
   // highlightedRow,
 }) => {
+  const {
+    paginationData,
+    paginationCardCount = {},
+    getCardsForSingleTableByLocation,
+  } = useCardContext();
   const [checkBox, setCheckBox] = useState(false);
   const navigate = useNavigate();
   const [isDownloadCompleted, setIsDownloadCompleted] = useState(false);
@@ -113,6 +169,10 @@ const TableWithCheckBox = ({
   };
 
   useEffect(() => {
+    console.log("paginationCardCount", paginationCardCount);
+  }, [paginationCardCount]);
+
+  useEffect(() => {
     setCheckBox(isCheckBoxChecked);
     setPageCount(getPageCount(groupedData.length));
   }, [isCheckBoxChecked]);
@@ -140,6 +200,7 @@ const TableWithCheckBox = ({
             container
             justifyContent="space-between"
             onClick={() => {
+              console.log("dataLength", dataLength);
               if (!checkBox) {
                 increaseDownloadCardCount(dataLength);
               } else {
@@ -152,7 +213,14 @@ const TableWithCheckBox = ({
             <Grid item>
               <Checkbox
                 checked={checkBox}
-                onChange={() => {
+                onClick={(e) => {
+                  e.stopPropagation();
+                  console.log("dataLength", dataLength);
+                  if (!checkBox) {
+                    increaseDownloadCardCount(dataLength);
+                  } else {
+                    increaseDownloadCardCount(-dataLength);
+                  }
                   setCheckBox(!checkBox);
                   checkBoxClicked(id, !checkBox);
                 }}
@@ -210,6 +278,7 @@ const TableWithCheckBox = ({
                 onClick={(e) => {
                   e.stopPropagation();
                   setIsCardDownload(true);
+                  console.log("tlDetails---------", tlDetails);
                   downloadCards.downloadMultipleCard({
                     cardData: groupedData,
                     Element: ArogyamComponent,
@@ -297,7 +366,7 @@ const TableWithCheckBox = ({
           })}
         </Box>
       ) : (
-        <Grid item xs={12} sx={{ mb: 3 }}>
+        <Grid item xs={12}>
           <CustomTable
             headers={tableHeaders}
             rows={groupedData}
@@ -311,6 +380,58 @@ const TableWithCheckBox = ({
           />
         </Grid>
       )}
+
+      <Card sx={{ width: "100vw", mb: 3 }}>
+        <TablePagination
+          component="div"
+          count={
+            paginationCardCount?.[
+              [`${groupName.district} ${groupName.tehsil}`]
+            ]?.[firtsData?.created_by_uid]
+          }
+          page={
+            paginationData?.[`${groupName.district} ${groupName.tehsil}`]?.[
+              firtsData?.created_by_uid
+            ]?.page
+          }
+          rowsPerPage={100}
+          rowsPerPageOptions={[]}
+          labelRowsPerPage={""}
+          labelDisplayedRows={({ from, to, count }) => {
+            return `${to} of ${count !== -1 ? count : `more than ${to}`}`;
+          }}
+          onPageChange={(e, newPage) => {
+            console.log("e", e.target);
+            console.log("e", e.target.name);
+            if (e?.target?.name === "FirstPage") {
+              newPage = 0;
+            }
+            getCardsForSingleTableByLocation({
+              location: groupName,
+              pagination: { page: newPage, limit: 100 },
+              feUid: firtsData?.created_by_uid,
+            });
+            // if (!!Object.keys(markAsPrintPending)?.length) {
+            //   alert(
+            //     "Some cards are downloaded but not marked as Printed, Are you sure to proceed?"
+            //   );
+            // }
+            // const searchParams = new URLSearchParams(
+            //   window.location.search
+            // ).get("tab");
+            // storageUtil.setStorageData(
+            //   0,
+            //   `${location.pathname}-${searchParams}`
+            // );
+          }}
+          slots={{
+            actions: {
+              nextButton: customNextButton,
+              previousButton: customPrevioudButton,
+            },
+          }}
+        />
+      </Card>
     </Grid>
   );
 };

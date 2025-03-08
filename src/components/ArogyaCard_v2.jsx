@@ -56,7 +56,7 @@ const ArogyamComponent = ({
           width: "461px",
         }}
       >
-        {Array.from({ length: 23 }, (_, index) => (
+        {Array.from({ length: 21 }, (_, index) => (
           <p key={`water_mark_${index}`}>
             © 7ROGYAM HEALTHCARE PVT. LTD © 7ROGYAM HEALTHCARE PVT. LTD ©
             7ROGYAM HEALTHCARE PVT. LTD ©
@@ -77,12 +77,12 @@ const ArogyamComponent = ({
         }}
       >
         <div className="support-header">
-          <div style={{ position: "relative", top: "8px" }}>
+          <div style={{ position: "relative", top: "8px", opacity: "0.7" }}>
             <img
               id={`${cardData._id}-support`}
               src={images?.support || "/v1cardImages/support.png"}
               alt="support"
-              style={{ width: "40px", height: "40px" }}
+              style={{ width: "40px" }}
               className="support-image"
             />
           </div>
@@ -105,7 +105,7 @@ const ArogyamComponent = ({
                   width: "92.7%",
                   height: "105%",
                   background: "rgb(253, 163, 48)",
-                  clipPath: "ellipse(70.6% 95% at 70% -1%)",
+                  clipPath: "ellipse(70.6% 85% at 70% -1%)",
                   top: "-3px",
                   left: "26.8px",
                 }}
@@ -118,7 +118,7 @@ const ArogyamComponent = ({
                 width: "100%",
                 height: "100%",
                 background: "#fda330",
-                clipPath: "ellipse(61% 92% at 73% 7%)",
+                clipPath: "ellipse(61% 80% at 73% 7%)",
                 zIndex: 1,
               }}
             ></div>
@@ -166,14 +166,18 @@ const ArogyamComponent = ({
             <div style={{ color: "#666666", fontSize: "9px" }}>
               {isIndividual() ? "Name" : "Primary menber"}
             </div>
-            <div>{cardData.name}</div>
+            <div style={{ width: "max-content" }}>
+              {charLimit(cardData.name, 50)}
+            </div>
           </div>
           {isIndividual() ? (
             <div className="text-group">
               <div style={{ color: "#666666", fontSize: "9px" }}>
                 Father/Husband
               </div>
-              <div> {cardData.father_husband_name}</div>
+              <div style={{ width: "max-content" }}>
+                {charLimit(cardData.father_husband_name, 28)}
+              </div>
             </div>
           ) : (
             <div className="text-group" style={{ width: "300px" }}>
@@ -274,8 +278,9 @@ const ArogyamComponent = ({
           src={images?.waterMark || "/v1cardImages/waterMark.svg"}
           alt="Watermark"
           style={{
-            width: "118px",
-            right: "29px",
+            width: "97px",
+            right: "53px",
+            top: "108px",
             zIndex: 2,
             opacity: "0.5",
           }}

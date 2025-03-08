@@ -44,6 +44,7 @@ import Slide from "@mui/material/Slide";
 import useScrollTrigger from "@mui/material/useScrollTrigger";
 import CssBaseline from "@mui/material/CssBaseline";
 import bin from "../../services/bin";
+import { useCardContext } from "./context/CardContext";
 
 // // Storing all memoized components in an object
 const images = {
@@ -53,6 +54,16 @@ const images = {
   phone: phoneImg,
   logo: cardLogoImg,
 };
+
+const cardStatusList = [
+  { label: "SUBMITTED" },
+  { label: "PRINTED" },
+  { label: "UNDELIVERED" },
+  { label: "DELIVERED" },
+  { label: "DISCARDED" },
+  { label: "RTO" },
+  { label: "PENDING" },
+];
 
 let useEffectTypingTimer;
 let lastScrollValue = 0;
@@ -77,40 +88,31 @@ const tableHeaders = [
   { label: "", key: "ACTION" },
 ];
 
-const actions = [
-  // {
-  //   label: "Download",
-  //   icon: <DownloadIcon />,
-  //   smallIcon: <DownloadIcon sx={{ fontSize: "18px !important", p: 0 }} />,
-  //   handler: (row) => {
-  //     downloadCards.downloadSingleCard({
-  //       Element: (
-  //         <ArogyamComponent showCardTag cardData={row} images={images} />
-  //       ),
-  //       cardData: row,
-  //     });
-  //   },
-  // },
-  // {
-  //   label: "Reprint",
-  //   icon: <PrintIcon />,
-  //   smallIcon: <PrintIcon sx={{ fontSize: "18px !important" }} />,
-  //   // handler: (row) => console.log("Download row:", row),
-  // },
-  // Add more actions as needed
-];
-
 const Cards = () => {
+  const {
+    FEDetails,
+    TLDetails,
+    getCardsByLocation,
+    setCurrentActiveLocation,
+    toBePrintedCards,
+    setTablesPagination,
+    getTobePrinntedCards,
+    updateFilters,
+    cardLocationTagData,
+    getCardsForSingleTableByLocation,
+    totalCardsAndToBePrinted,
+    setTotalCardsAndToBePrinted,
+  } = useCardContext();
   const [userDropdownOptions, setUserDropdownOptions] = useState([]);
-  const [totalCardsAndToBePrinted, setTotalCardsAndToBePrinted] = useState({
-    totalCards: 0,
-    toBePrinted: 0,
-  });
+  // const [totalCardsAndToBePrinted, setTotalCardsAndToBePrinted] = useState({
+  //   totalCards: 0,
+  //   toBePrinted: 0,
+  // });
   const [cardsDataGroupedBy, setCardsDataGroupBy] = useState({});
   const [totalCardsData, setTotalCardsData] = useState([]);
   const [selectedCard, setSelectedCard] = useState("");
   const [status, setStatus] = useState(null);
-  const [downloadCardMaps, setDownloadCardMaps] = useState({});
+  const [downloadCardMaps, setDownloadCardMaps] = useState([]);
   const [isDownloadCompleted, setIsDownloadCompleted] = useState({});
   const [downloadCardCount, setDownloadCardCount] = useState(0);
   const [tehsilCounts, setTehsilCounts] = useState({});
@@ -129,6 +131,12 @@ const Cards = () => {
   const [apiPayload, setApiPayload] = useState({});
   const [rowPerPage, setRowPerPage] = useState(100);
   const [scroll, setScrolly] = useState(window.scrollY);
+  const [cardDataBylocation, setCardsDataByLocation] = useState({});
+
+  useEffect(
+    () => console.log("downloadCardMaps", downloadCardMaps),
+    [downloadCardMaps]
+  );
 
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
@@ -150,66 +158,18 @@ const Cards = () => {
   };
 
   const handleMultipleCheckBox = (data) => {
-    if (data.type == "all") {
-      setDownloadCardMaps((pre) => {
-        if (!data.value.length) {
-          delete pre[data.groupName];
-          return pre;
-        }
-        return {
-          ...pre,
-          [data.groupName]: data.value,
-        };
-      });
-    }
-    if (data.type == "add") {
-      setDownloadCardMaps((pre) => {
-        const newObject = [].concat(pre?.[data.groupName] || []);
-        newObject.push(data.value);
-        return {
-          ...pre,
-          [data.groupName]: newObject,
-        };
-      });
-    }
-    if (data.type == "remove") {
-      // setDownloadCardMaps((pre) => {
-      //   const tempObj = { ...downloadCardMaps };
-      //   let newObject = [].concat(downloadCardMaps?.[data.groupName] || []);
-      //   newObject = newObject.filter((key) => key != data.value);
-      //   if (!newObject.length) {
-      //     delete tempObj[data.groupName];
-      //     return {
-      //       ...tempObj,
-      //     };
-      //   } else {
-      //     return {
-      //       ...pre,
-      //       [data.groupName]: newObject,
-      //     };
-      //   }
-      // });
-
-      setDownloadCardMaps((prev) => {
-        // Destructure the previous state
-        const { [data.groupName]: groupItems = [], ...rest } = prev;
-
-        // Filter out the selected value
-        const updatedGroupItems = groupItems.filter(
-          (key) => key !== data.value
-        );
-
-        // If the updated group is empty, remove it; otherwise, update the group
-        if (updatedGroupItems.length === 0) {
-          return rest; // Remove the group entirely
-        }
-
-        return {
-          ...prev,
-          [data.groupName]: updatedGroupItems, // Update with the filtered group
-        };
-      });
-    }
+    const removeKey = [];
+    const addKeys = [];
+    data.forEach((k) => {
+      if (downloadCardMaps.includes(k)) {
+        removeKey.push(k);
+      } else {
+        addKeys.push(k);
+      }
+    });
+    setDownloadCardMaps((prv) => {
+      return addKeys.concat(prv.filter((k) => !removeKey.includes(k)));
+    });
   };
 
   const increaseDownloadCardCount = (value) => {
@@ -229,6 +189,18 @@ const Cards = () => {
     }
   };
 
+  const getCardByLocation = async (location, feList) => {
+    try {
+      if (toBePrintedCards[`${location.district} ${location.tehsil}`]) {
+        return;
+      }
+      getCardsByLocation({ location, feList });
+      // setCardsDataByLocation((prev) => ({ ...prev, [location]: data }));
+    } catch (error) {
+      console.log("error", error);
+    }
+  };
+
   const getTableData = async ({
     search = null,
     state = null,
@@ -243,15 +215,8 @@ const Cards = () => {
     sortBy,
     _isPrintMode,
   } = {}) => {
-    // fetch cards data
     const cId = urlDateType.get("createdById");
-    // const tab = urlDateType.get("tab");
     const page = Number(urlDateType.get("page"));
-    console.log("..............Card api triggered.........");
-
-    // if (urlDateType.get("sortType") && !sortBy) {
-    //   sortBy = "status";
-    // };
 
     if (page > 0) {
       setPage(page);
@@ -303,7 +268,7 @@ const Cards = () => {
       setIsPageLoading(true);
       let data;
       if (selectedCard === "toBePrinted") {
-        data = await cards.getToBePrintedCards({
+        const filterData = {
           ...(_status && { _status }),
           ...(urlDateType.get("status") && {
             _status: urlDateType.get("status"),
@@ -324,10 +289,24 @@ const Cards = () => {
           ...((created_by || cId) && { created_by: created_by || cId }),
           ...(till_duration && { till_duration }),
           selectedCard,
-        });
+        };
+        // data = await getTobePrinntedCards();
+        console.log("------FILTER UPDATED-----");
+        updateFilters({ filterData });
+        // data = await cards.getToBePrintedCards(filterData);
+        // setTablesPagination(data?.groupedData);
+        // if (data && !isEmpty(data?.groupedData)) {
+        //   setCurrentActiveLocation(data.groupedData[0]._id);
+        //   getCardsByLocation({
+        //     location: data.groupedData[0]._id,
+        //     feList: data.groupedData[0].createByUids,
+        //   });
+        // }
+        console.log("data-------", data);
       } else {
         data = await cards.getCardsData({
-          ...(selectedCard === "totalCards" && {
+          ...((selectedCard === "totalCards" ||
+            selectedCard === "pendingCards") && {
             _status: _status,
           }),
           ...(selectedCard === "toBePrinted" && { _status: "SUBMITTED" }),
@@ -349,13 +328,13 @@ const Cards = () => {
           storageUtil.setStorageData(data.idList, "cards_ids");
         }
         if (selectedCard === "toBePrinted") {
-          setCardsDataGroupBy(() => data.groupedData);
-          setTotalCardsAndToBePrinted({
-            totalCards: data.totalCards,
-            toBePrinted: data.totalPrintedCards,
-            totalPrintCardsShowing: data.totalPrintCardsShowing,
-            totalShowing: data.totalShowing,
-          });
+          // setCardsDataGroupBy(() => data.groupedData);
+          // setTotalCardsAndToBePrinted({
+          //   totalCards: data.totalCards,
+          //   toBePrinted: data.totalPrintedCards,
+          //   totalPrintCardsShowing: data.totalPrintCardsShowing,
+          //   totalShowing: data.totalShowing,
+          // });
           setRowPerPage(data.total_documents_per_page);
         } else {
           setTotalCardsData(() => data.groupedData);
@@ -367,6 +346,7 @@ const Cards = () => {
           toBePrinted: data.totalPrintedCards,
           totalPrintCardsShowing: data.totalPrintCardsShowing,
           totalShowing: data.totalShowing,
+          pendingCardCount: data.pendingCardCount,
         });
         setPageCount(data?.totalShowing);
         setCurrentPage(parseInt(data?.page_number || 0));
@@ -401,11 +381,23 @@ const Cards = () => {
     setUserDropdownOptions(userList);
   };
 
-  const handleSort = ({ colName, type }) => {
+  const handleSort = ({ colName, type, location, feUid }) => {
     if (type === "des") {
       getTableData({ sortBy: colName });
     } else {
       getTableData({});
+    }
+    addDataToURL({ sortType: type === "des" ? "des" : "" });
+  };
+
+  const handleToBePrintedSort = ({ colName, type, location, feUid }) => {
+    if (type === "des") {
+      console.log("SORT location", location);
+      console.log("SORT feUid", feUid);
+
+      getCardsForSingleTableByLocation({ location, feUid, sortBy: colName });
+    } else {
+      getCardsForSingleTableByLocation({ location, feUid });
     }
     addDataToURL({ sortType: type === "des" ? "des" : "" });
   };
@@ -441,23 +433,45 @@ const Cards = () => {
     // setIsDownloadCompleted
 
     let keys = [];
+
     console.log("downloadCardMaps", downloadCardMaps);
-
-    Object.keys(downloadCardMaps).forEach((groupName) => {
-      const selectedCardData = [];
+    console.log("toBePrintedCards", toBePrintedCards);
+    downloadCardMaps.forEach((groupName) => {
+      const [locationName, FEUID] = groupName.split("/");
+      const _FEDetails = FEDetails[FEUID] || {};
+      const _TLDetails = TLDetails[_FEDetails.team_leader_id] || {};
+      if (cardsToDownload[locationName.replace(" ", "/")]) {
+        cardsToDownload[locationName.replace(" ", "/")].push({
+          cards: toBePrintedCards[locationName][FEUID],
+          teamLeaderDetails: [_TLDetails || {}],
+          userDetails: _FEDetails,
+          cardCount: toBePrintedCards[locationName][FEUID].length,
+        });
+      } else {
+        debugger;
+        cardsToDownload[locationName.replace(" ", "/")] = [];
+        cardsToDownload[locationName.replace(" ", "/")].push({
+          cards: toBePrintedCards[locationName][FEUID],
+          teamLeaderDetails: [_TLDetails || {}],
+          userDetails: _FEDetails,
+          cardCount: toBePrintedCards[locationName][FEUID].length,
+        });
+      }
       _isDownloadCompleted[groupName] = true;
-      keys = downloadCardMaps[groupName]
-        .map((a) => `${groupName}/${a}`)
-        .concat(keys);
-      const searchedData = cardsDataGroupedBy.find((d) => d._id === groupName);
+      // const selectedCardData = [];
+      // _isDownloadCompleted[groupName] = true;
+      // keys = downloadCardMaps[groupName]
+      //   .map((a) => `${groupName}/${a}`)
+      //   .concat(keys);
+      // const searchedData = cardsDataGroupedBy.find((d) => d._id === groupName);
 
-      searchedData.cards.forEach((FEData) => {
-        const key = FEData._id.createdBy;
-        if (downloadCardMaps[groupName].includes(key)) {
-          _isDownloadCompleted[key] = true;
-          selectedCardData.push(FEData);
-        }
-      });
+      // searchedData.cards.forEach((FEData) => {
+      //   const key = FEData._id.createdBy;
+      //   if (downloadCardMaps[groupName].includes(key)) {
+      //     _isDownloadCompleted[key] = true;
+      //     selectedCardData.push(FEData);
+      //   }
+      // });
       // searchedData[groupName].forEach((cardData) => {
 
       //   if (downloadCardMaps[groupName].includes(key)) {
@@ -465,50 +479,34 @@ const Cards = () => {
       //     selectedCardData.push(cardData);
       //   }
       // });
-      cardsToDownload[groupName] = selectedCardData;
+      // cardsToDownload[groupName] = selectedCardData;
     });
-    console.log("cardsToDownload", cardsToDownload);
 
     const markAsPending = {};
-    console.log("keys", keys);
+    console.log("cardsToDownload", cardsToDownload);
 
-    keys.forEach((key) => {
-      markAsPending[key] = true;
-    });
-    setMarkAsPrintPending((pre) => ({ ...pre, ...markAsPending }));
+    // keys.forEach((key) => {
+    //   markAsPending[key] = true;
+    // });
+    // setMarkAsPrintPending((pre) => ({ ...pre, ...markAsPending }));
     downloadCards.downloadMultipleLevelCardData({
       Element: ArogyamComponent,
       cardData: cardsToDownload,
       downloadCompleted: () => {
         setIsCardDownload(false);
+        setDownloadCardMaps([]);
+        setDownloadCardCount(0);
         setIsDownloadCompleted(_isDownloadCompleted);
       },
       images: images,
       secondaryImage: imageRef.current,
     });
-    setIsPaginationEnabled(true);
-    setDownloadCardMaps({});
-    setDownloadCardCount(0);
+    // setIsPaginationEnabled(true);
   };
 
   useEffect(() => {
-    // if (!isEmpty(cardsDataGroupedBy)) {
     getUsersList();
-    // }
   }, []);
-
-  // useEffect(() => {
-  //   const urls = setURLFilters();
-  //   common.getAddressData().then((states) => {
-  //     setStateDropdownOptions(states);
-  //     if (urls?.stateId) {
-  //       const _state = states?.find((state) => urls?.stateId === state._id);
-  //       if (_state) {
-  //         setState(_state);
-  //       }
-  //     }
-  //   });
-  // }, []);
 
   const handleMarkAsPrintApiCall = () => {
     const _search = urlDateType.get("search");
@@ -527,12 +525,14 @@ const Cards = () => {
     const _search = urlDateType.get("search");
     const sortType = urlDateType.get("sortType");
     const tab = urlDateType.get("tab");
-
+    const status = urlDateType.get("status");
+    console.log("status&&&&&&", status);
     clearTimeout(useEffectTypingTimer);
     useEffectTypingTimer = setTimeout(() => {
       console.log("----getTableData api");
       getTableData({
         ...apiPayload,
+        _status: status,
         _page: page,
         search: _search,
         sortBy: sortType ? "status" : null,
@@ -562,9 +562,6 @@ const Cards = () => {
   }, [selectedCard, page]);
 
   const customPrevioudButton = (porps) => {
-    console.log("porps", porps.onClick);
-    console.log("porps", porps);
-
     return (
       <span>
         <Button
@@ -623,7 +620,7 @@ const Cards = () => {
       setNavData({ value: n, filterObjects });
     } else {
       setPage(0);
-      setDownloadCardMaps({});
+      setDownloadCardMaps([]);
       setDownloadCardCount(0);
       if (n != urlDateType.get("tab") || byPass) {
         addDataToURL({ page: "" });
@@ -663,7 +660,6 @@ const Cards = () => {
   };
 
   useEffect(() => {
-    console.log("markAsPrintPending", markAsPrintPending);
     if (!isEmpty(markAsPrintPending)) {
       storageUtil.setStorageData(markAsPrintPending, "markAsPrintedData");
     }
@@ -731,20 +727,23 @@ const Cards = () => {
                 text: "To Be Printed",
                 name: "toBePrinted",
               }}
+              pendingCount={totalCardsAndToBePrinted.pendingCardCount}
+              handlePendingCardClick={() => {
+                addDataToURL({ tab: "pendingCards", status: "PENDING" });
+                setSelectedCard("pendingCards");
+              }}
               showPrintMode={selectedCard === "toBePrinted"}
-              {...(selectedCard === "totalCards" && {
+              {...((selectedCard === "totalCards" ||
+                selectedCard === "pendingCards") && {
                 statusOption: isEmpty(statusCount)
-                  ? [
-                      { label: "SUBMITTED" },
-                      { label: "PRINTED" },
-                      { label: "UNDELIVERED" },
-                      { label: "DELIVERED" },
-                      { label: "DISCARDED" },
-                      { label: "RTO" },
-                    ]
-                  : Object.keys(statusCount).map((k) => ({
-                      label: `${k} (${statusCount[k]})`,
-                    })),
+                  ? cardStatusList
+                  : cardStatusList.map((labelData) => {
+                      return {
+                        label: `${labelData.label} (${
+                          statusCount[labelData.label] || 0
+                        })`,
+                      };
+                    }),
               })}
               defaultSelectedCard="toBePrinted"
               pSelectedCard={selectedCard}
@@ -796,26 +795,6 @@ const Cards = () => {
           </div>
         </Slide>
       </Grid>
-      {/* {selectedCard === "toBePrinted" && (
-        <Box sx={{ m: 1 }} display="flex" flexDirection="row-reverse">
-          <Button
-            variant="contained"
-            sx={{
-              backgroundColor: isPrintMode ? "#FFA500" : "#FFFFFF", // Orange for active, Gray for inactive
-              color: isPrintMode ? "#FFFFFF" : "#FFA500", // Adjust text color based on the state
-              "&:hover": {
-                backgroundColor: isPrintMode ? "#e59400" : "#f0f0f0", // Slightly darker shade for hover effect
-              },
-            }}
-            onClick={() => {
-              addDataToURL({ isPrintMode: !isPrintMode });
-              setIsPrintMode((p) => !p);
-            }}
-          >
-            {isPrintMode ? "Exit Print Mode" : "Enter Print Mode"}
-          </Button>
-        </Box>
-      )} */}
       <Box>
         <Backdrop
           sx={(theme) => ({
@@ -830,7 +809,7 @@ const Cards = () => {
         {totalCardsData && (
           <>
             {selectedCard === "toBePrinted" ? (
-              isEmpty(cardsDataGroupedBy) ? (
+              isEmpty(cardLocationTagData) ? (
                 <Box
                   sx={{
                     display: "flex",
@@ -847,12 +826,15 @@ const Cards = () => {
                 </Box>
               ) : (
                 <Grid item sx={{ my: 1, mr: 2 }}>
-                  {cardsDataGroupedBy.map((data, index) => {
+                  {/* {JSON.stringify(cardLocationTagData)} */}
+                  {cardLocationTagData.map((data, index) => {
                     return (
                       <TableWithExtraElements
-                        key={data._id + index}
+                        key={`${data?._id?.district}/${data?._id?.tehsil}/${index}`}
                         groupName={data._id}
-                        groupedData={data.cards}
+                        cardCount={data?.count}
+                        getCardsData={getCardByLocation}
+                        feList={data.createByUids}
                         isImageMode={isImageMode}
                         handleMultipleCheckBox={handleMultipleCheckBox}
                         isDownloadCompleted={isDownloadCompleted}
@@ -863,7 +845,7 @@ const Cards = () => {
                         setIsPaginationEnabled={setIsPaginationEnabled}
                         setMarkAsPrintPending={setMarkAsPrintPending}
                         markAsPrintPending={markAsPrintPending}
-                        handleSort={handleSort}
+                        handleSort={handleToBePrintedSort}
                         setIsCardDownload={setIsCardDownload}
                         handleMarkAsPrintApiCall={handleMarkAsPrintApiCall}
                       />
@@ -893,7 +875,7 @@ const Cards = () => {
                 <CustomTable
                   headers={tableHeaders}
                   rows={totalCardsData}
-                  actions={actions}
+                  actions={[]}
                   rowClick={handleRowClick}
                   handleMenuSelect={handleMenuSelect}
                   highlightedRow={highlightedRow}
@@ -906,65 +888,70 @@ const Cards = () => {
           </>
         )}
 
-        <Card
-          sx={{
-            position: "fixed",
-            bottom: "1px",
-            mx: 2,
-            width: "fit-content",
-            right: "1px",
-            zIndex: 10,
-          }}
-        >
-          <TablePagination
-            component="div"
-            count={pageCount || 0}
-            page={currentPage || 0}
-            // disabled={
-            //   selectedCard === "toBePrinted"
-            //     ? !!Object.keys(markAsPrintPending)?.length
-            //     : false
-            // }
-            rowsPerPageOptions={[...(rowPerPage != 100 ? [rowPerPage] : [100])]}
-            rowsPerPage={rowPerPage}
-            labelRowsPerPage={""}
-            labelDisplayedRows={({ from, to, count }) => {
-              if (selectedCard === "toBePrinted") {
-                return `${rowPerPage} of ${
-                  count !== -1 ? count : `more than ${to}`
-                }`;
-              }
-              return `${to} of ${count !== -1 ? count : `more than ${to}`}`;
+        {selectedCard !== "toBePrinted" && (
+          <Card
+            sx={{
+              position: "fixed",
+              bottom: "1px",
+              mx: 2,
+              width: "fit-content",
+              right: "1px",
+              zIndex: 10,
             }}
-            onPageChange={(e, newPage) => {
-              if (
-                selectedCard === "toBePrinted"
-                  ? !!Object.keys(markAsPrintPending)?.length
-                  : false
-              ) {
-                alert(
-                  "Some cards are downloaded but not marked as Printed, Are you sure to proceed?"
+          >
+            <TablePagination
+              component="div"
+              count={pageCount || 0}
+              page={currentPage || 0}
+              // disabled={
+              //   selectedCard === "toBePrinted"
+              //     ? !!Object.keys(markAsPrintPending)?.length
+              //     : false
+              // }
+              rowsPerPageOptions={[
+                ...(rowPerPage != 100 ? [rowPerPage] : [100]),
+              ]}
+              rowsPerPage={rowPerPage}
+              labelRowsPerPage={""}
+              labelDisplayedRows={({ from, to, count }) => {
+                if (selectedCard === "toBePrinted") {
+                  return `${rowPerPage} of ${
+                    count !== -1 ? count : `more than ${to}`
+                  }`;
+                }
+                return `${to} of ${count !== -1 ? count : `more than ${to}`}`;
+              }}
+              onPageChange={(e, newPage) => {
+                console.log("page change", newPage);
+                if (
+                  selectedCard === "toBePrinted"
+                    ? !!Object.keys(markAsPrintPending)?.length
+                    : false
+                ) {
+                  alert(
+                    "Some cards are downloaded but not marked as Printed, Are you sure to proceed?"
+                  );
+                }
+                const searchParams = new URLSearchParams(
+                  window.location.search
+                ).get("tab");
+                storageUtil.setStorageData(
+                  0,
+                  `${location.pathname}-${searchParams}`
                 );
-              }
-              const searchParams = new URLSearchParams(
-                window.location.search
-              ).get("tab");
-              storageUtil.setStorageData(
-                0,
-                `${location.pathname}-${searchParams}`
-              );
-              addDataToURL({ page: newPage });
-              setPage(newPage);
-            }}
-            onRowsPerPageChange={() => {}}
-            slots={{
-              actions: {
-                nextButton: customNextButton,
-                previousButton: customPrevioudButton,
-              },
-            }}
-          />
-        </Card>
+                addDataToURL({ page: newPage });
+                setPage(newPage);
+              }}
+              onRowsPerPageChange={() => {}}
+              slots={{
+                actions: {
+                  nextButton: customNextButton,
+                  previousButton: customPrevioudButton,
+                },
+              }}
+            />
+          </Card>
+        )}
       </Box>
     </Grid>
   );

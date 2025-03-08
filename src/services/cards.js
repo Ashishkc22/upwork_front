@@ -48,6 +48,7 @@ async function getCardsData({
     total = 0,
     total_showing = 0,
     total_print_card_showing = 0,
+    pendingCardCount = 0,
   } = await axiosUtil.get({
     path: "cards/get-cards",
     params: _payload,
@@ -76,6 +77,7 @@ async function getCardsData({
         idList,
         statusCount,
         page_number,
+        pendingCardCount,
         // tehsilCounts,
       };
     }
@@ -238,8 +240,9 @@ async function getToBePrintedCards({
     total_showing = 0,
     total_print_card_showing = 0,
     total_documents_per_page,
+    pendingCardCount = 0,
   } = await axiosUtil.get({
-    path: "cards/to-be-printed",
+    path: "cards/get-available-card-locations",
     params: _payload,
   });
   if (status === "failed") {
@@ -255,7 +258,65 @@ async function getToBePrintedCards({
       tehsilCounts: tehsilCount,
       page_number,
       total_documents_per_page,
+      pendingCardCount,
     };
+  }
+}
+
+async function getCardDataByLocation({
+  _paginationData,
+  location,
+  filterData = {},
+} = {}) {
+  const _payload = {
+    // _paginationData,
+    ...filterData,
+    district: location.district,
+    tehsil: location.tehsil,
+  };
+  const {
+    data,
+    status = "",
+    paginationData = {},
+  } = await axiosUtil.get({
+    path: "cards/get-cards-data-by-location",
+    params: _payload,
+  });
+  if (status === "failed") {
+    return { status, error: "Failed to get cards", data: [] };
+  } else if (!isEmpty(data)) {
+    return { data, paginationData, status };
+  }
+}
+async function getSingleFECardsByLocation({
+  filterData,
+  page = 0,
+  limit = 100,
+  location,
+  feUid,
+  sortBy = "",
+} = {}) {
+  const _payload = {
+    ...filterData,
+    ...(sortBy && { sortBy: { status_updated_at: -1 } }),
+    page,
+    limit,
+    feUid,
+    district: location.district,
+    tehsil: location.tehsil,
+  };
+  const {
+    data,
+    status = "",
+    paginationData = {},
+  } = await axiosUtil.get({
+    path: "cards/get-cards-data",
+    params: _payload,
+  });
+  if (status === "failed") {
+    return { status, error: "Failed to get cards", data: [] };
+  } else if (!isEmpty(data)) {
+    return { data, paginationData, status };
   }
 }
 
@@ -493,4 +554,6 @@ export default {
   markAsPrint,
   getUsersList,
   getToBePrintedCards,
+  getCardDataByLocation,
+  getSingleFECardsByLocation,
 };

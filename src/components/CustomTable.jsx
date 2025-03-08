@@ -203,6 +203,7 @@ const DynamicTable = ({
                 sx={{
                   ":hover": { background: "#f3f3f3a1" },
                   ...(row?._id === highlightedRow && { background: "#d1efd1" }),
+                  ...(row?.isDuplicate && { background: "#fcf9b7" }),
                 }}
               >
                 {headers.map((keymap, cellIndex) => (
