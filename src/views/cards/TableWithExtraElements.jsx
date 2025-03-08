@@ -24,6 +24,7 @@ import ListItemButton from "@mui/material/ListItemButton";
 import Collapse from "@mui/material/Collapse";
 import { isEmpty, isEqual, difference } from "lodash";
 import { useCardContext } from "./context/CardContext";
+import storageUtil from "../../utils/storage.util";
 // Storing all memoized components in an object
 const images = {
   waterMark: waterMarkImg,
@@ -65,6 +66,7 @@ const TableWithExtraElements = ({
     TLDetails,
     getCardsByLocation,
     allLocationUIDlist,
+    getTobePrinntedCards,
   } = useCardContext();
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
@@ -171,7 +173,7 @@ const TableWithExtraElements = ({
                 Object.keys(
                   toBePrintedCards?.[
                     `${groupName.district} ${groupName.tehsil}`
-                  ]
+                  ] || {}
                 ).forEach((key) => {
                   const _FEDetails = FEDetails[key] || {};
                   const _TLDetails = TLDetails[_FEDetails.team_leader_id] || {};
@@ -212,9 +214,12 @@ const TableWithExtraElements = ({
             </IconButton>
           </Tooltip>
 
-          {/* {groupedData.every((feData) =>
+          {Object.keys(
+            toBePrintedCards?.[`${groupName.district} ${groupName.tehsil}`] ||
+              {}
+          ).every((feUiD) =>
             Object.keys(markAsPrintPending).includes(
-              `${groupName}/${feData.userDetails.uid}`
+              `${groupName.district} / ${groupName.tehsil}/${feUiD}`
             )
           ) && (
             <Button
@@ -222,13 +227,19 @@ const TableWithExtraElements = ({
                 e.stopPropagation();
                 let ids = [];
                 let keys = [];
-                const [firsttableData] = groupedData;
                 // keys.push(firsttableData._id.location);
-                groupedData.forEach((data) => {
+                Object.keys(
+                  toBePrintedCards?.[
+                    `${groupName.district} ${groupName.tehsil}`
+                  ] || {}
+                ).forEach((feUid) => {
                   keys.push(
-                    `${firsttableData._id.location}/${data.userDetails.uid}`
+                    `${groupName.district} / ${groupName.tehsil}/${feUid}`
                   );
-                  const cards = data.cards;
+                  const cards =
+                    toBePrintedCards?.[
+                      `${groupName.district} ${groupName.tehsil}`
+                    ][feUid];
                   ids = [...ids, ...cards.map((a) => a._id)];
                 });
                 setMarkAsPrintPending((pre) => {
@@ -240,8 +251,8 @@ const TableWithExtraElements = ({
                 });
                 markAsPrint({ ids }).then(() => {
                   setIsDownloadCompleted({});
-                  handleMarkAsPrintApiCall();
-                  storageUtil.removeItem("markAsPrintedData");
+                  getTobePrinntedCards();
+                  // storageUtil.removeItem("markAsPrintedData");
                 });
               }}
             >
@@ -258,7 +269,7 @@ const TableWithExtraElements = ({
                 MARK PRINTED
               </Typography>
             </Button>
-          )} */}
+          )}
         </Box>
         <ListItemButton
           sx={{ mr: 4, justifyContent: "end" }}

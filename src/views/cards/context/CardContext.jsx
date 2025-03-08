@@ -127,6 +127,9 @@ export const CardContextProvider = ({ children }) => {
           const newObject = {
             ...prev,
           };
+          if (!newObject[`${location.district} ${location.tehsil}`]) {
+            newObject[`${location.district} ${location.tehsil}`] = {};
+          }
           newObject[`${location.district} ${location.tehsil}`][feUid] =
             response.data;
           return newObject;
@@ -288,6 +291,7 @@ export const CardContextProvider = ({ children }) => {
         setSortData,
         totalCardsAndToBePrinted,
         setTotalCardsAndToBePrinted,
+        getUsersByUID,
       }}
     >
       {children}

@@ -102,6 +102,7 @@ const Cards = () => {
     getCardsForSingleTableByLocation,
     totalCardsAndToBePrinted,
     setTotalCardsAndToBePrinted,
+    getUsersByUID,
   } = useCardContext();
   const [userDropdownOptions, setUserDropdownOptions] = useState([]);
   // const [totalCardsAndToBePrinted, setTotalCardsAndToBePrinted] = useState({
@@ -361,6 +362,26 @@ const Cards = () => {
       setTimeout(() => {
         const markAsPrinted = storageUtil.getStorageData("markAsPrintedData");
         if (markAsPrinted) {
+          const locationAndFE = [];
+          const FE = [];
+          Object.keys(markAsPrinted).forEach((k) => {
+            const location = {
+              district: k.split("/")[0].trim(),
+              tehsil: k.split("/")[1].trim(),
+            };
+            const feUid = k.split("/")[2].trim();
+            locationAndFE.push({
+              location,
+              feUid,
+            });
+            FE.push(feUid);
+          });
+          getUsersByUID({ feList: FE }).then(() =>
+            locationAndFE.forEach((data) =>
+              getCardsForSingleTableByLocation(data)
+            )
+          );
+
           setMarkAsPrintPending(markAsPrinted);
         }
         restoreScroll();
@@ -440,6 +461,8 @@ const Cards = () => {
       const [locationName, FEUID] = groupName.split("/");
       const _FEDetails = FEDetails[FEUID] || {};
       const _TLDetails = TLDetails[_FEDetails.team_leader_id] || {};
+      console.log("locationName", locationName);
+      keys.push(`${locationName.replace(" ", " / ")}/${FEUID}`);
       if (cardsToDownload[locationName.replace(" ", "/")]) {
         cardsToDownload[locationName.replace(" ", "/")].push({
           cards: toBePrintedCards[locationName][FEUID],
@@ -448,7 +471,6 @@ const Cards = () => {
           cardCount: toBePrintedCards[locationName][FEUID].length,
         });
       } else {
-        debugger;
         cardsToDownload[locationName.replace(" ", "/")] = [];
         cardsToDownload[locationName.replace(" ", "/")].push({
           cards: toBePrintedCards[locationName][FEUID],
@@ -457,6 +479,7 @@ const Cards = () => {
           cardCount: toBePrintedCards[locationName][FEUID].length,
         });
       }
+      console.log("keys", keys);
       _isDownloadCompleted[groupName] = true;
       // const selectedCardData = [];
       // _isDownloadCompleted[groupName] = true;
@@ -483,12 +506,10 @@ const Cards = () => {
     });
 
     const markAsPending = {};
-    console.log("cardsToDownload", cardsToDownload);
-
-    // keys.forEach((key) => {
-    //   markAsPending[key] = true;
-    // });
-    // setMarkAsPrintPending((pre) => ({ ...pre, ...markAsPending }));
+    keys.forEach((key) => {
+      markAsPending[key] = true;
+    });
+    setMarkAsPrintPending((pre) => ({ ...pre, ...markAsPending }));
     downloadCards.downloadMultipleLevelCardData({
       Element: ArogyamComponent,
       cardData: cardsToDownload,
