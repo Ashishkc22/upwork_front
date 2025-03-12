@@ -203,7 +203,7 @@ const DynamicTable = ({
                 sx={{
                   ":hover": { background: "#f3f3f3a1" },
                   ...(row?._id === highlightedRow && { background: "#d1efd1" }),
-                  ...(row?.isDuplicate && { background: "#fcf9b7" }),
+                  ...(row?.isDuplicate && { background: "#ef9393" }),
                 }}
               >
                 {headers.map((keymap, cellIndex) => (
@@ -240,6 +240,7 @@ const DynamicTable = ({
               sx={{
                 mb: 1,
                 ...(row?._id === highlightedRow && { background: "#d1efd1" }),
+                ...(row?.isDuplicate && { background: "#ef9393" }),
               }}
             >
               <AccordionSummary

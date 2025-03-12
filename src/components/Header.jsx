@@ -668,12 +668,7 @@ const Header = memo(
     }, []);
 
     return (
-      <Grid
-        container
-        alignItems="center"
-        justifyContent="space-between"
-        sx={{ mx: 1 }}
-      >
+      <Grid container alignItems="center" sx={{ mx: 1, columnGap: "2px" }}>
         {/* Score Cards on the left */}
         <Grid item>
           <Grid container alignItems="center">
@@ -813,297 +808,298 @@ const Header = memo(
             )}
           </Grid>
         </Grid>
-
         {/* Search and other fields on the right */}
         <Grid item>
-          <Grid container alignItems="center">
-            <Box
-              sx={{
-                mx: 1,
-                width: {
-                  lg: 420,
-                  md: 270,
-                  sm: 200,
-                  xs: 130,
-                },
-              }}
-            >
-              <SearchTextinput
-                onLoadFocus={
-                  showSecondaryScoreCard && selectedCard === "totalCards"
-                }
-                value={searchTerm}
-                setSearchTerm={setSearchTerm}
-                emitSearchChange={handleSearch}
+          {/* <Grid container alignItems="center"> */}
+          <Box
+            sx={{
+              mx: 1,
+              width: {
+                lg: 400,
+                md: 270,
+                sm: 200,
+                xs: 130,
+              },
+            }}
+          >
+            <SearchTextinput
+              onLoadFocus={
+                showSecondaryScoreCard && selectedCard === "totalCards"
+              }
+              value={searchTerm}
+              setSearchTerm={setSearchTerm}
+              emitSearchChange={handleSearch}
+            />
+          </Box>
+        </Grid>
+        <Grid item>
+          {showState && (
+            <Box sx={{ mx: 1, minWidth: 130 }}>
+              <Autocomplete
+                disableClearable
+                options={stateOption}
+                value={state}
+                getOptionLabel={(option) => option.name}
+                onChange={() => {
+                  addDataToURL({ sortType: "" });
+                  emitStateChange();
+                }}
+                renderInput={(params) => (
+                  <TextField {...params} label="State" variant="standard" />
+                )}
               />
             </Box>
-
-            {showState && (
-              <Box sx={{ mx: 1, minWidth: 130 }}>
-                <Autocomplete
-                  disableClearable
-                  options={stateOption}
-                  value={state}
-                  getOptionLabel={(option) => option.name}
-                  onChange={() => {
-                    addDataToURL({ sortType: "" });
-                    emitStateChange();
-                  }}
-                  renderInput={(params) => (
-                    <TextField {...params} label="State" variant="standard" />
-                  )}
-                />
-              </Box>
-            )}
-
-            {!isEmpty(districtOption) && (
-              <Box sx={{ mx: 1, minWidth: 130 }}>
-                <Autocomplete
-                  disableClearable
-                  options={districtOption}
-                  value={district}
-                  getOptionLabel={(option) => option.name}
-                  onChange={emitDistrictChange}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="District"
-                      variant="standard"
-                    />
-                  )}
-                />
-              </Box>
-            )}
-
-            {!isEmpty(tehsilOption) && showTehsil && (
-              <Box sx={{ mx: 1, minWidth: 130 }}>
-                <Autocomplete
-                  disableClearable
-                  value={tehsil}
-                  options={tehsilOption.map((option) => {
-                    let label = option.name;
-                    // if (!isEmpty(tehsilCounts)) {
-                    // const obKey = tehsilCounts || {};
-                    label = `${option.name}(${option?.count || 0})`;
-                    // }
-                    return {
-                      ...option,
-                      label,
-                    };
-                  })}
-                  getOptionLabel={(option) => option.name}
-                  onChange={emitTehsilChange}
-                  renderOption={(props, option) => {
-                    const { key, ...optionProps } = props;
-                    return (
-                      <Box
-                        key={key}
-                        sx={{ p: "3px", display: "block" }}
-                        {...optionProps}
-                      >
-                        <Grid container>
-                          <Typography fontSize={12} fontWeight={500}>
-                            {option.label}
-                          </Typography>
-                        </Grid>
-                      </Box>
-                    );
-                  }}
-                  renderInput={(params) => (
-                    <TextField {...params} label="Tehsil" variant="standard" />
-                  )}
-                />
-              </Box>
-            )}
-
-            {!isEmpty(gramOption) && showGram && (
-              <Box sx={{ mx: 1, minWidth: 160 }}>
-                <Autocomplete
-                  options={gramOption.map((option) => {
-                    return {
-                      ...option,
-                      label: `${option.name},${option.grampanchayat_name}`,
-                    };
-                  })}
-                  disableClearable
-                  value={gram}
-                  getOptionLabel={(option) => option.label}
-                  onChange={emitGramChange}
-                  renderInput={(params) => (
-                    <TextField {...params} label="Gram" variant="standard" />
-                  )}
-                />
-              </Box>
-            )}
-
-            {showType && (
-              <Box sx={{ mx: 1, minWidth: 140 }}>
-                <Autocomplete
-                  options={categoryOption}
-                  disableClearable
-                  value={category}
-                  // {...(!isEmpty(status) && { value: status })}
-                  getOptionLabel={(option) => option.name}
-                  onChange={(e, newValue, value) => {
-                    setCategory(newValue || null);
-                    addDataToURL({ category: newValue?.name });
-                    addInChipList(newValue?.name, "category");
-                  }}
-                  renderInput={(params) => (
-                    <TextField {...params} label="Type" variant="standard" />
-                  )}
-                />
-              </Box>
-            )}
-
-            {showStatusDropDown && !isEmpty(statusOption) && (
-              <Box sx={{ mx: 1, minWidth: 140 }}>
-                <Autocomplete
-                  options={statusOption}
-                  value={status}
-                  disableClearable
-                  getOptionLabel={(option) => option.label}
-                  onChange={(e, newValue) => {
-                    setStatus(newValue);
-                    addDataToURL({ status: newValue.label });
-                    addInChipList(newValue?.label, "status");
-                  }}
-                  renderInput={(params) => (
-                    <TextField {...params} label="Status" variant="standard" />
-                  )}
-                />
-              </Box>
-            )}
-
-            {!isEmpty(createdByOptions) && (
-              <Box sx={{ mx: 1, minWidth: 130 }}>
-                <Autocomplete
-                  disableClearable
-                  options={createdByOptions.map((option) => {
-                    const { labelKey, codeKey } = createdByKeyMap;
-                    return {
-                      ...option,
-                      label: option[labelKey],
-                      ...(codeKey && { code: option[codeKey] }),
-                    };
-                  })}
-                  value={createdBy}
-                  onChange={emitCreatedByChange}
-                  renderOption={(props, option) => {
-                    const { key, ...optionProps } = props;
-                    return (
-                      <Box
-                        key={option._id}
-                        sx={{ p: "3px", display: "block" }}
-                        {...optionProps}
-                      >
-                        <Grid container>
-                          <Typography fontSize={12} fontWeight={500}>
-                            {option.label}
-                          </Typography>
-                          {option.code && (
-                            <Typography
-                              fontSize={12}
-                              fontWeight={500}
-                              color="#000000b0"
-                            >
-                              ({`#${option.code}`})
-                            </Typography>
-                          )}
-                        </Grid>
-                        {option?.count && (
-                          <Typography fontSize={12} fontWeight={500}>
-                            {" ("}
-                            {option.count}
-                            {")"}
+          )}
+        </Grid>
+        <Grid item>
+          {!isEmpty(districtOption) && (
+            <Box sx={{ mx: 1, minWidth: 130 }}>
+              <Autocomplete
+                disableClearable
+                options={districtOption}
+                value={district}
+                getOptionLabel={(option) => option.name}
+                onChange={emitDistrictChange}
+                renderInput={(params) => (
+                  <TextField {...params} label="District" variant="standard" />
+                )}
+              />
+            </Box>
+          )}
+        </Grid>
+        <Grid item>
+          {!isEmpty(tehsilOption) && showTehsil && (
+            <Box sx={{ mx: 1, minWidth: 130 }}>
+              <Autocomplete
+                disableClearable
+                value={tehsil}
+                options={tehsilOption.map((option) => {
+                  let label = option.name;
+                  // if (!isEmpty(tehsilCounts)) {
+                  // const obKey = tehsilCounts || {};
+                  label = `${option.name}(${option?.count || 0})`;
+                  // }
+                  return {
+                    ...option,
+                    label,
+                  };
+                })}
+                getOptionLabel={(option) => option.name}
+                onChange={emitTehsilChange}
+                renderOption={(props, option) => {
+                  const { key, ...optionProps } = props;
+                  return (
+                    <Box
+                      key={key}
+                      sx={{ p: "3px", display: "block" }}
+                      {...optionProps}
+                    >
+                      <Grid container>
+                        <Typography fontSize={12} fontWeight={500}>
+                          {option.label}
+                        </Typography>
+                      </Grid>
+                    </Box>
+                  );
+                }}
+                renderInput={(params) => (
+                  <TextField {...params} label="Tehsil" variant="standard" />
+                )}
+              />
+            </Box>
+          )}
+        </Grid>
+        <Grid item>
+          {!isEmpty(gramOption) && showGram && (
+            <Box sx={{ mx: 1, minWidth: 160 }}>
+              <Autocomplete
+                options={gramOption.map((option) => {
+                  return {
+                    ...option,
+                    label: `${option.name},${option.grampanchayat_name}`,
+                  };
+                })}
+                disableClearable
+                value={gram}
+                getOptionLabel={(option) => option.label}
+                onChange={emitGramChange}
+                renderInput={(params) => (
+                  <TextField {...params} label="Gram" variant="standard" />
+                )}
+              />
+            </Box>
+          )}
+        </Grid>{" "}
+        <Grid item>
+          {showType && (
+            <Box sx={{ mx: 1, minWidth: 140 }}>
+              <Autocomplete
+                options={categoryOption}
+                disableClearable
+                value={category}
+                // {...(!isEmpty(status) && { value: status })}
+                getOptionLabel={(option) => option.name}
+                onChange={(e, newValue, value) => {
+                  setCategory(newValue || null);
+                  addDataToURL({ category: newValue?.name });
+                  addInChipList(newValue?.name, "category");
+                }}
+                renderInput={(params) => (
+                  <TextField {...params} label="Type" variant="standard" />
+                )}
+              />
+            </Box>
+          )}
+        </Grid>
+        <Grid item>
+          {showStatusDropDown && !isEmpty(statusOption) && (
+            <Box sx={{ mx: 1, minWidth: 140 }}>
+              <Autocomplete
+                options={statusOption}
+                value={status}
+                disableClearable
+                getOptionLabel={(option) => option.label}
+                onChange={(e, newValue) => {
+                  setStatus(newValue);
+                  addDataToURL({ status: newValue.label });
+                  addInChipList(newValue?.label, "status");
+                }}
+                renderInput={(params) => (
+                  <TextField {...params} label="Status" variant="standard" />
+                )}
+              />
+            </Box>
+          )}
+        </Grid>
+        <Grid item>
+          {!isEmpty(createdByOptions) && (
+            <Box sx={{ mx: 1, minWidth: 130 }}>
+              <Autocomplete
+                disableClearable
+                options={createdByOptions.map((option) => {
+                  const { labelKey, codeKey } = createdByKeyMap;
+                  return {
+                    ...option,
+                    label: option[labelKey],
+                    ...(codeKey && { code: option[codeKey] }),
+                  };
+                })}
+                value={createdBy}
+                onChange={emitCreatedByChange}
+                renderOption={(props, option) => {
+                  const { key, ...optionProps } = props;
+                  return (
+                    <Box
+                      key={option._id}
+                      sx={{ p: "3px", display: "block" }}
+                      {...optionProps}
+                    >
+                      <Grid container>
+                        <Typography fontSize={12} fontWeight={500}>
+                          {option.label}
+                        </Typography>
+                        {option.code && (
+                          <Typography
+                            fontSize={12}
+                            fontWeight={500}
+                            color="#000000b0"
+                          >
+                            ({`#${option.code}`})
                           </Typography>
                         )}
-                      </Box>
-                    );
-                  }}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="Created By"
-                      variant="standard"
-                    />
-                  )}
-                />
-              </Box>
+                      </Grid>
+                      {option?.count && (
+                        <Typography fontSize={12} fontWeight={500}>
+                          {" ("}
+                          {option.count}
+                          {")"}
+                        </Typography>
+                      )}
+                    </Box>
+                  );
+                }}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Created By"
+                    variant="standard"
+                  />
+                )}
+              />
+            </Box>
+          )}
+        </Grid>
+        <Grid item>
+          <Box
+            sx={{
+              mx: 1,
+              minWidth: 130,
+              display: "inline-flex",
+            }}
+          >
+            <CustomDateRangePicker
+              open={dateType === "CUSTOM" && isDatePickerOpened}
+              onClose={handleCloseDialog}
+              onApply={handleApply}
+            />
+            <CustomDatePicker
+              open={dateType === "CUSTOM DATE" && isDatePickerOpened}
+              onClose={handleCloseDialog}
+              onApply={handleApply}
+            />
+
+            <FormControl variant="standard" fullWidth sx={{}}>
+              <InputLabel id="duration-select-label">Duration</InputLabel>
+              <Select
+                value={dateType}
+                labelId="duration-select-label"
+                id="duration-select"
+              >
+                <MenuItem
+                  value={null}
+                  onClick={() => emitDurationChange({ value: null })}
+                >
+                  none
+                </MenuItem>
+                {durationOptions.map((option, index) => (
+                  <MenuItem
+                    key={index}
+                    value={option}
+                    onClick={() => emitDurationChange({ value: option })}
+                  >
+                    {option}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Box>
+        </Grid>
+        <Grid item>
+          <Box sx={{ mx: 1 }}>
+            {showMode && (
+              <IconButton
+                onClick={() => {
+                  setIsImageMode(!isImageMode);
+                  handleViewChange();
+                }}
+                color="primary"
+                aria-label="table"
+              >
+                {isImageMode ? (
+                  <ViewModuleIcon></ViewModuleIcon>
+                ) : (
+                  <TableChartIcon />
+                )}
+              </IconButton>
             )}
 
-            <Box
-              sx={{
-                mx: 1,
-                minWidth: 130,
-                display: "inline-flex",
-              }}
-            >
-              <CustomDateRangePicker
-                open={dateType === "CUSTOM" && isDatePickerOpened}
-                onClose={handleCloseDialog}
-                onApply={handleApply}
-              />
-              <CustomDatePicker
-                open={dateType === "CUSTOM DATE" && isDatePickerOpened}
-                onClose={handleCloseDialog}
-                onApply={handleApply}
-              />
-
-              <FormControl variant="standard" fullWidth sx={{}}>
-                <InputLabel id="duration-select-label">Duration</InputLabel>
-                <Select
-                  value={dateType}
-                  labelId="duration-select-label"
-                  id="duration-select"
-                >
-                  <MenuItem
-                    value={null}
-                    onClick={() => emitDurationChange({ value: null })}
-                  >
-                    none
-                  </MenuItem>
-                  {durationOptions.map((option, index) => (
-                    <MenuItem
-                      key={index}
-                      value={option}
-                      onClick={() => emitDurationChange({ value: option })}
-                    >
-                      {option}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Box>
-
-            <Box sx={{ mx: 1 }}>
-              {showMode && (
-                <IconButton
-                  onClick={() => {
-                    setIsImageMode(!isImageMode);
-                    handleViewChange();
-                  }}
-                  color="primary"
-                  aria-label="table"
-                >
-                  {isImageMode ? (
-                    <ViewModuleIcon></ViewModuleIcon>
-                  ) : (
-                    <TableChartIcon />
-                  )}
-                </IconButton>
-              )}
-
-              <IconButton
-                onClick={() => {}}
-                color="primary"
-                aria-label="refresh"
-              >
-                <RefreshIcon onClick={() => triggerAPICallback()} />
-              </IconButton>
-            </Box>
-          </Grid>
+            <IconButton onClick={() => {}} color="primary" aria-label="refresh">
+              <RefreshIcon onClick={() => triggerAPICallback()} />
+            </IconButton>
+          </Box>
+          {/* </Grid> */}
         </Grid>
+        {/* Filter display chips */}
         <Grid
           item
           xs={12}
