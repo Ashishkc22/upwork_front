@@ -236,14 +236,18 @@ const EditCardDialog = ({ open, onClose, data, mode = "Edit" }) => {
           if (!data.error) {
             onClose(true);
           }
-        });
+        })
+        .catch(() => {});
     } else {
       const newFormData = removeEmptyValues(formData);
-      hospitals.addHospital({ formData: newFormData }).then((data) => {
-        if (!data.error) {
-          onClose(true);
-        }
-      });
+      hospitals
+        .addHospital({ formData: newFormData })
+        .then((data) => {
+          if (!data.error) {
+            onClose(true);
+          }
+        })
+        .catch(() => {});
     }
   };
 

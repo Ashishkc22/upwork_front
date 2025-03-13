@@ -734,6 +734,7 @@ const Cards = () => {
           >
             <Header
               currentComponentName="Cards"
+              applyMargin={false}
               statusCount={statusCount}
               toTalScoreDetails={{
                 totalScore: totalCardsAndToBePrinted?.totalCards || 0,

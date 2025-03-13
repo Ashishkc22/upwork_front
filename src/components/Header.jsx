@@ -95,6 +95,9 @@ const Header = memo(
     apiCallBack,
     pendingCount = 0,
     handlePendingCardClick = () => {},
+    applyMargin = true,
+    showAddTL = false,
+    handleAddTL = () => {},
     // tehsilCounts = {},
     showStatusDropDown = true,
     statusOption = [],
@@ -385,8 +388,6 @@ const Header = memo(
     };
 
     const triggerAPICallback = ({ search = "" } = {}) => {
-      console.log("---------------API Triggered---------------");
-
       let trimedStatus;
       if (status?.label) {
         trimedStatus = status?.label?.split(" ")?.[0]?.trim();
@@ -668,7 +669,12 @@ const Header = memo(
     }, []);
 
     return (
-      <Grid container alignItems="center" sx={{ mx: 1, columnGap: "2px" }}>
+      <Grid
+        container
+        alignItems="center"
+        // justifyContent="space-between"
+        sx={{ mx: 1, columnGap: "2px" }}
+      >
         {/* Score Cards on the left */}
         <Grid item>
           <Grid container alignItems="center">
@@ -806,10 +812,41 @@ const Header = memo(
                 Add hospital
               </Button>
             )}
+            {showAddTL && (
+              <Button
+                sx={{
+                  background: "#ff5722",
+                  color: "white",
+                  ":hover": {
+                    background: "#e23f0c",
+                  },
+                }}
+                onClick={handleAddTL}
+              >
+                Add TL
+              </Button>
+            )}
           </Grid>
         </Grid>
+        {/* <Grid></Grid>
+        <Grid
+          item
+          sx={{
+            width: {
+              lg: 50,
+              md: 0,
+              sm: 0,
+              xs: 0,
+            },
+          }}
+        ></Grid> */}
         {/* Search and other fields on the right */}
-        <Grid item>
+        {/* <Grid item>
+          <Grid container> */}
+        <Grid
+          item
+          sx={{ ...(applyMargin && { ml: { lg: 18, md: 0, sm: 0, xs: 0 } }) }}
+        >
           {/* <Grid container alignItems="center"> */}
           <Box
             sx={{
@@ -1099,6 +1136,8 @@ const Header = memo(
           </Box>
           {/* </Grid> */}
         </Grid>
+        {/* </Grid>
+        </Grid> */}
         {/* Filter display chips */}
         <Grid
           item

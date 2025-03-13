@@ -219,6 +219,8 @@ const HospitalPage = () => {
             text: "Total Executives",
             name: "totalExecutives",
           }}
+          showAddTL={true}
+          handleAddTL={() => setAddUsersDialog(true)}
           statusOption={[
             { label: "Unverified" },
             { label: "Active" },
@@ -245,7 +247,7 @@ const HospitalPage = () => {
         }}
         justifyContent="end"
       >
-        <Button
+        {/* <Button
           sx={{
             background: "#ff5722",
             color: "white",
@@ -256,7 +258,7 @@ const HospitalPage = () => {
           onClick={() => setAddUsersDialog(true)}
         >
           Add TL
-        </Button>
+        </Button> */}
       </Grid>
       <Grid item xs={12}>
         {/* {!isEmpty(hospitalList) && ( */}
