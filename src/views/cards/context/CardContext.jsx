@@ -40,8 +40,15 @@ export const CardContextProvider = ({ children }) => {
           const dupIndex = valueCounts.get(`${obj[key[0]]} ${obj[key[1]]}`);
           newArr[dupIndex] = { ...newArr[dupIndex], isDuplicate: true };
         } else {
+          if (
+            obj?.name?.replace(/\s+/g, "") ===
+            obj?.father_husband_name?.replace(/\s+/g, "")
+          ) {
+            newArr[index] = { ...obj, isDuplicate: true };
+          } else {
+            newArr[index] = { ...obj, isDuplicate: false };
+          }
           valueCounts.set(`${obj[key[0]]} ${obj[key[1]]}`, index);
-          newArr[index] = { ...obj, isDuplicate: false };
         }
       }
     });
