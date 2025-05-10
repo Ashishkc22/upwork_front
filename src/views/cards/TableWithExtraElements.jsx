@@ -149,7 +149,6 @@ const TableWithExtraElements = ({
                   allLocationUIDlist[
                     `${groupName.district} ${groupName.tehsil}`
                   ];
-                console.log("allCurrentKey", allCurrentKey);
                 if (isEmpty(locationFEUidList)) {
                   setLocationFEUidList(allCurrentKey);
                   increaseDownloadCardCount(cardCount);
@@ -292,11 +291,7 @@ const TableWithExtraElements = ({
               {}
           )?.map((feUidKey, index) => {
             // const groupByDistrict = groupedData[key];
-            console.log("isCurrentGroupOpen()", isCurrentGroupOpen());
-            console.log("currentActiveLocation", currentActiveLocation);
-            console.log("groupName", groupName);
-            // console.log("FEDetails", FEDetails);
-            // console.log("feUidKey", feUidKey);
+
             const firtsData = {
               created_by_uid: FEDetails[feUidKey].uid,
               created_by_name: FEDetails[feUidKey].name,

@@ -53,6 +53,12 @@ const EditDialog = ({ open, onClose, cardData, setIscardLoadtion }) => {
   const [isTehsilLoading, setIsTehsilLoading] = useState(false);
   const [isGramLoading, setIsGramLoading] = useState(false);
 
+  const [isJanpadPanchyatLoading, setIsJanpadPanchyatLoading] = useState(false);
+  const [janpadOption, setJanpadOption] = useState([]);
+
+  const [isGramPanchyatLoading, setIsGramPanchyatLoading] = useState(false);
+  const [gramPanchayatOptions, setGramPanchayatOptions] = useState([]);
+
   const [rotation, setRotation] = useState(0);
 
   const theme = useTheme();
@@ -77,6 +83,12 @@ const EditDialog = ({ open, onClose, cardData, setIscardLoadtion }) => {
     if (payload?.type == "district") {
       setIsDistrictLoading(true);
     }
+    if (payload?.type == "janPanchayat") {
+      setIsJanpadPanchyatLoading(true);
+    }
+    if (payload?.type == "gramPanchayat") {
+      setIsGramPanchyatLoading(true);
+    }
     if (!payload?.type) {
       setIsStateLoading(true);
     }
@@ -90,12 +102,16 @@ const EditDialog = ({ open, onClose, cardData, setIscardLoadtion }) => {
       if (payload?.type == "tehsil") {
         setTehsilOption(data || []);
         setIsTehsilLoading(false);
+      } else if (payload?.type == "janPanchayat") {
+        setJanpadOption(data || []);
+        setIsJanpadPanchyatLoading(false);
+      } else if (payload?.type == "gramPanchayat") {
+        setGramPanchayatOptions(data || []);
+        setIsGramPanchyatLoading(false);
       } else if (payload?.type == "district") {
         setDistrictOption(data || []);
         setIsDistrictLoading(false);
       } else if (payload?.type == "gram") {
-        console.log("data >>>>", data);
-
         setGramOption(data || []);
         setIsGramLoading(false);
       } else {
@@ -114,7 +130,9 @@ const EditDialog = ({ open, onClose, cardData, setIscardLoadtion }) => {
 
     // getAddressData({ type: "tehsil" });
     // getAddressData({ type: "gram" });
-  }, [formData?.state, formData?.district, formData?.tehsil]);
+  }, [formData?.state]);
+  //  formData?.district, formData?.tehsil, formData.janpad
+
   useEffect(() => {
     if (stateOption || formData.state) {
       const selectedState = stateOption.find(
@@ -128,7 +146,7 @@ const EditDialog = ({ open, onClose, cardData, setIscardLoadtion }) => {
       } else {
       }
     }
-  }, [stateOption]);
+  }, [stateOption, formData?.state]);
 
   useEffect(() => {
     if (districtOption || formData.district) {
@@ -140,29 +158,45 @@ const EditDialog = ({ open, onClose, cardData, setIscardLoadtion }) => {
           type: "tehsil",
           params: { refId: selectedDistrict._id },
         });
-      } else {
+        getAddressData({
+          type: "janPanchayat",
+          params: { refId: selectedDistrict._id },
+        });
       }
     }
-  }, [districtOption]);
+  }, [districtOption, formData?.district]);
 
   useEffect(() => {
-    if (tehsilOption || formData.tehsil) {
-      const selected = tehsilOption.find(
-        (data) => data.name === formData.tehsil
+    if (janpadOption || formData.janpad) {
+      const selected = janpadOption.find(
+        (data) => data.name === formData.janpad
+      );
+      if (selected) {
+        getAddressData({
+          type: "gramPanchayat",
+          params: {
+            refId: selected._id,
+          },
+        });
+      }
+    }
+  }, [janpadOption, formData.janpad]);
+
+  useEffect(() => {
+    if (gramPanchayatOptions || formData.gramPanchayat) {
+      const selected = gramPanchayatOptions.find(
+        (data) => data.name === formData.gramPanchayat
       );
       if (selected) {
         getAddressData({
           type: "gram",
           params: {
             refId: selected._id,
-            showHidden: true,
-            // display: "Gram"
           },
         });
-      } else {
       }
     }
-  }, [tehsilOption]);
+  }, [gramPanchayatOptions, formData.gramPanchayat]);
 
   const handleRotateLeft = () => setRotation((prev) => prev - 90);
   const handleRotateRight = () => setRotation((prev) => prev + 90);
@@ -196,6 +230,35 @@ const EditDialog = ({ open, onClose, cardData, setIscardLoadtion }) => {
     delete newFormData.address;
     delete newFormData.status;
     delete newFormData.created_by_name;
+    delete newFormData.area;
+    newFormData.state = "63c681806072b29c2133326e";
+    if (formData.district) {
+      newFormData.district = districtOption.find(
+        (data) => data.name === formData.district
+      )?._id;
+    }
+    if (formData.tehsil) {
+      newFormData.tehsil = tehsilOption.find(
+        (data) => data.name === formData.tehsil
+      )?._id;
+    }
+    if (formData.janpad) {
+      newFormData.janpad = janpadOption.find(
+        (data) => data.name === formData.janpad
+      )?._id;
+    }
+
+    if (formData.gramPanchayat) {
+      newFormData.gramPanchayat = gramPanchayatOptions.find(
+        (data) => data.name === formData.gramPanchayat
+      )?._id;
+    }
+    if (formData.gram) {
+      newFormData.gram = gramOption.find(
+        (data) => data.name === formData.gram
+      )?._id;
+    }
+
     if (status) {
       newFormData.status = status;
     }
@@ -585,6 +648,23 @@ const EditDialog = ({ open, onClose, cardData, setIscardLoadtion }) => {
               </Grid>
             )}
 
+            <Box
+              sx={{
+                px: 2,
+                py: 1,
+                display: "flex",
+                width: "100%",
+              }}
+            >
+              <Typography variant="h6">Area: </Typography>
+              <Typography
+                variant="body2"
+                sx={{ textAlign: "center", alignContent: "center", px: 1 }}
+              >
+                {formData?.area}
+              </Typography>
+            </Box>
+
             {/* {Boolean(stateOption?.length) && (
             <Grid item xs={12} sm={6}>
               <FormControl fullWidth>
@@ -625,32 +705,40 @@ const EditDialog = ({ open, onClose, cardData, setIscardLoadtion }) => {
               <Grid item xs={12} sm={3}>
                 <Autocomplete
                   options={districtOption}
+                  getOptionLabel={(option) => {
+                    if (typeof option === "string") {
+                      return option;
+                    }
+                    return option.name;
+                  }}
                   filterOptions={createFilterOptions({
                     matchFrom: "start",
                     stringify: (option) => option.name,
                   })}
                   disabled={isDistrictLoading}
                   defaultValue={formData?.district}
-                  {...(!isEmpty(formData?.district)
-                    ? { value: formData?.district }
-                    : { value: "" })}
+                  value={formData?.district ? formData.district : ""}
                   onChange={(e, newValue, value) => {
-                    if (newValue) {
-                      setFormData((prev) => ({
-                        ...prev,
-                        district: newValue.name,
-                      }));
-                    } else {
-                      setFormData((prev) => ({
-                        ...prev,
-                        district: "",
-                      }));
-                    }
+                    setFormData((prev) => ({
+                      ...prev,
+                      district: newValue?.name ? newValue.name : "",
+                    }));
 
-                    // handleChange({ e, newValue });
+                    if (formData?.district !== newValue?.name) {
+                      setFormData((prev) => ({
+                        ...prev,
+                        tehsil: "",
+                        janpad: "",
+                        gramPanchayat: "",
+                        gram: "",
+                      }));
+                      setGramPanchayatOptions(() => []);
+                      setGramOption(() => []);
+                    }
                   }}
                   renderOption={(props, option) => {
                     const { key, ...optionProps } = props;
+                    // console.log("props", props);
                     return (
                       <Box
                         key={key}
@@ -689,6 +777,80 @@ const EditDialog = ({ open, onClose, cardData, setIscardLoadtion }) => {
                 />
               </Grid>
             )}
+            {Boolean(janpadOption.length) && (
+              <Grid item xs={12} sm={3}>
+                <FormControl fullWidth>
+                  <InputLabel id="janpad-helper-label">
+                    Janpad Panchyat
+                  </InputLabel>
+                  <Select
+                    labelId="janpad-helper-label"
+                    id="janpad-dropdown"
+                    label="Janpad Panchyat"
+                    name="janpad"
+                    disabled={isJanpadPanchyatLoading}
+                    defaultValue={formData?.janpad}
+                    onChange={handleChange}
+                  >
+                    {janpadOption.map((option) => {
+                      return (
+                        <MenuItem value={option.name}>{option.name}</MenuItem>
+                      );
+                    })}
+                  </Select>
+                  {isJanpadPanchyatLoading ? (
+                    <CircularProgress
+                      size={24}
+                      sx={{
+                        position: "absolute",
+                        top: "50%",
+                        left: "50%",
+                        marginTop: "-12px",
+                        marginLeft: "-12px",
+                      }}
+                    />
+                  ) : null}
+                </FormControl>
+              </Grid>
+            )}
+
+            {Boolean(gramPanchayatOptions.length) && (
+              <Grid item xs={12} sm={3}>
+                <FormControl fullWidth>
+                  <InputLabel id="gramPanchayat-helper-label">
+                    Gram Panchayat
+                  </InputLabel>
+                  <Select
+                    labelId="gramPanchayat-helper-label"
+                    id="gramPanchayat-dropdown"
+                    label="Gram Panchayat"
+                    name="gramPanchayat"
+                    disabled={isGramPanchyatLoading}
+                    defaultValue={formData?.gramPanchayat}
+                    onChange={handleChange}
+                  >
+                    {gramPanchayatOptions.map((option) => {
+                      return (
+                        <MenuItem value={option.name}>{option.name}</MenuItem>
+                      );
+                    })}
+                  </Select>
+                  {isGramPanchyatLoading ? (
+                    <CircularProgress
+                      size={24}
+                      sx={{
+                        position: "absolute",
+                        top: "50%",
+                        left: "50%",
+                        marginTop: "-12px",
+                        marginLeft: "-12px",
+                      }}
+                    />
+                  ) : null}
+                </FormControl>
+              </Grid>
+            )}
+
             {Boolean(tehsilOption?.length) && (
               <Grid item xs={12} sm={3}>
                 <FormControl fullWidth>
@@ -725,7 +887,7 @@ const EditDialog = ({ open, onClose, cardData, setIscardLoadtion }) => {
                 </FormControl>
               </Grid>
             )}
-
+            {/* 
             {Boolean(gramOption?.length) && (
               <Grid item xs={12} sm={6}>
                 <FormControl fullWidth>
@@ -792,6 +954,70 @@ const EditDialog = ({ open, onClose, cardData, setIscardLoadtion }) => {
                         <TextField
                           {...params}
                           label="Gram Panchayat"
+                          variant="outlined"
+                        />
+                      </Box>
+                    )}
+                  />
+                </FormControl>
+              </Grid>
+            )} */}
+            {Boolean(gramOption?.length) && (
+              <Grid item xs={12} sm={6}>
+                <FormControl fullWidth>
+                  <Autocomplete
+                    options={gramOption}
+                    disabled={isGramLoading}
+                    filterOptions={createFilterOptions({
+                      matchFrom: "any",
+                      stringify: (option) => option.label,
+                    })}
+                    getOptionLabel={(option) => {
+                      if (typeof option === "string") {
+                        return option;
+                      }
+                      return option.name;
+                    }}
+                    value={formData?.gram}
+                    onChange={(e, newValue, value) => {
+                      setFormData((prev) => ({
+                        ...prev,
+                        gram: newValue?.name ? newValue.name : "",
+                      }));
+                    }}
+                    renderOption={(props, option) => {
+                      const { key, ...optionProps } = props;
+                      return (
+                        <Box
+                          key={key}
+                          sx={{ p: "3px", display: "block" }}
+                          {...optionProps}
+                        >
+                          <Grid container>
+                            <Typography fontSize={12} fontWeight={500}>
+                              {option.name}
+                            </Typography>
+                          </Grid>
+                        </Box>
+                      );
+                    }}
+                    renderInput={(params) => (
+                      <Box>
+                        {isGramLoading ? (
+                          <CircularProgress
+                            size={24}
+                            sx={{
+                              position: "absolute",
+                              top: "50%",
+                              left: "50%",
+                              marginTop: "-12px",
+                              marginLeft: "-12px",
+                            }}
+                          />
+                        ) : null}
+                        <TextField
+                          {...params}
+                          label="Gram"
                           variant="outlined"
                         />
                       </Box>

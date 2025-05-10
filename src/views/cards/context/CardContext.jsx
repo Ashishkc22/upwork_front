@@ -61,7 +61,6 @@ export const CardContextProvider = ({ children }) => {
     feList = [],
   }) => {
     if (!isEmpty(location)) {
-      console.log("getCardsByLocation location", location);
       const response = await cards.getCardDataByLocation({
         _paginationData: { ...paginationData, ...pagination },
         location,
@@ -181,9 +180,9 @@ export const CardContextProvider = ({ children }) => {
   };
 
   const getTobePrinntedCards = async () => {
+    console.log("getTobePrinntedCards -----");
     const data = await cards.getToBePrintedCards(filterData);
     setCardLocationTagData(data?.groupedData);
-    console.log("data?.groupedData -----", data?.groupedData);
     setTotalCardsAndToBePrinted({
       totalCards: data.totalCards,
       toBePrinted: data.totalPrintedCards,
@@ -194,7 +193,6 @@ export const CardContextProvider = ({ children }) => {
     setTablesPagination(data?.groupedData);
     if (data && !isEmpty(data?.groupedData)) {
       setCurrentActiveLocation(data.groupedData[0]._id);
-      console.log(" data.groupedData[0]", data.groupedData[0]);
       getCardsByLocation({
         location: data.groupedData[0]._id,
         feList: data.groupedData[0].createByUids,
@@ -204,6 +202,7 @@ export const CardContextProvider = ({ children }) => {
   };
 
   const updateFilters = ({ filterData }) => {
+    console.log("updateFilters", filterData);
     setFilterData((prv) => {
       const newFilterData = {};
       if (prv.isPrintMode !== (filterData.isPrintMode || "")) {

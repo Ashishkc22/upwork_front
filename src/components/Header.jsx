@@ -214,7 +214,6 @@ const Header = memo(
       if (tab != name) {
         addDataToURL({ page: null });
       }
-      console.log("isNavAllowed()", isNavAllowed());
 
       if (isNavAllowed()) {
         setSelectedCard(name);
@@ -248,8 +247,7 @@ const Header = memo(
       if (data || type === "duration") {
         seFilterDate((_filterDate) => {
           const s = _filterDate.findIndex((a) => a.type === type);
-          console.log("s found", s);
-          console.log("datas found", data);
+
           if (s === -1) {
             _filterDate.push({ type, value: data });
             return _filterDate;
@@ -269,7 +267,7 @@ const Header = memo(
       if (data?.name) {
         getAddressData({
           type: "tehsil",
-          params: { refId: data._id },
+          params: { refId: data._id, showCardCount: true },
         });
         setDistrict(data);
       } else {
@@ -539,7 +537,10 @@ const Header = memo(
       if (urlDateType?.get("tehsilId") || urlDateType?.get("districtId")) {
         getAddressData({
           type: "tehsil",
-          params: { refId: urlDateType?.get("districtId") },
+          params: {
+            refId: urlDateType?.get("districtId"),
+            showCardCount: true,
+          },
         });
       }
 
@@ -607,7 +608,6 @@ const Header = memo(
 
       useEffectTypingTimer = setTimeout(function () {
         // call API
-        console.log("-----Filter API Trigger------------");
 
         triggerAPICallback();
       }, 10);
@@ -656,10 +656,9 @@ const Header = memo(
           if (!isEmpty(data)) {
             setCategoryOption(data.hospital_category.filter((h) => h.active));
             const category = urlDateType?.get("category");
-            console.log("newValue", category);
             if (showType && category) {
               const c = data.hospital_category?.find((h) => h.name == category);
-              console.log("newValue", c);
+
               setCategory(c);
               addInChipList(c.name, "category");
             }
@@ -667,6 +666,18 @@ const Header = memo(
         });
       }
     }, []);
+
+    useEffect(() => {
+      if (
+        selectedCard === "pendingCards" &&
+        !isEmpty(statusOption) &&
+        !status
+      ) {
+        const s = statusOption.find((v) => v?.label?.includes("PENDING"));
+        setStatus(s);
+        addInChipList(s?.label, "status");
+      }
+    }, [selectedCard, statusOption]);
 
     return (
       <Grid
@@ -734,9 +745,11 @@ const Header = memo(
                   value={pendingCount || 0}
                   text="Pending Cards"
                   bgcolor="#ffeee8"
-                  secondValue={0}
+                  secondValue={pendingCount}
                   isCardSelected={selectedCard === "pendingCards"}
-                  emitCardSelect={handlePendingCardClick}
+                  emitCardSelect={() => {
+                    handlePendingCardClick();
+                  }}
                 />
                 <Divider
                   orientation="vertical"

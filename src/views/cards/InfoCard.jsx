@@ -89,6 +89,7 @@ const CardComponent = () => {
   const [renewIncValue, setRenewIncValue] = useState(1);
   const [isDetelConfirmationDialog, setIsDetelConfirmationDialog] =
     useState(false);
+  const isEditDialogOpenedRef = useRef(isEditDialogOpened);
 
   const [isCardLoading, setIscardLoadtion] = useState(false);
 
@@ -200,8 +201,15 @@ const CardComponent = () => {
     return indexOf === 0;
   };
 
+  useEffect(() => {
+    isEditDialogOpenedRef.current = isEditDialogOpened;
+  }, [isEditDialogOpened]);
+
   const handleKeyPress = ({ key }) => {
-    if (key === "ArrowLeft" || key === "ArrowRight") {
+    if (
+      (key === "ArrowLeft" || key === "ArrowRight") &&
+      !isEditDialogOpenedRef.current
+    ) {
       const newId = window.location.pathname.split("/")[2];
       if (idList?.length && newId) {
         let indexOf = idList.indexOf(newId.trim());
@@ -357,9 +365,6 @@ const CardComponent = () => {
       setIscardLoadtion(false);
     }
   };
-  useEffect(() => {
-    console.log("arogyaCardRef", arogyaCardRef);
-  }, [arogyaCardRef]);
 
   const handleDiscardFocus = () => {
     // Focus the TextField

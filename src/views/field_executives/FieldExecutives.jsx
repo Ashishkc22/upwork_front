@@ -13,40 +13,6 @@ import storageUtil from "../../utils/storage.util";
 
 let typingTimer;
 
-const headers = [
-  {
-    label: "RANK",
-    key: "index",
-    indicator: true,
-    getColor: ({ last_fetch, status }) => {
-      const color =
-        status === "Verified"
-          ? new Date(last_fetch) >
-            new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
-            ? "green"
-            : "grey"
-          : status === "Unverified"
-          ? "#ffc107"
-          : "red";
-
-      return color;
-    },
-  },
-  { label: "ID", key: "uid" },
-  { label: "NAME", key: "name" },
-  { label: "MOB NO.", key: "phone" },
-  { label: "DISTRICT", key: "district" },
-  { label: "EMERGENCY", key: "emergency_contact" },
-  { label: "JOINED", key: "created_at" },
-  { label: "TOTAL", key: "score" },
-  { label: "2P", key: "p2_count" },
-  { label: "P", key: "p_count" },
-  { label: "D", key: "d_count" },
-  { label: "UD", key: "ud_count" },
-  { label: "DIS", key: "dis_count" },
-  { label: "RATIO", key: "ratio", sort: true },
-];
-
 const HospitalPage = () => {
   const navigate = useNavigate();
   // Hospital Table Data
@@ -65,6 +31,114 @@ const HospitalPage = () => {
 
   let [urlDateType, setUrlDateType] = useSearchParams();
   const [isPageLoading, setIsPageLoading] = useState(false);
+
+  const headers = [
+    {
+      label: "RANK",
+      key: "index",
+      indicator: true,
+      getColor: ({ last_fetch, status }) => {
+        const color =
+          status === "Verified"
+            ? new Date(last_fetch) >
+              new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+              ? "green"
+              : "grey"
+            : status === "Unverified"
+            ? "#ffc107"
+            : "red";
+
+        return color;
+      },
+    },
+    { label: "ID", key: "uid" },
+    { label: "NAME", key: "name" },
+    { label: "MOB NO.", key: "phone" },
+    { label: "DISTRICT", key: "district" },
+    { label: "EMERGENCY", key: "emergency_contact" },
+    { label: "JOINED", key: "created_at" },
+    {
+      label: "TOTAL",
+      key: "score",
+      onClick: (e, row) => {
+        e.stopPropagation();
+        if (row.uid) {
+          navigate(`/cards?tab=totalCards&createdById=${row.uid}`);
+        } else {
+          navigate(`/cards?tab=totalCards`);
+        }
+      },
+    },
+    {
+      label: "2P",
+      key: "p2_count",
+      onClick: (e, row) => {
+        e.stopPropagation();
+        if (row.uid) {
+          navigate(`/cards?tab=toBePrinted&createdById=${row.uid}`);
+        } else {
+          navigate(`/cards?tab=toBePrinted`);
+        }
+      },
+    },
+    {
+      label: "P",
+      key: "p_count",
+      onClick: (e, row) => {
+        e.stopPropagation();
+        if (row.uid) {
+          navigate(
+            `/cards?tab=totalCards&status=PRINTED&createdById=${row.uid}`
+          );
+        } else {
+          navigate(`/cards?tab=totalCards&status=PRINTED`);
+        }
+      },
+    },
+    {
+      label: "D",
+      key: "d_count",
+      onClick: (e, row) => {
+        e.stopPropagation();
+        if (row.uid) {
+          navigate(
+            `/cards?tab=totalCards&status=DELIVERED&createdById=${row.uid}`
+          );
+        } else {
+          navigate(`/cards?tab=totalCards&status=DELIVERED`);
+        }
+      },
+    },
+    {
+      label: "UD",
+      key: "ud_count",
+      onClick: (e, row) => {
+        e.stopPropagation();
+        if (row.uid) {
+          navigate(
+            `/cards?tab=totalCards&status=UNDELIVERED&createdById=${row.uid}`
+          );
+        } else {
+          navigate(`/cards?tab=totalCards&status=UNDELIVERED`);
+        }
+      },
+    },
+    {
+      label: "DIS",
+      key: "dis_count",
+      onClick: (e, row) => {
+        e.stopPropagation();
+        if (row.uid) {
+          navigate(
+            `/cards?tab=totalCards&status=DISCARDED&createdById=${row.uid}`
+          );
+        } else {
+          navigate("/cards?tab=totalCards&status=DISCARDED");
+        }
+      },
+    },
+    { label: "RATIO", key: "ratio", sort: true },
+  ];
 
   //   API call to get hospital data
   const getUsers = ({

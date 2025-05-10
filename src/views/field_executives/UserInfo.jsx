@@ -58,14 +58,13 @@ const UserInfoCard = () => {
 
   const fetchCardData = () => {
     const isTL = urlDateType.get("isTL");
-    console.log("isTL", id);
-    if (Boolean(isTL) && id) {
+    if (Boolean(isTL) && id !== "undefined") {
       fieldExecutives.getUserById({ tlId: id }).then((tlDetails) => {
         setTeamLeaderDetails(tlDetails);
         setUserData(tlDetails);
         setRole(tlDetails.role);
       });
-    } else if (id) {
+    } else if (id !== "undefined") {
       fieldExecutives.getUserById({ uid: id }).then((data) => {
         setUserData(data);
         setRole(data.role);
@@ -79,6 +78,8 @@ const UserInfoCard = () => {
             });
         }
       });
+    } else {
+      navigate("/field-executives");
     }
   };
 

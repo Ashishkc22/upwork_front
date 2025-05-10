@@ -169,10 +169,6 @@ const TableWithCheckBox = ({
   };
 
   useEffect(() => {
-    console.log("paginationCardCount", paginationCardCount);
-  }, [paginationCardCount]);
-
-  useEffect(() => {
     setCheckBox(isCheckBoxChecked);
     setPageCount(getPageCount(groupedData.length));
   }, [isCheckBoxChecked]);
@@ -200,7 +196,6 @@ const TableWithCheckBox = ({
             container
             justifyContent="space-between"
             onClick={() => {
-              console.log("dataLength", dataLength);
               if (!checkBox) {
                 increaseDownloadCardCount(dataLength);
               } else {
@@ -215,7 +210,6 @@ const TableWithCheckBox = ({
                 checked={checkBox}
                 onClick={(e) => {
                   e.stopPropagation();
-                  console.log("dataLength", dataLength);
                   if (!checkBox) {
                     increaseDownloadCardCount(dataLength);
                   } else {
@@ -227,7 +221,6 @@ const TableWithCheckBox = ({
               />
               <Link
                 onClick={(e) => {
-                  console.log("Clicked ");
                   e.stopPropagation();
                   navigate(`/field-executives/${firtsData?.created_by_uid}`);
                 }}
@@ -278,7 +271,6 @@ const TableWithCheckBox = ({
                 onClick={(e) => {
                   e.stopPropagation();
                   setIsCardDownload(true);
-                  console.log("tlDetails---------", tlDetails);
                   downloadCards.downloadMultipleCard({
                     cardData: groupedData,
                     Element: ArogyamComponent,
@@ -293,7 +285,7 @@ const TableWithCheckBox = ({
                   });
                   setMarkAsPrintPending((pre) => ({
                     ...pre,
-                    [`${groupName}/${firtsData?.created_by_uid}`]: true,
+                    [`${groupName.district}/${groupName.tehsil}/${firtsData?.created_by_uid}`]: true,
                   }));
                 }}
               >
@@ -301,7 +293,7 @@ const TableWithCheckBox = ({
               </Button>
               {(isDownloadCompleted ||
                 Object.keys(markAsPrintPending).includes(
-                  `${groupName}/${firtsData?.created_by_uid}`
+                  `${groupName.district}/${groupName.tehsil}/${firtsData?.created_by_uid}`
                 )) && (
                 <Button
                   sx={{
@@ -315,7 +307,6 @@ const TableWithCheckBox = ({
                     e.stopPropagation();
                     setMarkAsPrintPending((pre) => {
                       const newObject = { ...pre };
-                      console.log("before delete", newObject);
                       delete newObject[
                         `${groupName}/${firtsData?.created_by_uid}`
                       ];
@@ -401,8 +392,6 @@ const TableWithCheckBox = ({
             return `${to} of ${count !== -1 ? count : `more than ${to}`}`;
           }}
           onPageChange={(e, newPage) => {
-            console.log("e", e.target);
-            console.log("e", e.target.name);
             if (e?.target?.name === "FirstPage") {
               newPage = 0;
             }

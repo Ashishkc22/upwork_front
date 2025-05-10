@@ -1,3 +1,5 @@
+const activeEnv = "test"; // dev, test, pro, staging
+
 const apiInfo = {
   dev: {
     protocol: "http",
@@ -12,6 +14,10 @@ const apiInfo = {
     protocol: "https",
     url: "asia-south1-arogyam-super.cloudfunctions.net/app",
   },
+  staging: {
+    protocol: "https",
+    url: "asia-south1-health-demo-dev.cloudfunctions.net/app",
+  },
 };
 
 function getSystemDomain() {
@@ -23,8 +29,13 @@ function isLocalEnvironment() {
 
   // Regex pattern for local IP address ranges
   const localIPRegex = /^(127\.0\.0\.1|::1|localhost|192\.168\.|10\.|172\.)/;
-
-  return localIPRegex.test(ipAddress);
+  if (activeEnv) {
+    return activeEnv;
+  } else if (!localIPRegex.test(ipAddress)) {
+    return "test";
+  } else {
+    return "pro";
+  }
   // return false;
 }
 
@@ -37,23 +48,20 @@ function protocol() {
   if (isTestEnvironment()) {
     return apiInfo.test.protocol;
   }
-  return isLocalEnvironment() ? apiInfo.dev.protocol : apiInfo.pro.protocol;
+  return apiInfo[isLocalEnvironment()]?.protocol || apiInfo.pro.protocol;
 }
 
 function getPort() {
-  return isLocalEnvironment() ? apiInfo.dev.port : apiInfo.pro.port;
+  return apiInfo[isLocalEnvironment()]?.port || apiInfo.pro.port;
 }
 
 function getDomain() {
-  if (isTestEnvironment()) {
-    return apiInfo.test.url;
-  }
-  return isLocalEnvironment() ? apiInfo.dev.url : apiInfo.pro.url;
+  return apiInfo[isLocalEnvironment()]?.url || apiInfo.pro.url;
 }
 
 function getApiUrl({ path = false }) {
   let url = `${protocol()}://${getDomain()}:${getPort()}`;
-  if (!isLocalEnvironment()) {
+  if (isLocalEnvironment() !== "pro" || isLocalEnvironment() !== "staging") {
     url = `${protocol()}://${getDomain()}`;
   }
   if (path) {

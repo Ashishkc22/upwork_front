@@ -134,11 +134,6 @@ const Cards = () => {
   const [scroll, setScrolly] = useState(window.scrollY);
   const [cardDataBylocation, setCardsDataByLocation] = useState({});
 
-  useEffect(
-    () => console.log("downloadCardMaps", downloadCardMaps),
-    [downloadCardMaps]
-  );
-
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const highlightedRow = storageUtil.getStorageData("highlightedRow");
@@ -291,8 +286,8 @@ const Cards = () => {
           ...(till_duration && { till_duration }),
           selectedCard,
         };
+
         // data = await getTobePrinntedCards();
-        console.log("------FILTER UPDATED-----");
         updateFilters({ filterData });
         // data = await cards.getToBePrintedCards(filterData);
         // setTablesPagination(data?.groupedData);
@@ -303,14 +298,11 @@ const Cards = () => {
         //     feList: data.groupedData[0].createByUids,
         //   });
         // }
-        console.log("data-------", data);
       } else {
         data = await cards.getCardsData({
-          ...((selectedCard === "totalCards" ||
-            selectedCard === "pendingCards") && {
-            _status: _status,
-          }),
+          ...(selectedCard === "totalCards" && { _status: _status }),
           ...(selectedCard === "toBePrinted" && { _status: "SUBMITTED" }),
+          ...(selectedCard === "pendingCards" && { _status: "PENDING" }),
           page: _page,
           ...(search && { q: search }),
           ...(gram_p && { gram_p: gram_p }),
@@ -397,7 +389,6 @@ const Cards = () => {
     const userList = await cardService.getUsersList({
       ...(_status === "toBePrinted" && { _status: "SUBMITTED" }),
     });
-    console.log("userList", userList);
 
     setUserDropdownOptions(userList);
   };
@@ -413,9 +404,6 @@ const Cards = () => {
 
   const handleToBePrintedSort = ({ colName, type, location, feUid }) => {
     if (type === "des") {
-      console.log("SORT location", location);
-      console.log("SORT feUid", feUid);
-
       getCardsForSingleTableByLocation({ location, feUid, sortBy: colName });
     } else {
       getCardsForSingleTableByLocation({ location, feUid });
@@ -455,13 +443,10 @@ const Cards = () => {
 
     let keys = [];
 
-    console.log("downloadCardMaps", downloadCardMaps);
-    console.log("toBePrintedCards", toBePrintedCards);
     downloadCardMaps.forEach((groupName) => {
       const [locationName, FEUID] = groupName.split("/");
       const _FEDetails = FEDetails[FEUID] || {};
       const _TLDetails = TLDetails[_FEDetails.team_leader_id] || {};
-      console.log("locationName", locationName);
       keys.push(`${locationName.replace(" ", " / ")}/${FEUID}`);
       if (cardsToDownload[locationName.replace(" ", "/")]) {
         cardsToDownload[locationName.replace(" ", "/")].push({
@@ -479,7 +464,6 @@ const Cards = () => {
           cardCount: toBePrintedCards[locationName][FEUID].length,
         });
       }
-      console.log("keys", keys);
       _isDownloadCompleted[groupName] = true;
       // const selectedCardData = [];
       // _isDownloadCompleted[groupName] = true;
@@ -547,10 +531,8 @@ const Cards = () => {
     const sortType = urlDateType.get("sortType");
     const tab = urlDateType.get("tab");
     const status = urlDateType.get("status");
-    console.log("status&&&&&&", status);
     clearTimeout(useEffectTypingTimer);
     useEffectTypingTimer = setTimeout(() => {
-      console.log("----getTableData api");
       getTableData({
         ...apiPayload,
         _status: status,
@@ -944,7 +926,6 @@ const Cards = () => {
                 return `${to} of ${count !== -1 ? count : `more than ${to}`}`;
               }}
               onPageChange={(e, newPage) => {
-                console.log("page change", newPage);
                 if (
                   selectedCard === "toBePrinted"
                     ? !!Object.keys(markAsPrintPending)?.length

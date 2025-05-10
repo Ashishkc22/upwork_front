@@ -134,7 +134,7 @@ function addCardBackSideImage({
   });
   if (addNewPage) {
     doc.addPage();
-    addVerticalLines({ doc, lineEndText: `#${pageCount + 1}` });
+    addVerticalLines({ doc, lineEndText: `#${pageCount}` });
   }
 }
 
@@ -466,12 +466,6 @@ async function downloadMultipleCard({
   yPosition = 5,
   yIncrement = 57,
 }) {
-  // cardData = require("./multipleDownloadCard(100).json");
-  console.log("cardData----------", cardData);
-  // console.log("cardData----------", testData.length);
-  // console.log("cardData----------", testData);
-
-  console.time("CardImagesData");
   const caardImageData = await getCardImages({
     Element,
     cardsData: cardData,
@@ -483,8 +477,6 @@ async function downloadMultipleCard({
   //   cardData,
   //   images,
   // });
-  console.timeEnd("CardImagesData");
-  console.log("caardImageData", caardImageData);
 
   const imageBackSideUrl = getImageDataURLFromRef(secondaryImage);
 
@@ -685,13 +677,9 @@ async function downloadMultipleCardWithMultipleAgent({
         y = yPosition;
         cardPositons = [];
         pageLimit = 10;
-        console.log("clearn cardPositons", cardPositons);
-        // debugger;
       }
     });
     if (cardData.length - 1 === i && cardPositons.length) {
-      console.log("Another backside triggered.", cardPositons);
-
       addCardBackSideImage({
         doc,
         cardPositons,

@@ -33,7 +33,6 @@ import InputAdornment from "@mui/material/InputAdornment";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import Input from "@mui/material/Input";
-import formEvents from "../../utils/formEvents.util";
 
 const VisuallyHiddenInput = styled("input")({
   clip: "rect(0 0 0 0)",
@@ -90,8 +89,6 @@ const EditProfileDialog = ({
   const [legalName, setLegalName] = useState("");
   const [phone, setPhone] = useState("");
   const [alternatePhone, setAlternatePhone] = useState("");
-  const [janPanchayatOptions, setJanPanchayatOptions] = useState([]);
-  const [janPanchayat, setJanPanchayat] = useState(null);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -105,6 +102,18 @@ const EditProfileDialog = ({
   const [stateOptions, setStateOption] = useState([]);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+
+  const [janPanchayatOptions, setJanPanchayatOptions] = useState([]);
+  const [janPanchayat, setJanPanchayat] = useState(null);
+
+  const [tehsilOption, setTehsilOption] = useState([]);
+  const [tehsil, setTehsil] = useState(null);
+
+  const [gramPanchayat, setGramPanchayat] = useState(null);
+  const [gramPanchayatOptions, setGramPanchayatOptions] = useState([]);
+
+  const [gram, setGram] = useState(null);
+  const [gramOptions, setGramOptions] = useState([]);
 
   // const [formErrors, setFormErros] = useState({
   //   name: "required",
@@ -188,25 +197,75 @@ const EditProfileDialog = ({
     }
 
     const _data = await common.getAddressData(payload);
-    console.log("address ", _data);
 
     if (payload?.type == "district" && !_data?.error) {
       setDistrictOption(_data);
-      if (!isEmpty(_data) && data?.district) {
-        setDistrict(_data?.find((d) => d.name === data.district));
+      if (!isEmpty(_data) && data?.current_district) {
+        setDistrict(
+          _data?.find(
+            (d) =>
+              d.name === data.current_district ||
+              d._id === data.current_district
+          )
+        );
+      }
+    } else if (payload.type === "tehsil") {
+      setTehsilOption(_data);
+      if (!isEmpty(_data) && data?.current_tehsil) {
+        setTehsil(
+          _data?.find(
+            (d) =>
+              d.name === data.current_tehsil || d._id === data.current_tehsil
+          )
+        );
       }
     } else if (payload?.type == "janPanchayat") {
       setJanPanchayatOptions(_data);
-      if (!isEmpty(_data) && data?.janPanchayat) {
-        setJanPanchayat(_data?.find((d) => d.name === data.janPanchayat));
+      if (!isEmpty(_data) && data?.current_janpad) {
+        setJanPanchayat(
+          _data?.find(
+            (d) =>
+              d.name === data.current_janpad || d._id === data.current_janpad
+          )
+        );
+      }
+    } else if (payload.type === "gramPanchayat") {
+      setGramPanchayatOptions(_data);
+      if (!isEmpty(_data) && data?.current_gram_panchayat) {
+        setGramPanchayat(
+          _data?.find(
+            (d) =>
+              d.name === data.current_gram_panchayat ||
+              d._id === data.current_gram_panchayat
+          )
+        );
+      }
+    } else if (payload?.type === "gram") {
+      setGramOptions(_data);
+      if (!isEmpty(_data) && data?.current_gram) {
+        setGram(
+          _data?.find(
+            (d) => d.name === data.current_gram || d._id === data.current_gram
+          )
+        );
       }
     } else {
       if (!_data?.error) {
         setStateOption(_data);
-        if (!isEmpty(_data) && data?.state) {
-          setState(_data?.find((d) => d.name === data.state));
+        if (!isEmpty(_data) && data?.current_state) {
+          setState(
+            _data?.find(
+              (d) =>
+                d.name === data.current_state || d._id === data.current_state
+            )
+          );
         } else if (addTLMode && draftData.state) {
-          setState(_data?.find((d) => d.name === draftData.state.name));
+          setState(
+            _data?.find(
+              (d) =>
+                d.name === draftData.state.name || d._id === draftData.state._id
+            )
+          );
         }
       }
     }
@@ -258,8 +317,8 @@ const EditProfileDialog = ({
         setEmail(data.email);
         setPassword(data.password);
         setAddress(data.address);
-        setState(data.state);
-        setDistrict(data.district);
+        // setState(data.state);
+        // setDistrict(data.district);
         setEmergencyNumber(data.emergency_contact);
         setSignatureDataUrl(data?.signatureImage);
       }
@@ -271,35 +330,72 @@ const EditProfileDialog = ({
   }, [data]);
 
   useEffect(() => {
-    console.log("data change");
-
     if (!isEmpty(data)) {
-      if (isEmpty(stateOptions)) {
-        console.log("state ap call");
-
+      if (isEmpty(stateOptions) && data.current_state) {
         getAddressData({ type: "state" });
-      } else if (isEmpty(districtOption)) {
-        const selectedState = stateOptions.find((s) => s.name === data.state);
+      }
+      if (!isEmpty(stateOptions) && isEmpty(districtOption)) {
+        const selectedState = stateOptions.find(
+          (s) => s.name === data.current_state || s._id === data.current_state
+        );
         if (data.district && !isEmpty(selectedState)) {
-          console.log("district ap call", selectedState);
           getAddressData({
             type: "district",
             params: { refId: selectedState?._id },
           });
         }
-      } else if (isEmpty(janPanchayatOptions)) {
-        if (data.janPanchayat && !isEmpty(districtOption)) {
-          const selectedJanPanchyat = districtOption.find(
-            (s) => s.name === data.district
-          );
+      } else if (!isEmpty(districtOption) && isEmpty(janPanchayatOptions)) {
+        const selectedDistrict = districtOption.find(
+          (s) =>
+            s.name === data.current_district || s._id === data.current_district
+        );
+        if (data.current_tehsil && !isEmpty(selectedDistrict)) {
+          getAddressData({
+            type: "tehsil",
+            params: { refId: selectedDistrict?._id },
+          });
+        }
+        if (data.current_janpad && !isEmpty(districtOption)) {
           getAddressData({
             type: "janPanchayat",
+            params: { refId: selectedDistrict?._id },
+          });
+        }
+      } else if (
+        !isEmpty(janPanchayatOptions) &&
+        isEmpty(gramPanchayatOptions)
+      ) {
+        const selectedJanPanchyat = janPanchayatOptions.find(
+          (s) => s.name === data.current_janpad || s._id === data.current_janpad
+        );
+        if (data.current_gram_panchayat && !isEmpty(selectedJanPanchyat)) {
+          getAddressData({
+            type: "gramPanchayat",
             params: { refId: selectedJanPanchyat?._id },
+          });
+        }
+      } else if (!isEmpty(gramPanchayatOptions) && isEmpty(gramOptions)) {
+        const selectedGramPanchyat = gramPanchayatOptions.find(
+          (s) =>
+            s.name === data.current_gram_panchayat ||
+            s._id === data.current_gram_panchayat
+        );
+        if (data.current_gram && !isEmpty(selectedGramPanchyat)) {
+          getAddressData({
+            type: "gram",
+            params: { refId: selectedGramPanchyat?._id },
           });
         }
       }
     }
-  }, [data, stateOptions, districtOption]);
+  }, [
+    stateOptions,
+    districtOption,
+    janPanchayatOptions,
+    tehsilOption,
+    gramPanchayatOptions,
+    gramOptions,
+  ]);
 
   function handleSaveFormData() {
     if (addTLMode) {
@@ -441,8 +537,6 @@ const EditProfileDialog = ({
       });
     }
   }, []);
-
-  formEvents.disableWheelIncrAndDicr();
 
   return (
     <Dialog
@@ -640,6 +734,10 @@ const EditProfileDialog = ({
                       type: "janPanchayat",
                       params: { refId: data._id },
                     });
+                    getAddressData({
+                      type: "tehsil",
+                      params: { refId: data._id },
+                    });
                   }
                 }}
                 sx={{ my: 1 }}
@@ -653,6 +751,12 @@ const EditProfileDialog = ({
               <Autocomplete
                 getOptionLabel={(option) => option.name}
                 onChange={(e, data) => {
+                  if (data) {
+                    getAddressData({
+                      type: "gramPanchayat",
+                      params: { refId: data._id },
+                    });
+                  }
                   setJanPanchayat(data);
                 }}
                 value={janPanchayat}
@@ -663,6 +767,61 @@ const EditProfileDialog = ({
                     {...params}
                     label="Jan Panchayat"
                   />
+                )}
+                sx={{ mt: 2 }}
+              />
+            )}
+
+            {!isEmpty(tehsilOption) && (
+              <Autocomplete
+                getOptionLabel={(option) => option.name}
+                onChange={(e, data) => {
+                  setTehsil(data);
+                }}
+                value={tehsil}
+                options={tehsilOption}
+                renderInput={(params) => (
+                  <TextField variant="standard" {...params} label="Tehsil" />
+                )}
+                sx={{ mt: 2 }}
+              />
+            )}
+
+            {!isEmpty(gramPanchayatOptions) && (
+              <Autocomplete
+                getOptionLabel={(option) => option.name}
+                onChange={(e, data) => {
+                  if (data) {
+                    getAddressData({
+                      type: "gram",
+                      params: { refId: data._id },
+                    });
+                  }
+                  setGramPanchayat(data);
+                }}
+                value={gramPanchayat}
+                options={gramPanchayatOptions}
+                renderInput={(params) => (
+                  <TextField
+                    variant="standard"
+                    {...params}
+                    label="Gram Panchayat"
+                  />
+                )}
+                sx={{ mt: 2 }}
+              />
+            )}
+
+            {!isEmpty(gramOptions) && (
+              <Autocomplete
+                getOptionLabel={(option) => option.name}
+                onChange={(e, data) => {
+                  setJanPanchayat(data);
+                }}
+                value={gram}
+                options={gramOptions}
+                renderInput={(params) => (
+                  <TextField variant="standard" {...params} label="Gram" />
                 )}
                 sx={{ mt: 2 }}
               />

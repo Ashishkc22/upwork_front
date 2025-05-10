@@ -161,7 +161,9 @@ const DynamicTable = ({
                       md: 0,
                       sm: 0,
                     },
-                    ...(keymap.sort && { ":hover": { cursor: "pointer" } }),
+                    ...(keymap.sort && {
+                      ":hover": { cursor: "pointer" },
+                    }),
                     ...(keymap.sort &&
                       urlDateType.get("sortType") === "des" && {
                         color: "blue",
@@ -196,166 +198,176 @@ const DynamicTable = ({
             </TableRow>
           </TableHead>
           <TableBody>
-            {rows.map((row, rowIndex) => (
-              <TableRow
-                key={row._id + rowIndex}
-                onClick={() => rowClick && rowClick(row)}
-                sx={{
-                  ":hover": { background: "#f3f3f3a1" },
-                  ...(row?._id === highlightedRow && { background: "#d1efd1" }),
-                  ...(row?.isDuplicate && { background: "#ef9393" }),
-                }}
-              >
-                {headers.map((keymap, cellIndex) => (
-                  <TableCell
-                    key={row._id + keymap?.label + cellIndex}
-                    sx={{
-                      whiteSpace: "nowrap",
-                      py: 0,
-                      px: {
-                        lg: 1,
-                        md: "2px",
-                        sm: 0,
-                        ...(statusIndicator &&
-                          keymap.indicator && {
-                            borderLeft: "solid",
-                            borderLeftColor: keymap?.getColor(row) || "red",
-                          }),
-                      },
-                      ...(!isEmpty(tbCellStyle) && tbCellStyle),
-                    }}
-                  >
-                    {getCellValue({ keymap, row, rowIndex, showActionMenu })}
-                  </TableCell>
-                ))}
-              </TableRow>
-            ))}
+            {Array.isArray(rows) &&
+              rows?.map((row, rowIndex) => (
+                <TableRow
+                  key={row._id + rowIndex}
+                  onClick={() => rowClick && rowClick(row)}
+                  sx={{
+                    ":hover": { background: "#f3f3f3a1" },
+                    ...(row?._id === highlightedRow && {
+                      background: "#d1efd1",
+                    }),
+                    ...(row?.isDuplicate && { background: "#ef9393" }),
+                  }}
+                >
+                  {headers.map((keymap, cellIndex) => (
+                    <TableCell
+                      key={row._id + keymap?.label + cellIndex}
+                      sx={{
+                        whiteSpace: "nowrap",
+                        py: 0,
+                        px: {
+                          lg: 1,
+                          md: "2px",
+                          sm: 0,
+                          ...(statusIndicator &&
+                            keymap.indicator && {
+                              borderLeft: "solid",
+                              borderLeftColor: keymap?.getColor(row) || "red",
+                            }),
+                        },
+                        ...(keymap.onClick && {
+                          ":hover": { cursor: "pointer", color: "blue" },
+                        }),
+                        ...(!isEmpty(tbCellStyle) && tbCellStyle),
+                      }}
+                      {...(keymap?.onClick && {
+                        onClick: (e) => keymap.onClick(e, row, keymap),
+                      })}
+                    >
+                      {getCellValue({ keymap, row, rowIndex, showActionMenu })}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))}
           </TableBody>
         </Table>
       ) : (
         <>
-          {rows.map((row, rowIndex) => (
-            <Accordion
-              key={row._id + rowIndex}
-              sx={{
-                mb: 1,
-                ...(row?._id === highlightedRow && { background: "#d1efd1" }),
-                ...(row?.isDuplicate && { background: "#ef9393" }),
-              }}
-            >
-              <AccordionSummary
-                expandIcon={<ExpandMoreIcon />}
-                aria-controls={`panel${rowIndex}-content`}
-                id={`panel${rowIndex}-header`}
+          {Array.isArray(rows) &&
+            rows?.map((row, rowIndex) => (
+              <Accordion
+                key={row._id + rowIndex}
+                sx={{
+                  mb: 1,
+                  ...(row?._id === highlightedRow && { background: "#d1efd1" }),
+                  ...(row?.isDuplicate && { background: "#ef9393" }),
+                }}
               >
-                <Box
-                  display="inline-flex"
-                  justifyContent="space-between"
-                  sx={{ width: "100%", mr: 3 }}
+                <AccordionSummary
+                  expandIcon={<ExpandMoreIcon />}
+                  aria-controls={`panel${rowIndex}-content`}
+                  id={`panel${rowIndex}-header`}
                 >
-                  <Typography variant="h6">
-                    {!dataForSmallScreen?.use ? (
-                      `${row?.name} - ${row.unique_number} - ${row.father_husband_name} - ${row.status}` ||
-                      "Unknown Name"
-                    ) : (
-                      <Box display="inline-flex" sx={{ width: "100%" }}>
-                        {dataForSmallScreen.title.keys.map((key, index) => {
-                          return (
-                            <div>
-                              {row[key] && (
-                                <div style={{ display: "inline-flex" }}>
-                                  <Typography
-                                    variant="h6"
-                                    sx={{ mx: 1, fontWeight: 500 }}
-                                  >
-                                    {key === "deleted_at"
-                                      ? moment(row[key]).format(
-                                          "DD-MM-YYYY HH:mm:ss"
-                                        )
-                                      : row[key]}
-                                  </Typography>
-                                </div>
-                              )}
-                            </div>
-                          );
-                        })}
-                      </Box>
-                    )}
-                  </Typography>
-                  <Box display="flex">
-                    {rowClick && (
-                      <Button variant="text" onClick={() => rowClick(row)}>
-                        Details
-                      </Button>
-                    )}
-                    {actions?.map((action, actionIndex) => (
-                      <IconButton
-                        key={row._id + action.label + actionIndex}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          action.handler(row);
-                        }}
-                        aria-label={action.label}
-                        color="primary"
-                        sx={{
-                          padding: isSmallScreen ? "4px" : "8px",
-                        }}
-                      >
-                        {action.smallIcon}
-                      </IconButton>
-                    ))}
-                    {showActionMenu && (
-                      <ThreeDotsDynamicMenu
-                        row={row}
-                        handleMenuSelect={handleMenuSelect}
-                      />
-                    )}
-                  </Box>
-                </Box>
-              </AccordionSummary>
-              <AccordionDetails>
-                <Grid
-                  container
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 2, // Adjust spacing between label and value
-                  }}
-                >
-                  {headers?.map(
-                    (keymap, index) =>
-                      keymap.key && (
-                        <Box
-                          key={keymap.label + index + "headers"}
-                          // item
-                          // xs={12}
-                          // sm={4}
-                          // md={3}
-                          // sx={{ mr: 1 }}
-                          // display="inline-flex"
-                        >
-                          <Typography
-                            variant="body2"
-                            fontWeight="bold"
-                            sx={{ m: 1 }} // Margin to create space between label and value
-                          >
-                            {keymap.label}:
-                          </Typography>
-                          <Typography variant="body2" sx={{ m: 1 }}>
-                            {keymap.key === "created_at" ||
-                            keymap.key === "expiry_date"
-                              ? moment(row?.[keymap.key]).format(
-                                  "YYYY-MM-DD HH:mm:ss"
-                                )
-                              : row?.[keymap.key] || "N/A"}
-                          </Typography>
+                  <Box
+                    display="inline-flex"
+                    justifyContent="space-between"
+                    sx={{ width: "100%", mr: 3 }}
+                  >
+                    <Typography variant="h6">
+                      {!dataForSmallScreen?.use ? (
+                        `${row?.name} - ${row.unique_number} - ${row.father_husband_name} - ${row.status}` ||
+                        "Unknown Name"
+                      ) : (
+                        <Box display="inline-flex" sx={{ width: "100%" }}>
+                          {dataForSmallScreen.title.keys.map((key, index) => {
+                            return (
+                              <div>
+                                {row[key] && (
+                                  <div style={{ display: "inline-flex" }}>
+                                    <Typography
+                                      variant="h6"
+                                      sx={{ mx: 1, fontWeight: 500 }}
+                                    >
+                                      {key === "deleted_at"
+                                        ? moment(row[key]).format(
+                                            "DD-MM-YYYY HH:mm:ss"
+                                          )
+                                        : row[key]}
+                                    </Typography>
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
                         </Box>
-                      )
-                  )}
-                </Grid>
-              </AccordionDetails>
-            </Accordion>
-          ))}
+                      )}
+                    </Typography>
+                    <Box display="flex">
+                      {rowClick && (
+                        <Button variant="text" onClick={() => rowClick(row)}>
+                          Details
+                        </Button>
+                      )}
+                      {actions?.map((action, actionIndex) => (
+                        <IconButton
+                          key={row._id + action.label + actionIndex}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            action.handler(row);
+                          }}
+                          aria-label={action.label}
+                          color="primary"
+                          sx={{
+                            padding: isSmallScreen ? "4px" : "8px",
+                          }}
+                        >
+                          {action.smallIcon}
+                        </IconButton>
+                      ))}
+                      {showActionMenu && (
+                        <ThreeDotsDynamicMenu
+                          row={row}
+                          handleMenuSelect={handleMenuSelect}
+                        />
+                      )}
+                    </Box>
+                  </Box>
+                </AccordionSummary>
+                <AccordionDetails>
+                  <Grid
+                    container
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 2, // Adjust spacing between label and value
+                    }}
+                  >
+                    {headers?.map(
+                      (keymap, index) =>
+                        keymap.key && (
+                          <Box
+                            key={keymap.label + index + "headers"}
+                            // item
+                            // xs={12}
+                            // sm={4}
+                            // md={3}
+                            // sx={{ mr: 1 }}
+                            // display="inline-flex"
+                          >
+                            <Typography
+                              variant="body2"
+                              fontWeight="bold"
+                              sx={{ m: 1 }} // Margin to create space between label and value
+                            >
+                              {keymap.label}:
+                            </Typography>
+                            <Typography variant="body2" sx={{ m: 1 }}>
+                              {keymap.key === "created_at" ||
+                              keymap.key === "expiry_date"
+                                ? moment(row?.[keymap.key]).format(
+                                    "YYYY-MM-DD HH:mm:ss"
+                                  )
+                                : row?.[keymap.key] || "N/A"}
+                            </Typography>
+                          </Box>
+                        )
+                    )}
+                  </Grid>
+                </AccordionDetails>
+              </Accordion>
+            ))}
         </>
       )}
     </TableContainer>

@@ -43,6 +43,7 @@ import CancelPresentationIcon from "@mui/icons-material/CancelPresentation";
 import SignWhiteBoard from "../../components/SignWhiteBoard";
 import AddIcon from "@mui/icons-material/Add";
 import ClearIcon from "@mui/icons-material/Clear";
+import formEvents from "../../utils/formEvents.util";
 
 const facilities = [
   "Wheel chair",
@@ -271,6 +272,7 @@ const EditCardDialog = ({ open, onClose, data, mode = "Edit" }) => {
       }
     });
   }
+  formEvents.disableWheelIncrAndDicr();
 
   return (
     <Dialog
