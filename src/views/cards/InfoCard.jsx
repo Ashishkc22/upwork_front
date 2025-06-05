@@ -280,7 +280,6 @@ const CardComponent = () => {
   const handleRenewCard = async () => {
     try {
       const renewPayload = {};
-      console.log("cardData", cardData);
 
       renewPayload.expiry_date = moment(new Date(cardData.expiry_date))
         .add(renewIncValue, "year")
@@ -290,8 +289,6 @@ const CardComponent = () => {
         .add(renewIncValue, "year")
         .format("MMM YYYY");
 
-      console.log("renewPayload", renewPayload);
-      console.log("renewIncValue", renewIncValue);
       setIscardLoadtion(true);
       const updatedCardData = await cardService.renewCard({
         ...renewPayload,
@@ -899,7 +896,11 @@ const CardComponent = () => {
                     <div>
                       <TextElement
                         label="Address"
-                        value={`${cardData.area} ${cardData.tehsil}  ${cardData.district} ${cardData.state} `}
+                        value={`${cardData?.area?.name || cardData?.area}, ${
+                          cardData?.tehsil?.name || cardData?.tehsil
+                        },  ${
+                          cardData?.district?.name || cardData?.district
+                        }, ${cardData?.state?.name || cardData?.state}`}
                       />
                     </div>
                   </Box>
@@ -1124,7 +1125,7 @@ const CardComponent = () => {
                         label="TL Name"
                         value={TLDetails.name}
                         path={`/field-executives/${TLDetails.tl_id}?isTL=true`}
-                        subText={`UID: ${TLDetails.tl_id}`}
+                        subText={`UID: ${TLDetails?.tl_id || "N/A"}`}
                       />
                       <PhoneIcon
                         onClick={() => window.open(`tel:${TLDetails.phone}`)}

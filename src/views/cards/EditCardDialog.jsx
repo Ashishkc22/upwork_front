@@ -151,7 +151,9 @@ const EditDialog = ({ open, onClose, cardData, setIscardLoadtion }) => {
   useEffect(() => {
     if (districtOption || formData.district) {
       const selectedDistrict = districtOption.find(
-        (data) => data.name === formData.district
+        (data) =>
+          data.name === formData.district.name ||
+          data.name === formData.district
       );
       if (selectedDistrict) {
         getAddressData({
@@ -270,7 +272,16 @@ const EditDialog = ({ open, onClose, cardData, setIscardLoadtion }) => {
   };
 
   useEffect(() => {
-    setFormData(cardData);
+    setFormData({
+      ...cardData,
+      state: cardData?.state?.name || cardData?.state || "",
+      district: cardData?.district?.name || cardData?.district || "",
+      tehsil: cardData?.tehsil?.name || cardData?.tehsil || "",
+      janpad: cardData?.janpad?.name || cardData?.janpad || "",
+      gramPanchayat:
+        cardData?.gramPanchayat?.name || cardData?.gramPanchayat || "",
+      gram: cardData?.gram?.name || cardData?.gram || "",
+    });
     setProfilePic(cardData?.image);
   }, [cardData]);
 
@@ -790,6 +801,7 @@ const EditDialog = ({ open, onClose, cardData, setIscardLoadtion }) => {
                     name="janpad"
                     disabled={isJanpadPanchyatLoading}
                     defaultValue={formData?.janpad}
+                    // value={formData?.janpad ? formData.janpad : ""}
                     onChange={handleChange}
                   >
                     {janpadOption.map((option) => {

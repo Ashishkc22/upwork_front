@@ -1,4 +1,4 @@
-const activeEnv = "test"; // dev, test, pro, staging
+const activeEnv = "dev"; // dev, test, pro, staging
 
 const apiInfo = {
   dev: {
@@ -61,7 +61,7 @@ function getDomain() {
 
 function getApiUrl({ path = false }) {
   let url = `${protocol()}://${getDomain()}:${getPort()}`;
-  if (isLocalEnvironment() !== "pro" || isLocalEnvironment() !== "staging") {
+  if (isLocalEnvironment() === "pro" || isLocalEnvironment() === "staging") {
     url = `${protocol()}://${getDomain()}`;
   }
   if (path) {

@@ -265,10 +265,14 @@ const ArogyamComponent = ({
             />
 
             <div className="user-loc">
-              {`${getGramAddress(cardData?.area)}, ${cardData?.tehsil}`}
+              {`${getGramAddress(cardData?.area?.name || cardData?.area)}, ${
+                cardData?.tehsil?.name || cardData?.tehsil
+              }`}
             </div>
             <div className="user-loc-2">
-              {`${cardData?.district}, ${cardData?.state}`}
+              {`${cardData?.district?.name || cardData?.district}, ${
+                cardData?.state?.name || cardData?.state
+              }`}
             </div>
           </div>
         </div>
