@@ -61,7 +61,7 @@ function getDomain() {
 
 function getApiUrl({ path = false }) {
   let url = `${protocol()}://${getDomain()}:${getPort()}`;
-  if (isLocalEnvironment() === "pro" || isLocalEnvironment() === "staging") {
+  if (isLocalEnvironment() !== "dev") {
     url = `${protocol()}://${getDomain()}`;
   }
   if (path) {
