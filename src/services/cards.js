@@ -25,7 +25,7 @@ async function getCardsData({
     limit,
     page,
     responseType,
-    ...(_status && { status: _status }),
+    ...(_status && { status: _status.toUpperCase() }),
     ...(q && { q }),
     ...(state && { state }),
     ...(district && { district }),
@@ -61,6 +61,7 @@ async function getCardsData({
     let idList = data.map((data) => {
       return data._id;
     });
+
     if (selectedCard === "pendingCards") {
       return {
         groupedData: data,
@@ -232,12 +233,20 @@ async function getCardDataByLocation({
   _paginationData,
   location,
   filterData = {},
+  duration = null,
+  till_duration = null,
+  q = null,
+  isPrintMode = null,
 } = {}) {
   const _payload = {
     // _paginationData,
     ...filterData,
     district: location.district,
     tehsil: location.tehsil,
+    duration,
+    till_duration,
+    q,
+    isPrintMode,
   };
   const {
     data,
@@ -260,6 +269,9 @@ async function getSingleFECardsByLocation({
   location,
   feUid,
   sortBy = "",
+  duration,
+  till_duration,
+  isPrintMode = null,
 } = {}) {
   const _payload = {
     ...filterData,
@@ -269,6 +281,9 @@ async function getSingleFECardsByLocation({
     feUid,
     district: location.district,
     tehsil: location.tehsil,
+    duration,
+    till_duration,
+    isPrintMode,
   };
   const {
     data,
@@ -317,7 +332,6 @@ async function getUsersList({ ids = [], _status } = {}) {
       ...(_status && { status: _status }),
     },
   });
-  console.log("userList", userList);
   return userList;
 
   if (status === "failed") {

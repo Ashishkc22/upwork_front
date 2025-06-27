@@ -182,6 +182,7 @@ export const CardContextProvider = ({ children }) => {
   const getTobePrinntedCards = async () => {
     console.log("getTobePrinntedCards -----");
     const data = await cards.getToBePrintedCards(filterData);
+    console.log("getTobePrinntedCards data", data);
     setCardLocationTagData(data?.groupedData);
     setTotalCardsAndToBePrinted({
       totalCards: data.totalCards,

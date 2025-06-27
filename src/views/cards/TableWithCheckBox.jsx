@@ -125,7 +125,6 @@ const TableWithCheckBox = ({
   markAsPrintPending,
   groupName,
   handleMarkAsPrintApiCall,
-  // highlightedRow,
 }) => {
   const {
     paginationData,

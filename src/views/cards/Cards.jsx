@@ -1,14 +1,6 @@
 import React, { useEffect, useState, useRef, useContext } from "react";
 import Header from "../../components/Header";
-import {
-  Grid,
-  Typography,
-  useTheme,
-  Box,
-  Card,
-  Button,
-  Paper,
-} from "@mui/material";
+import { Grid, Typography, useTheme, Box, Card, Button } from "@mui/material";
 import CustomTable from "../../components/CustomTable";
 import { tokens } from "../../theme";
 import cards from "../../services/cards";
@@ -45,6 +37,7 @@ import useScrollTrigger from "@mui/material/useScrollTrigger";
 import CssBaseline from "@mui/material/CssBaseline";
 import bin from "../../services/bin";
 import { useCardContext } from "./context/CardContext";
+import Header_2 from "../../components/Header_2";
 
 // // Storing all memoized components in an object
 const images = {
@@ -93,10 +86,7 @@ const Cards = () => {
     FEDetails,
     TLDetails,
     getCardsByLocation,
-    setCurrentActiveLocation,
     toBePrintedCards,
-    setTablesPagination,
-    getTobePrinntedCards,
     updateFilters,
     cardLocationTagData,
     getCardsForSingleTableByLocation,
@@ -464,6 +454,9 @@ const Cards = () => {
           cardCount: toBePrintedCards[locationName][FEUID].length,
         });
       }
+      console.log("downloadCardMaps", downloadCardMaps);
+      console.log("cardsToDownload", cardsToDownload);
+      return;
       _isDownloadCompleted[groupName] = true;
       // const selectedCardData = [];
       // _isDownloadCompleted[groupName] = true;
@@ -765,39 +758,40 @@ const Cards = () => {
               handleViewChange={() => setIsImageMode(!isImageMode)}
               apiCallBack={getTableData}
             />
-            {Boolean(Object.keys(downloadCardMaps).length) && (
-              <Stack
-                spacing={2}
-                direction="row"
-                sx={{
-                  position: "fixed",
-                  bottom: 60,
-                  right: 50,
-                  alignItems: "center",
-                  zIndex: 2,
-                }}
-              >
-                <Fab
-                  sx={{
-                    background: colors.primary[200],
-                    color: colors.primary[500],
-                  }}
-                  variant="extended"
-                  size="large"
-                  onClick={handleGroupCardsDownload}
-                >
-                  <Typography variant="h6">[</Typography>
-
-                  <Typography variant="h6">Download</Typography>
-                  <Typography variant="h6" sx={{ ml: 1, fontWeight: "600" }}>
-                    {downloadCardCount}
-                  </Typography>
-                  <Typography variant="h6">]</Typography>
-                </Fab>
-              </Stack>
-            )}
+            {/* <Header_2 /> */}
           </div>
         </Slide>
+        {Boolean(Object.keys(downloadCardMaps).length) && (
+          <Stack
+            spacing={2}
+            direction="row"
+            sx={{
+              position: "fixed",
+              bottom: 55,
+              right: 60,
+              alignItems: "center",
+              zIndex: 2,
+            }}
+          >
+            <Fab
+              sx={{
+                background: colors.primary[200],
+                color: colors.primary[500],
+              }}
+              variant="extended"
+              size="large"
+              onClick={handleGroupCardsDownload}
+            >
+              <Typography variant="h6">[</Typography>
+
+              <Typography variant="h6">Download</Typography>
+              <Typography variant="h6" sx={{ ml: 1, fontWeight: "600" }}>
+                {downloadCardCount}
+              </Typography>
+              <Typography variant="h6">]</Typography>
+            </Fab>
+          </Stack>
+        )}
       </Grid>
       <Box>
         <Backdrop

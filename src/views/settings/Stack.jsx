@@ -218,9 +218,9 @@ Text Dialog  logic
 
   const handleAddAction = async () => {
     const keyMap = {
-      district: "stateId",
-      tehsil: "districtId",
-      janPanchayat: "districtId",
+      district: "ref_id",
+      tehsil: "ref_id",
+      janPanchayat: "ref_id",
       gramPanchayat: "janPanchayatId",
       gram: "gramPanchayatId",
     };

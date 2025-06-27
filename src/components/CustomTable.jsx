@@ -39,6 +39,7 @@ const DynamicTable = ({
   handleSort,
   showActionMenu = false,
   sortType = "acc",
+  disableDefaultSortMethod = false,
   statusIndicator = true,
 }) => {
   const theme = useTheme();
@@ -163,23 +164,37 @@ const DynamicTable = ({
                     },
                     ...(keymap.sort && {
                       ":hover": { cursor: "pointer" },
+                      color:
+                        disableDefaultSortMethod && sortType !== null
+                          ? "blue"
+                          : null,
                     }),
                     ...(keymap.sort &&
-                      urlDateType.get("sortType") === "des" && {
+                      urlDateType.get("sortType") === "des" &&
+                      !disableDefaultSortMethod && {
                         color: "blue",
                       }),
                   }}
                   {...(keymap.sort && {
                     onClick: () => {
                       if (handleSort) {
-                        handleSort({
-                          colName: keymap.key,
-                          type:
-                            urlDateType.get("sortType") === "acc" ||
-                            urlDateType.get("sortType") === null
-                              ? "des"
-                              : "acc",
-                        });
+                        if (!disableDefaultSortMethod) {
+                          handleSort({
+                            colName: keymap.key,
+                            type:
+                              (urlDateType.get("sortType") === "acc" &&
+                                !disableDefaultSortMethod) ||
+                              (urlDateType.get("sortType") === null &&
+                                !disableDefaultSortMethod)
+                                ? "des"
+                                : "acc",
+                          });
+                        } else {
+                          handleSort({
+                            colName: keymap.key,
+                            type: sortType === null ? "des" : null,
+                          });
+                        }
                       }
                     },
                   })}
@@ -187,7 +202,9 @@ const DynamicTable = ({
                   <Box display="flex" alignItems="center">
                     {keymap.label}
                     {keymap.sort &&
-                      (urlDateType.get("sortType") === "des" ? (
+                      ((urlDateType.get("sortType") === "des" &&
+                        !disableDefaultSortMethod) ||
+                      sortType !== null ? (
                         <ArrowDownwardIcon sx={{ mx: 1 }} />
                       ) : (
                         <ArrowUpwardIcon sx={{ mx: 1 }} />

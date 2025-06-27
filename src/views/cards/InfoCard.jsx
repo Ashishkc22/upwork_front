@@ -1114,33 +1114,35 @@ const CardComponent = () => {
                         Renew
                       </Button>
                     </Box>
-                    <Box
-                      sx={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                      }}
-                    >
-                      <TextElement
-                        label="TL Name"
-                        value={TLDetails.name}
-                        path={`/field-executives/${TLDetails.tl_id}?isTL=true`}
-                        subText={`UID: ${TLDetails?.tl_id || "N/A"}`}
-                      />
-                      <PhoneIcon
-                        onClick={() => window.open(`tel:${TLDetails.phone}`)}
-                      />
-                      <IconButton
-                        sx={{ color: "#23e223" }}
-                        onClick={() =>
-                          window.open(
-                            `https://wa.me/+91${TLDetails.phone}?text=token no. ${cardData.s_no}`
-                          )
-                        }
+                    {!isEmpty(TLDetails) && (
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                        }}
                       >
-                        <WhatsAppIcon />
-                      </IconButton>
-                    </Box>
+                        <TextElement
+                          label="TL Name"
+                          value={TLDetails?.name || ""}
+                          path={`/field-executives/${TLDetails?.tl_id}?isTL=true`}
+                          subText={`UID: ${TLDetails?.tl_id || "N/A"}`}
+                        />
+                        <PhoneIcon
+                          onClick={() => window.open(`tel:${TLDetails.phone}`)}
+                        />
+                        <IconButton
+                          sx={{ color: "#23e223" }}
+                          onClick={() =>
+                            window.open(
+                              `https://wa.me/+91${TLDetails.phone}?text=token no. ${cardData.s_no}`
+                            )
+                          }
+                        >
+                          <WhatsAppIcon />
+                        </IconButton>
+                      </Box>
+                    )}
                   </Grid>
                 </Grid>
               </Grid>

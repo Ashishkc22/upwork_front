@@ -19,7 +19,9 @@ import Settings from "./views/settings/Settings";
 import Users from "./views/users/Users";
 import CustomerDetails from "./views/users/CustomerDetails";
 import { CardContextProvider } from "./views/cards/context/CardContext";
+import TestCard from "./views/cards/Cards_2";
 import Bin from "./views/bin/Bin";
+import { CardContextProvider2 } from "./views/cards/context/CardContext2";
 // import { loadFontFromCache, cacheGoogleFont } from "./utils/cache.util";
 
 // const loadGoogleFonts = async () => {
@@ -100,9 +102,9 @@ function App() {
               <Route
                 path="/cards"
                 element={
-                  <CardContextProvider>
-                    <Cards />
-                  </CardContextProvider>
+                  <CardContextProvider2>
+                    <TestCard />
+                  </CardContextProvider2>
                 }
               />
 
@@ -122,6 +124,14 @@ function App() {
               <Route path="/bin" element={<Bin />} />
               <Route path="/users" element={<Users />} />
               <Route path="/users/:id" element={<CustomerDetails />} />
+              {/* <Route
+                path="/test-card"
+                element={
+                  <CardContextProvider>
+                    <Cards />
+                  </CardContextProvider>
+                }
+              /> */}
             </Route>
           </Route>
           <Route path="*" element={<PageNotFound />} />

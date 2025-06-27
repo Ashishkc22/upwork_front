@@ -28,8 +28,6 @@ function request({
   url,
   skipNgrokHeader = false,
 }) {
-  console.log("method =====", method);
-
   return axios({
     method,
     url: url || getApiUrl({ path }),
