@@ -428,6 +428,7 @@ function CardsView() {
             }}
             toBePrintedCardScoreDetails={{
               value: cardsScoreDetails.toBePrinted,
+              secondValue: cardsScoreDetails.total_print_card_showing,
             }}
             pendindgCardScoreDetails={{
               value: cardsScoreDetails.pendingCardCount,

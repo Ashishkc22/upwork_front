@@ -32,7 +32,7 @@ import CustomDateRangePicker from "./CustomDateRangePicker";
 import { enqueueSnackbar } from "notistack";
 import commonAPIServices from "../services/common";
 import ChipStack from "../views/dashboard/ChipStack";
-import { debounce } from "lodash";
+import { debounce, isEmpty } from "lodash";
 import moment from "moment";
 import cardService from "../services/cards";
 import { useSearchParams } from "react-router-dom";
@@ -265,6 +265,7 @@ function Header({
               valueId: selectedId,
               options: data,
               setFn: setTehsil,
+              type: payload.type,
             });
           break;
         case "gram":
@@ -274,6 +275,7 @@ function Header({
               valueId: selectedId,
               options: data,
               setFn: setGram,
+              type: payload.type,
             });
           break;
         default:
@@ -290,15 +292,14 @@ function Header({
       } else {
         newParams.set(name, value);
       }
+      console.log("ALL newParams", Object.fromEntries(prev.entries()));
       return newParams;
     });
   }
 
   function handleFilterChange({ type, value }) {
-    console.log("Type  -", type, " value-", value);
     setFilterChips((prev) => {
       const existingIndex = prev.findIndex((chip) => chip.type === type);
-
       if (existingIndex > -1) {
         const updatedChips = [...prev];
         if (updatedChips[existingIndex].type === type) {
@@ -414,9 +415,19 @@ function Header({
     const userList = await cardService.getUsersList({
       ...(selectedCardType === "toBePrinted" && { _status: "SUBMITTED" }),
     });
-
+    const preSelectedValue = searchParams.get("createdById");
     setCreatedByOPtions(userList);
-  }, [selectedCardType]);
+    if (preSelectedValue && !isEmpty(userList)) {
+      const results = userList.find((user) => user._id === preSelectedValue);
+      setCreatedBy({
+        ...results,
+        label: results["name"],
+        code: results["uid"],
+      });
+      handleFilterChange({ type: "createdById", value: results?.name || null });
+      setFilterValues((p) => ({ ...p, created_by: results.uid }));
+    }
+  }, [selectedCardType, searchParams]);
 
   const emitScoreCardClick = (type) => {
     if (selectedCardType === type) {
@@ -436,7 +447,15 @@ function Header({
     setTehsil(null);
     setGram(null);
   };
-  const clearURLParams = () => {};
+  const clearURLParams = () => {
+    setSearchParams((p) => {
+      ["districtId", "tehsilId", "createdById", "dateType"].forEach((k) =>
+        p.delete(k)
+      );
+      console.log(Object.fromEntries(p.entries()));
+      return p;
+    });
+  };
   const clearSelectedFilters = () => {
     clearLocationFilters();
     setStatus(null);
@@ -471,7 +490,9 @@ function Header({
     apiCallQueue.push(getAddressData({ type: "district" }, districtId));
     const tehsilId = searchParams.get("tehsilId");
     const gramId = searchParams.get("gramId");
-    if (tehsilId) {
+    const dateType = searchParams.get("dateType");
+    const printMode = searchParams.get("printMode");
+    if (tehsilId || districtId) {
       apiCallQueue.push(
         getAddressData(
           { type: "tehsil", params: { refId: districtId } },
@@ -479,16 +500,43 @@ function Header({
         )
       );
     }
-    if (gramId) {
+    if (gramId || tehsilId) {
       apiCallQueue.push(
         getAddressData({ type: "gram", params: { refId: tehsilId } }, gramId)
       );
     }
+    if (dateType) {
+      setDateType(dateType);
+      const duration = searchParams.get("duration");
+      if (duration) {
+        const [start, end] = duration.split("-");
+        setFilterValues((p) => ({
+          ...p,
+          duration: moment(start, "DD/MM/YYYY").startOf("day").valueOf(),
+          till_duration: moment(end || start, "DD/MM/YYYY")
+            .endOf("day")
+            .valueOf(),
+        }));
+        handleFilterChange({ type: "duration", value: duration || null });
+      } else {
+        handleFilterChange({ type: "dateType", value: dateType || null });
+      }
+    }
+    if (printMode) {
+      // setPrintModeDateTime();
+      setFilterValues((p) => ({ ...p, isPrintMode: printMode }));
+    }
+    // if(searchParams.get("createdById")){
+    apiCallQueue.push(getUsersList());
+    // }
     Promise.all(apiCallQueue).then(() => {
-      callBackFunction().then(() => {
-        getUsersList();
-        setTimeout(restoreScroll, 1000);
-      });
+      setTimeout(
+        () =>
+          callBackFunction().then(() => {
+            restoreScroll();
+          }),
+        1000
+      );
     });
   }, []);
 
@@ -894,7 +942,10 @@ function Header({
               variant="outlined"
               size="small"
               startIcon={<ClearIcon />}
-              onClick={() => handleClearChipFilter()}
+              onClick={() => {
+                handleClearChipFilter();
+                clearURLParams();
+              }}
             >
               Clear
             </Button>

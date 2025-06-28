@@ -55,11 +55,6 @@ export const CardContextProvider2 = ({ children }) => {
     }
   };
 
-  useEffect(
-    () => console.log("FilterValue Changed to: ", filterValues),
-    [filterValues]
-  );
-
   function findDuplicateValues(arr, key = []) {
     const valueCounts = new Map();
     const ids = new Set();
@@ -123,7 +118,7 @@ export const CardContextProvider2 = ({ children }) => {
         });
       }
 
-      if (response?.status === "success") {
+      if (response?.status === "success" && !isEmpty(response.data)) {
         const newData = {};
         let cardIds = new Set(storageUtil.getStorageData("cards_ids") || []);
         console.log("cardIds", cardIds);
@@ -145,26 +140,6 @@ export const CardContextProvider2 = ({ children }) => {
           [sectionName]: newData,
         }));
       }
-      //   const newData = {};
-      //   Object.keys(response.data).forEach(
-      //     (key) =>
-      //       (newData[key] = findDuplicateValues(response.data[key], [
-      //         "name",
-      //         "father_husband_name",
-      //       ]))
-      //   );
-      //   setToBePrintedCards((prev) => {
-      //     const newObject = {
-      //       ...prev,
-      //       [`${location.district} ${location.tehsil}`]: newData,
-      //     };
-      //     return newObject;
-      //   });
-      //   setPaginationCardCount((p) => ({
-      //     ...p,
-      //     [`${location.district} ${location.tehsil}`]: response.paginationData,
-      //   }));
-      // }
       setsectionLoading((p) => {
         p[sectionName] = false;
         return { ...p };
@@ -258,26 +233,10 @@ export const CardContextProvider2 = ({ children }) => {
     callAPI = false,
   } = {}) => {
     let _filterValues = filterValues;
-    // console.log(
-    //   "get card location Tag with filterValues props:",
-    //   status,
-    //   search,
-    //   district,
-    //   duration,
-    //   created_by,
-    //   selectedCard,
-    //   tehsil,
-    //   gram,
-    //   till_duration,
-    //   isPrintMode
-    // );
-    console.log("filterValue", filterValues);
     setFilterValues((p) => {
       _filterValues = p;
       return p;
     });
-    console.log("_filterValues", _filterValues);
-
     const data = await cards.getToBePrintedCards({
       _status: status || _filterValues?.status || null,
       q: search || _filterValues?.search || null,
@@ -296,7 +255,6 @@ export const CardContextProvider2 = ({ children }) => {
       (!isEmpty(data?.groupedData) && (duration || till_duration || search))
     ) {
       const activeSections = [];
-
       Object.keys(openSections).forEach((k) => {
         if (openSections[k]) {
           const [district, tehsil] = k.split("-");
@@ -321,7 +279,6 @@ export const CardContextProvider2 = ({ children }) => {
         });
       });
     }
-
     setCardLocationTagData(data?.groupedData || []);
     if (isEmpty(cardDataByLocations) && isEmpty(openSections)) {
       const firstSection = data?.groupedData[0];
@@ -348,25 +305,19 @@ export const CardContextProvider2 = ({ children }) => {
         pendingCardCount: data.pendingCardCount,
       }),
     }));
-    setCheckedSections((p) => ({
-      ...p,
-      ...data?.groupedData?.reduce(
-        (init, data) => ({
-          ...init,
-          [`${data._id.district}-${data._id.tehsil}`]: [],
-        }),
-        {}
-      ),
-    }));
-    // setTablesPagination(data?.groupedData);
-
-    // setCurrentActiveLocation(data.groupedData[0]._id);
-    // getCardsByLocation({
-    //   location: data.groupedData[0]._id,
-    //   feList: data.groupedData[0].createByUids,
-    // });
+    if (!isEmpty(data?.groupedData)) {
+      setCheckedSections((p) => ({
+        ...p,
+        ...data?.groupedData?.reduce(
+          (init, data) => ({
+            ...init,
+            [`${data?._id?.district}-${data?._id?.tehsil}`]: [],
+          }),
+          {}
+        ),
+      }));
+    }
     setIsPageLoading(false);
-
     return data;
   };
 
