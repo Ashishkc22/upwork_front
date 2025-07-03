@@ -1,4 +1,4 @@
-const activeEnv = "test"; // dev, test, pro, staging
+const activeEnv = "dev"; // dev, test, pro, staging
 
 const apiInfo = {
   dev: {

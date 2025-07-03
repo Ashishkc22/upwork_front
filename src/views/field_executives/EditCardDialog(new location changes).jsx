@@ -198,7 +198,7 @@ const EditProfileDialog = ({
 
     const _data = await common.getAddressData(payload);
 
-    if (payload?.type == "district" && !_data?.error) {
+    if (payload?.type === "district" && !_data?.error) {
       setDistrictOption(_data);
       if (!isEmpty(_data) && data?.current_district) {
         setDistrict(
@@ -209,7 +209,7 @@ const EditProfileDialog = ({
           )
         );
       }
-    } else if (payload.type === "tehsil") {
+    } else if (payload?.type === "tehsil") {
       setTehsilOption(_data);
       if (!isEmpty(_data) && data?.current_tehsil) {
         setTehsil(
@@ -219,7 +219,7 @@ const EditProfileDialog = ({
           )
         );
       }
-    } else if (payload?.type == "janPanchayat") {
+    } else if (payload?.type === "janPanchayat") {
       setJanPanchayatOptions(_data);
       if (!isEmpty(_data) && data?.current_janpad) {
         setJanPanchayat(
@@ -427,6 +427,10 @@ const EditProfileDialog = ({
         })
         .then(() => {
           onClose(true);
+          storageUtil.removeItem("TL-draft-data");
+        })
+        .catch(() => {
+          draftFormData();
         });
     } else {
       field_executives
@@ -816,7 +820,7 @@ const EditProfileDialog = ({
               <Autocomplete
                 getOptionLabel={(option) => option.name}
                 onChange={(e, data) => {
-                  setJanPanchayat(data);
+                  setGram(data);
                 }}
                 value={gram}
                 options={gramOptions}

@@ -250,7 +250,12 @@ const UserInfoCard = () => {
                       >
                         <ArrowBackIcon sx={{ fontSize: 30 }} />
                       </IconButton>
-                      <TextGroup title="UID:" value={userData.uid} />
+                      <TextGroup
+                        title="UID:"
+                        value={
+                          userData.role === "TL" ? userData.tl_id : userData.uid
+                        }
+                      />
                     </Box>
                   </Grid>
                   <Grid item xs={6}>

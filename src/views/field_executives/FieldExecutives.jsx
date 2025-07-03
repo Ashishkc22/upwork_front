@@ -6,6 +6,7 @@ import { useState } from "react";
 import CustomTable from "../../components/CustomTable";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import EditCardDialog from "./EditCardDialog";
+// import EditCardDialog from "./EditCardDialog(new location changes)";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import LoadingScreen from "../../components/LaodingScreenWithWhiteBG";
@@ -154,9 +155,8 @@ const HospitalPage = () => {
     sortBy,
   } = {}) => {
     const urlStatus = urlDateType.get("status");
-    console.log("search", search);
 
-    if (!search && searchValue && search != "em") {
+    if (!search && searchValue && search !== "em") {
       search = searchValue;
     }
     setIsPageLoading(true);
@@ -181,7 +181,6 @@ const HospitalPage = () => {
       })
       .then((response) => {
         if (!isEmpty(response)) {
-          console.log("response FE", response);
           setPageCount(response.total_results);
           if (!isEmpty(response.data)) {
             setUsersList(response.data);

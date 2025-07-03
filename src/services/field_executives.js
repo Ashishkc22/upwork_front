@@ -213,18 +213,18 @@ async function saveTLDetails(formData) {
       path: "user/add-tl",
       body: formData,
     });
-    if (data.status === "failed") {
-      console.log("data failed", data);
-
+    if (data?.error && data.error.status === "Failed") {
       enqueueSnackbar(data.message || "something went wrong.", {
         variant: "error",
         autoHideDuration: 2000,
       });
-      return {};
+      throw new Error(data.message || "something went wrong.");
     } else if (!isEmpty(data)) {
       return data;
     }
-  } catch (error) {}
+  } catch (error) {
+    throw error;
+  }
 }
 
 async function changeUserStatus(formData, id) {
