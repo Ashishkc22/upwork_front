@@ -725,7 +725,6 @@ const EditProfileDialog = ({
                 </Select>
               </FormControl>
             )}
-
             {!isEmpty(districtOption) && (
               <Autocomplete
                 getOptionLabel={(option) => option.name}
@@ -745,9 +744,9 @@ const EditProfileDialog = ({
                   }
                 }}
                 sx={{ my: 1 }}
-                renderInput={(params) => (
-                  <TextField variant="standard" {...params} label="District" />
-                )}
+                // renderInput={(params) => (
+                //   <TextField variant="standard" {...params} label="District" />
+                // )}
               />
             )}
 
@@ -921,7 +920,11 @@ const EditProfileDialog = ({
                 <Typography variant="h6" gutterBottom>
                   Signature :
                 </Typography>
-                <img style={{ height: "14vh" }} src={signatureDataUrl} />
+                <img
+                  alt="sign"
+                  style={{ height: "14vh" }}
+                  src={signatureDataUrl}
+                />
                 <IconButton
                   onClick={() => {
                     setSignatureDataUrl("");

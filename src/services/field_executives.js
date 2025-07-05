@@ -126,8 +126,6 @@ function generateRandom5DigitNumber() {
 
 async function uploadImage(image, skipBlob) {
   const newformData = new FormData();
-  console.log("skipBlob", skipBlob);
-
   const imageBlobData = skipBlob ? image : dataUrlToBlob(image);
   newformData.append("file", imageBlobData, `${generateRandom5DigitNumber()}`);
   const url = await common.fileUpload(newformData);
@@ -194,11 +192,10 @@ async function saveTLDetails(formData) {
       const [name, image] = imagesToUploadEntries[i];
       if (name === "aFront") {
         if (isEmpty(formData.id_proof)) formData.id_proof = {};
-        formData.id_proof.back = await uploadImage(image);
-      }
-      if (name === "aBack") {
-        if (isEmpty(formData.id_proof)) formData.id_proof = {};
         formData.id_proof.front = await uploadImage(image);
+      } else if (name === "aBack") {
+        if (isEmpty(formData.id_proof)) formData.id_proof = {};
+        formData.id_proof.back = await uploadImage(image);
       } else {
         formData[keyMapper[name]] = await uploadImage(image);
       }

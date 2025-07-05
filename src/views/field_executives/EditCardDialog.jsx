@@ -98,7 +98,7 @@ const EditProfileDialog = ({
   const [confirmPassword, setConfirmPassword] = useState("");
   const [address, setAddress] = useState("");
   const [state, setState] = useState(addTLMode ? "MP" : null);
-  const [district, setDistrict] = useState(null);
+  const [district, setDistrict] = useState("");
   const [emergencyNumber, setEmergencyNumber] = useState("");
   const [teamLeader, setTeamLeader] = useState("");
   const [backupData, setBackupData] = useState({});
@@ -186,16 +186,17 @@ const EditProfileDialog = ({
     if (addTLMode) {
       draftData = storageUtil.getStorageData("TL-draft-data") || {};
     }
-
     const _data = await common.getAddressData(payload);
-    console.log("address ", _data);
-
-    if (payload?.type == "district" && !_data?.error) {
+    if (payload?.type === "district" && !_data?.error) {
       setDistrictOption(_data);
       if (!isEmpty(_data) && data?.district) {
-        setDistrict(_data?.find((d) => d.name === data.district));
+        setDistrict(
+          _data?.find(
+            (d) => d.name.toLowerCase() === data.district.toLowerCase()
+          )
+        );
       }
-    } else if (payload?.type == "janPanchayat") {
+    } else if (payload?.type === "janPanchayat") {
       setJanPanchayatOptions(_data);
       if (!isEmpty(_data) && data?.janPanchayat) {
         setJanPanchayat(_data?.find((d) => d.name === data.janPanchayat));
@@ -627,7 +628,6 @@ const EditProfileDialog = ({
                 </Select>
               </FormControl>
             )}
-
             {!isEmpty(districtOption) && (
               <Autocomplete
                 getOptionLabel={(option) => option.name}
@@ -758,7 +758,11 @@ const EditProfileDialog = ({
                 <Typography variant="h6" gutterBottom>
                   Signature :
                 </Typography>
-                <img style={{ height: "14vh" }} src={signatureDataUrl} />
+                <img
+                  alt="sign"
+                  style={{ height: "14vh" }}
+                  src={signatureDataUrl}
+                />
                 <IconButton
                   onClick={() => {
                     setSignatureDataUrl("");
