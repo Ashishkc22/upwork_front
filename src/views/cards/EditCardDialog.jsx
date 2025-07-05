@@ -64,6 +64,11 @@ const EditDialog = ({ open, onClose, cardData, setIscardLoadtion }) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
 
+  const nextTypeMap = {
+    district: ["tehsil", "janPanchayat"],
+    janPanchayat: "gramPanchayat",
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     if (name === "idProof") {
@@ -87,6 +92,7 @@ const EditDialog = ({ open, onClose, cardData, setIscardLoadtion }) => {
       setIsJanpadPanchyatLoading(true);
     }
     if (payload?.type == "gramPanchayat") {
+      payload.params.showGrams = true;
       setIsGramPanchyatLoading(true);
     }
     if (!payload?.type) {
@@ -98,26 +104,66 @@ const EditDialog = ({ open, onClose, cardData, setIscardLoadtion }) => {
     if (payload?.type == "gram") {
       setIsGramLoading(true);
     }
-    commonService.getAddressData(payload).then((data) => {
-      if (payload?.type == "tehsil") {
-        setTehsilOption(data || []);
-        setIsTehsilLoading(false);
-      } else if (payload?.type == "janPanchayat") {
-        setJanpadOption(data || []);
-        setIsJanpadPanchyatLoading(false);
-      } else if (payload?.type == "gramPanchayat") {
-        setGramPanchayatOptions(data || []);
-        setIsGramPanchyatLoading(false);
-      } else if (payload?.type == "district") {
-        setDistrictOption(data || []);
-        setIsDistrictLoading(false);
-      } else if (payload?.type == "gram") {
-        setGramOption(data || []);
-        setIsGramLoading(false);
-      } else {
-        setStateOption(data || []);
-        setIsStateLoading(false);
-      }
+    return new Promise((resolve, reject) => {
+      commonService
+        .getAddressData(payload)
+        .then((data) => {
+          if (payload?.type == "tehsil") {
+            setTehsilOption(data || []);
+            setIsTehsilLoading(false);
+          } else if (payload?.type == "janPanchayat") {
+            setJanpadOption(data || []);
+            setIsJanpadPanchyatLoading(false);
+          } else if (payload?.type == "gramPanchayat") {
+            let newGrams = [];
+            let selectedGramPanchayatName = null;
+            data.forEach(
+              (d) =>
+                (newGrams = newGrams.concat(
+                  d.grams?.map((g) => {
+                    const constructedObject = {
+                      gramId: g._id,
+                      gramName: g.name,
+                      gramPanchayatId: d._id,
+                      gramPanchayatName: d.name,
+                      name: `${d.name}, ${g.name}`,
+                    };
+                    if (
+                      cardData?.gramPanchayat?.name === d.name &&
+                      cardData?.gram?.name === g.name
+                    ) {
+                      selectedGramPanchayatName = constructedObject;
+                    } else if (
+                      cardData?.gramPanchayat === d.name &&
+                      cardData?.gram === g.name
+                    ) {
+                      selectedGramPanchayatName = constructedObject;
+                    }
+                    return constructedObject;
+                  })
+                ))
+            );
+            setGramPanchayatOptions(newGrams || []);
+            if (selectedGramPanchayatName) {
+              setFormData((pd) => ({
+                ...pd,
+                gramPanchayat: selectedGramPanchayatName,
+              }));
+            }
+            setIsGramPanchyatLoading(false);
+          } else if (payload?.type == "district") {
+            setDistrictOption(data || []);
+            setIsDistrictLoading(false);
+          } else if (payload?.type == "gram") {
+            setGramOption(data || []);
+            setIsGramLoading(false);
+          } else {
+            setStateOption(data || []);
+            setIsStateLoading(false);
+          }
+          resolve(data);
+        })
+        .catch(reject);
     });
   }
 
@@ -125,7 +171,7 @@ const EditDialog = ({ open, onClose, cardData, setIscardLoadtion }) => {
     clearTimeout(useEffectTypingTimer);
     useEffectTypingTimer = setTimeout(function () {
       // call API
-      getAddressData();
+      // getAddressData();
     }, 10);
 
     // getAddressData({ type: "tehsil" });
@@ -133,20 +179,83 @@ const EditDialog = ({ open, onClose, cardData, setIscardLoadtion }) => {
   }, [formData?.state]);
   //  formData?.district, formData?.tehsil, formData.janpad
 
-  useEffect(() => {
-    if (stateOption || formData.state) {
-      const selectedState = stateOption.find(
-        (data) => data.name === formData.state
+  function handleAddressAPICalls() {
+    getAddressData().then((_stateOptions) => {
+      const selectedState = _stateOptions.find(
+        (data) => data.name === cardData.state.name
       );
       if (selectedState) {
         getAddressData({
           type: "district",
           params: { refId: selectedState._id },
+        }).then((_districtOption) => {
+          if (_districtOption || cardData.district) {
+            const selectedDistrict = _districtOption.find((data) => {
+              const districtName = data?.name?.toLowerCase();
+              if (typeof cardData?.district === "string") {
+                return districtName === cardData?.district?.toLowerCase();
+              }
+              if (typeof cardData?.district === "object" && cardData !== null) {
+                return districtName === cardData?.district?.name?.toLowerCase();
+              }
+              return false;
+            });
+            if (selectedDistrict) {
+              getAddressData({
+                type: "tehsil",
+                params: { refId: selectedDistrict._id },
+              });
+              getAddressData({
+                type: "janPanchayat",
+                params: { refId: selectedDistrict._id },
+              }).then((_janpadOption) => {
+                if (_janpadOption || cardData.janpad) {
+                  const selected = _janpadOption.find((data) => {
+                    const districtName = data?.name?.toLowerCase();
+                    if (typeof cardData.janpad === "string") {
+                      return districtName === cardData.janpad?.toLowerCase();
+                    }
+                    if (
+                      typeof cardData.janpad === "object" &&
+                      cardData !== null
+                    ) {
+                      return (
+                        districtName === cardData.janpad?.name?.toLowerCase()
+                      );
+                    }
+                    return false;
+                  });
+                  if (selected) {
+                    getAddressData({
+                      type: "gramPanchayat",
+                      params: {
+                        refId: selected._id,
+                      },
+                    });
+                  }
+                }
+              });
+            }
+          }
         });
-      } else {
       }
-    }
-  }, [stateOption, formData?.state]);
+    });
+  }
+
+  // useEffect(() => {
+  //   if (stateOption || formData.state) {
+  //     const selectedState = stateOption.find(
+  //       (data) => data.name === formData.state
+  //     );
+  //     if (selectedState) {
+  //       getAddressData({
+  //         type: "district",
+  //         params: { refId: selectedState._id },
+  //       });
+  //     } else {
+  //     }
+  //   }
+  // }, [stateOption, formData?.state]);
 
   useEffect(() => {
     if (districtOption || formData.district) {
@@ -184,21 +293,17 @@ const EditDialog = ({ open, onClose, cardData, setIscardLoadtion }) => {
     }
   }, [janpadOption, formData.janpad]);
 
-  useEffect(() => {
-    if (gramPanchayatOptions || formData.gramPanchayat) {
-      const selected = gramPanchayatOptions.find(
-        (data) => data.name === formData.gramPanchayat
-      );
-      if (selected) {
-        getAddressData({
-          type: "gram",
-          params: {
-            refId: selected._id,
-          },
-        });
-      }
-    }
-  }, [gramPanchayatOptions, formData.gramPanchayat]);
+  // useEffect(() => {
+  //   if (gramPanchayatOptions || formData.gramPanchayat) {
+  //     console.log("formData", formData.gramPanchayat);
+  //     const selected = gramPanchayatOptions.find(
+  //       (data) =>
+  //         data.gramPanchayatId === formData.gramPanchayat.gramPanchayatId &&
+  //         data.gramId === formData.gramPanchayat.gramId
+  //     );
+  //     console.log("selected", selected);
+  //   }
+  // }, [gramPanchayatOptions, formData.gramPanchayat]);
 
   const handleRotateLeft = () => setRotation((prev) => prev - 90);
   const handleRotateRight = () => setRotation((prev) => prev + 90);
@@ -251,15 +356,19 @@ const EditDialog = ({ open, onClose, cardData, setIscardLoadtion }) => {
     }
 
     if (formData.gramPanchayat) {
-      newFormData.gramPanchayat = gramPanchayatOptions.find(
-        (data) => data.name === formData.gramPanchayat
-      )?._id;
+      const gramAndGramPanchyat = gramPanchayatOptions.find(
+        (data) =>
+          data.gramPanchayatId === formData.gramPanchayat.gramPanchayatId &&
+          data.gramId === formData.gramPanchayat.gramId
+      );
+      newFormData.gramPanchayat = gramAndGramPanchyat.gramPanchayatId;
+      newFormData.gram = gramAndGramPanchyat.gramId;
     }
-    if (formData.gram) {
-      newFormData.gram = gramOption.find(
-        (data) => data.name === formData.gram
-      )?._id;
-    }
+    // if (formData.gram) {
+    //   newFormData.gram = gramOption.find(
+    //     (data) => data.name === formData.gram
+    //   )?._id;
+    // }
 
     if (status) {
       newFormData.status = status;
@@ -272,15 +381,23 @@ const EditDialog = ({ open, onClose, cardData, setIscardLoadtion }) => {
   };
 
   useEffect(() => {
+    if (cardData?.state) {
+      handleAddressAPICalls();
+    }
     setFormData({
       ...cardData,
       state: cardData?.state?.name || cardData?.state || "",
       district: cardData?.district?.name || cardData?.district || "",
       tehsil: cardData?.tehsil?.name || cardData?.tehsil || "",
       janpad: cardData?.janpad?.name || cardData?.janpad || "",
-      gramPanchayat:
-        cardData?.gramPanchayat?.name || cardData?.gramPanchayat || "",
-      gram: cardData?.gram?.name || cardData?.gram || "",
+      // gramPanchayat:
+      //   `${cardData?.gramPanchayat?.name || cardData?.gramPanchayat}, ${
+      //     cardData?.gram?.name || cardData?.gram
+      //   }` ||
+      //   cardData?.gramPanchayat?.name ||
+      //   cardData?.gramPanchayat ||
+      // "",
+      // gram: cardData?.gram?.name || cardData?.gram || "",
     });
     setProfilePic(cardData?.image);
   }, [cardData]);
@@ -825,7 +942,6 @@ const EditDialog = ({ open, onClose, cardData, setIscardLoadtion }) => {
                 </FormControl>
               </Grid>
             )}
-
             {Boolean(gramPanchayatOptions.length) && (
               <Grid item xs={12} sm={3}>
                 <FormControl fullWidth>
@@ -842,9 +958,7 @@ const EditDialog = ({ open, onClose, cardData, setIscardLoadtion }) => {
                     onChange={handleChange}
                   >
                     {gramPanchayatOptions.map((option) => {
-                      return (
-                        <MenuItem value={option.name}>{option.name}</MenuItem>
-                      );
+                      return <MenuItem value={option}>{option.name}</MenuItem>;
                     })}
                   </Select>
                   {isGramPanchyatLoading ? (
