@@ -279,6 +279,12 @@ const UserInfoCard = () => {
                       </Grid>
                       <Grid item xs={5}>
                         <TextGroup title="Name" value={userData.name} />
+                        {userData?.legalName && (
+                          <TextGroup
+                            title="Legal Name"
+                            value={userData.legalName}
+                          />
+                        )}
                         <TextGroup title="Status" value={userData.status} />
                         <ToggleButtonGroup
                           color="primary"
@@ -322,15 +328,14 @@ const UserInfoCard = () => {
                   <Box
                     display="flex"
                     alignItems="center"
-                    sx={{ width: "30px !important" }}
+                    sx={{ width: "100px !important" }}
                   >
                     <LocalPhoneIcon sx={{ mr: 2 }} />
-
-                    <Box mb={1}>
+                    <Box mb={1} mr={2}>
                       <Typography fontSize="10px" color="text.secondary">
                         Phone
                       </Typography>
-                      <Link underline="none" sx={{ width: "fit" }}>
+                      <Link underline="none">
                         <Typography
                           variant="h6"
                           fontSize="12px"
@@ -344,7 +349,6 @@ const UserInfoCard = () => {
                         </Typography>
                       </Link>
                     </Box>
-                    {/* <TextGroup title="Phone" value={userData.phone} /> */}
                   </Box>
                   <Box
                     sx={{
@@ -388,6 +392,32 @@ const UserInfoCard = () => {
 
                 <Grid item xs={12}>
                   <Box display="flex" alignItems="center">
+                    <LocalPhoneIcon sx={{ mr: 2 }} />
+                    <Box my={2}>
+                      <Typography fontSize="10px" color="text.secondary">
+                        Alternate Phone
+                      </Typography>
+                      <Link underline="none">
+                        <Typography
+                          variant="h6"
+                          fontSize="12px"
+                          fontWeight={600}
+                          gutterBottom
+                          onClick={() =>
+                            window.open(
+                              `https://wa.me/${userData.alternate_phone}`
+                            )
+                          }
+                        >
+                          {userData.alternate_phone}
+                        </Typography>
+                      </Link>
+                    </Box>
+                  </Box>
+                </Grid>
+
+                <Grid item xs={12}>
+                  <Box display="flex" alignItems="center">
                     <LocationOnIcon sx={{ mr: 2 }} />
                     <TextGroup title="Address" value={userData.address} />
                   </Box>
@@ -397,6 +427,14 @@ const UserInfoCard = () => {
                   <Box sx={{ ml: { lg: "35px", md: "35px" } }}>
                     <TextGroup title="State" value={userData.state} />
                   </Box>
+                  {userData.janPanchayat && (
+                    <Box sx={{ ml: { lg: "35px", md: "35px" } }}>
+                      <TextGroup
+                        title="Jan Panchayat"
+                        value={userData.janPanchayat}
+                      />
+                    </Box>
+                  )}
                 </Grid>
               </Grid>
 
@@ -478,74 +516,51 @@ const UserInfoCard = () => {
                     </Box>
                   </Grid>
 
-                  <Grid item xs={12}>
-                    <TextGroup title="ID Card: (Aadhaar)" />
-                    <Box display="flex" columnGap={1}>
-                      <Box display="flex">
-                        <Card
-                          sx={{
-                            width: "140px",
-                            borderRadius: 3,
-                          }}
-                        >
-                          {userData?.id_proof?.front ? (
-                            <CardMedia
-                              component="img"
-                              sx={{ width: "140px", borderRadius: 3 }}
-                              image={userData?.id_proof?.front}
-                              alt={`Profile Image`}
-                              onClick={() => {
-                                setImageListDialog(2);
-                              }}
-                            />
-                          ) : (
-                            <PersonIcon sx={{ fontSize: "100px" }} />
-                          )}
-                        </Card>
-                      </Box>
-                      <Box>
-                        <Card sx={{ width: "140px", borderRadius: 3 }}>
-                          {userData?.id_proof?.back ? (
-                            <CardMedia
-                              component="img"
-                              sx={{ width: "140px", borderRadius: 3 }}
-                              image={userData?.id_proof?.back}
-                              alt={`Profile Image`}
-                              onClick={() => {
-                                setImageListDialog(3);
-                              }}
-                            />
-                          ) : (
-                            <PersonIcon sx={{ fontSize: "100px" }} />
-                          )}
-                        </Card>
-                      </Box>
-                      {/* {userData?.id_proof?.front && (
-                        <img
-                          src={userData?.id_proof?.front}
-                          alt=""
-                          style={{ width: "100px", mx: 1 }}
-                          onClick={() => {
-                            setImageListDialog(true);
-                          }}
-                        />
-                      )}
-
-                      {userData?.id_proof?.back && (
-                        <img
-                          src={userData?.id_proof?.back}
-                          alt=""
-                          style={{
-                            width: "100px",
-                            marginLeft: 3,
-                          }}
-                          onClick={() => {
-                            setImageListDialog(true);
-                          }}
-                        />
-                      )} */}
-                    </Box>
+                  <Grid item container columnGap={2}>
+                    <Grid item xs={12}>
+                      <TextGroup title="ID Card: (Aadhaar)" />
+                    </Grid>
+                    <Grid item>
+                      <Card
+                        sx={{
+                          width: "140px",
+                          borderRadius: 3,
+                        }}
+                      >
+                        {userData?.id_proof?.front ? (
+                          <CardMedia
+                            component="img"
+                            sx={{ width: "140px", borderRadius: 3 }}
+                            image={userData?.id_proof?.front}
+                            alt={`Profile Image`}
+                            onClick={() => {
+                              setImageListDialog(2);
+                            }}
+                          />
+                        ) : (
+                          <PersonIcon sx={{ fontSize: "100px" }} />
+                        )}
+                      </Card>
+                    </Grid>
+                    <Grid item>
+                      <Card sx={{ width: "140px", borderRadius: 3 }}>
+                        {userData?.id_proof?.back ? (
+                          <CardMedia
+                            component="img"
+                            sx={{ width: "140px", borderRadius: 3 }}
+                            image={userData?.id_proof?.back}
+                            alt={`Profile Image`}
+                            onClick={() => {
+                              setImageListDialog(3);
+                            }}
+                          />
+                        ) : (
+                          <PersonIcon sx={{ fontSize: "100px" }} />
+                        )}
+                      </Card>
+                    </Grid>
                   </Grid>
+
                   <Grid
                     item
                     xs={12}
@@ -627,6 +642,25 @@ const UserInfoCard = () => {
                               component="img"
                               sx={{ width: "140px", borderRadius: 3 }}
                               image={userData?.panCardImage}
+                              alt={`Pancard Image`}
+                              onClick={() => {
+                                setImageListDialog(3);
+                              }}
+                            />
+                          ) : (
+                            <PersonIcon sx={{ fontSize: "100px" }} />
+                          )}
+                        </Card>
+                      </Box>
+                    </Grid>
+                    <Grid item>
+                      <Box>
+                        <Card sx={{ width: "140px", borderRadius: 3 }}>
+                          {userData?.signatureImage ? (
+                            <CardMedia
+                              component="img"
+                              sx={{ width: "140px", borderRadius: 3 }}
+                              image={userData?.signatureImage}
                               alt={`Pancard Image`}
                               onClick={() => {
                                 setImageListDialog(3);

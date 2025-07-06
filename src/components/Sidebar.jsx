@@ -8,7 +8,7 @@ import Typography from "@mui/material/Typography";
 import Divider from "@mui/material/Divider";
 import IconButton from "@mui/material/IconButton";
 import MenuIcon from "@mui/icons-material/Menu";
-import PeopleOutlineIcon from '@mui/icons-material/PeopleOutline';
+import PeopleOutlineIcon from "@mui/icons-material/PeopleOutline";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import cookiesUtil from "../utils/cookies.util";
 import ListItem from "@mui/material/ListItem";
@@ -26,9 +26,10 @@ import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
 import SupervisedUserCircleOutlinedIcon from "@mui/icons-material/SupervisedUserCircleOutlined";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import { isEmpty } from "lodash";
+import packageJSON from "../../package.json";
 
 const drawerWidth = 240;
-const drawerVersion = "v3.0.0";
+const drawerVersion = `v${packageJSON.version}`;
 
 const openedMixin = (theme) => ({
   width: drawerWidth,
@@ -184,7 +185,6 @@ const navList = [
     path: "/",
     allowedRole: ["ADMIN", "SUBADMIN"],
   },
-  
 ];
 
 export default function MiniDrawer() {
