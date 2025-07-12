@@ -111,7 +111,9 @@ const UserInfoCard = () => {
     const formData = new FormData();
     formData.append("role", role);
     setRole(role);
-    fieldExecutives.updateUserRole({ formData: { role }, id: userData._id });
+    fieldExecutives
+      .updateUserRole({ formData: { role }, id: userData._id })
+      .then(fetchCardData);
   };
 
   const handleUserSuspension = async () => {
@@ -350,7 +352,7 @@ const UserInfoCard = () => {
                       </Link>
                     </Box>
                   </Box>
-                  <Box
+                  {/* <Box
                     sx={{
                       ml: { lg: "35px", md: "35px" },
                       width: "90px !important",
@@ -376,7 +378,7 @@ const UserInfoCard = () => {
                         </Typography>
                       </Link>
                     </Box>
-                    {/* <Link
+                    <Link
                     onClick={() =>
                       window.open(`tel:${userData.emergency_contact}`)
                     }
@@ -386,8 +388,8 @@ const UserInfoCard = () => {
                       title="Emergency Contact"
                       value={userData.emergency_contact}
                     />
-                  </Link> */}
-                  </Box>
+                  </Link> 
+                  </Box> */}
                 </Grid>
 
                 <Grid item xs={12}>
@@ -405,11 +407,11 @@ const UserInfoCard = () => {
                           gutterBottom
                           onClick={() =>
                             window.open(
-                              `https://wa.me/${userData.alternate_phone}`
+                              `https://wa.me/${userData.emergency_contact}`
                             )
                           }
                         >
-                          {userData.alternate_phone}
+                          {userData.emergency_contact}
                         </Typography>
                       </Link>
                     </Box>
@@ -485,7 +487,7 @@ const UserInfoCard = () => {
                         fontWeight={600}
                         gutterBottom
                       >
-                        {moment(userData.created_at).format("DD-MM-YYYY HH:MM")}
+                        {moment(userData.created_at).format("DD-MM-YYYY HH:mm")}
                       </Typography>
                     </Box>
                   </Grid>
