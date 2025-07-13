@@ -352,7 +352,7 @@ const UserInfoCard = () => {
                       </Link>
                     </Box>
                   </Box>
-                  {/* <Box
+                  <Box
                     sx={{
                       ml: { lg: "35px", md: "35px" },
                       width: "90px !important",
@@ -378,18 +378,18 @@ const UserInfoCard = () => {
                         </Typography>
                       </Link>
                     </Box>
-                    <Link
-                    onClick={() =>
-                      window.open(`tel:${userData.emergency_contact}`)
-                    }
-                    underline="none"
-                  >
-                    <TextGroup
-                      title="Emergency Contact"
-                      value={userData.emergency_contact}
-                    />
-                  </Link> 
-                  </Box> */}
+                    {/* <Link
+                      onClick={() =>
+                        window.open(`tel:${userData.emergency_contact}`)
+                      }
+                      underline="none"
+                    >
+                      <TextGroup
+                        title="Emergency Contact"
+                        value={userData.emergency_contact}
+                      />
+                    </Link> */}
+                  </Box>
                 </Grid>
 
                 <Grid item xs={12}>
@@ -407,11 +407,11 @@ const UserInfoCard = () => {
                           gutterBottom
                           onClick={() =>
                             window.open(
-                              `https://wa.me/${userData.emergency_contact}`
+                              `https://wa.me/${userData.alternate_phone}`
                             )
                           }
                         >
-                          {userData.emergency_contact}
+                          {userData.alternate_phone}
                         </Typography>
                       </Link>
                     </Box>
