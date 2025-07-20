@@ -64,7 +64,7 @@ const HospitalPage = () => {
       onClick: (e, row) => {
         e.stopPropagation();
         if (row.uid) {
-          navigate(`/cards?tab=totalCards&createdById=${row.uid}`);
+          navigate(`/cards?tab=totalCards&createdById=${row._id}`);
         } else {
           navigate(`/cards?tab=totalCards`);
         }
@@ -76,7 +76,9 @@ const HospitalPage = () => {
       onClick: (e, row) => {
         e.stopPropagation();
         if (row.uid) {
-          navigate(`/cards?tab=toBePrinted&createdById=${row.uid}`);
+          navigate(
+            `/cards?tab=totalCards&status=SUBMITTED&createdById=${row._id}`
+          );
         } else {
           navigate(`/cards?tab=toBePrinted`);
         }
@@ -89,7 +91,7 @@ const HospitalPage = () => {
         e.stopPropagation();
         if (row.uid) {
           navigate(
-            `/cards?tab=totalCards&status=PRINTED&createdById=${row.uid}`
+            `/cards?tab=totalCards&status=PRINTED&createdById=${row._id}`
           );
         } else {
           navigate(`/cards?tab=totalCards&status=PRINTED`);
@@ -103,7 +105,7 @@ const HospitalPage = () => {
         e.stopPropagation();
         if (row.uid) {
           navigate(
-            `/cards?tab=totalCards&status=DELIVERED&createdById=${row.uid}`
+            `/cards?tab=totalCards&status=DELIVERED&createdById=${row._id}`
           );
         } else {
           navigate(`/cards?tab=totalCards&status=DELIVERED`);
@@ -117,7 +119,7 @@ const HospitalPage = () => {
         e.stopPropagation();
         if (row.uid) {
           navigate(
-            `/cards?tab=totalCards&status=UNDELIVERED&createdById=${row.uid}`
+            `/cards?tab=totalCards&status=UNDELIVERED&createdById=${row._id}`
           );
         } else {
           navigate(`/cards?tab=totalCards&status=UNDELIVERED`);
@@ -131,7 +133,7 @@ const HospitalPage = () => {
         e.stopPropagation();
         if (row.uid) {
           navigate(
-            `/cards?tab=totalCards&status=DISCARDED&createdById=${row.uid}`
+            `/cards?tab=totalCards&status=DISCARDED&createdById=${row._id}`
           );
         } else {
           navigate("/cards?tab=totalCards&status=DISCARDED");

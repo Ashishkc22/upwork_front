@@ -88,12 +88,18 @@ const UserInfoCard = () => {
     fetchCardData();
   }, []);
 
-  const TextGroup = ({ title, value, subText }) => (
+  const TextGroup = ({ title, value, subText, valueStyle = {} } = {}) => (
     <Box mb={1}>
       <Typography fontSize="10px" color="text.secondary">
         {title}
       </Typography>
-      <Typography variant="h6" fontSize="12px" fontWeight={600} gutterBottom>
+      <Typography
+        variant="h6"
+        fontSize="12px"
+        fontWeight={600}
+        gutterBottom
+        style={{ ...valueStyle }}
+      >
         {value}
       </Typography>
       <Typography
@@ -280,7 +286,11 @@ const UserInfoCard = () => {
                         </Card>
                       </Grid>
                       <Grid item xs={5}>
-                        <TextGroup title="Name" value={userData.name} />
+                        <TextGroup
+                          title="Name"
+                          value={userData.name}
+                          valueStyle={{ width: "200px" }}
+                        />
                         {userData?.legalName && (
                           <TextGroup
                             title="Legal Name"
@@ -534,7 +544,7 @@ const UserInfoCard = () => {
                             component="img"
                             sx={{ width: "140px", borderRadius: 3 }}
                             image={userData?.id_proof?.front}
-                            alt={`Profile Image`}
+                            alt={`adhaar front Image`}
                             onClick={() => {
                               setImageListDialog(2);
                             }}

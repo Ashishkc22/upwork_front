@@ -32,7 +32,7 @@ import CustomDateRangePicker from "./CustomDateRangePicker";
 import { enqueueSnackbar } from "notistack";
 import commonAPIServices from "../services/common";
 import ChipStack from "../views/dashboard/ChipStack";
-import { debounce, isEmpty } from "lodash";
+import { debounce, isEmpty, set } from "lodash";
 import moment from "moment";
 import cardService from "../services/cards";
 import { useSearchParams } from "react-router-dom";
@@ -321,9 +321,6 @@ function Header({
             (chip) => chip.type === "dateType" || chip.type === "duration"
           );
         }
-        console.log("existingDateDurationIndex", existingDateDurationIndex);
-        console.log("replacing chip new", { type: type, value });
-        console.log("prev data", prev);
         if (
           existingDateDurationIndex !== null &&
           existingDateDurationIndex !== -1
@@ -492,6 +489,10 @@ function Header({
     const gramId = searchParams.get("gramId");
     const dateType = searchParams.get("dateType");
     const printMode = searchParams.get("printMode");
+    const urlStatus = searchParams.get("status");
+    const clearnedStatus = urlStatus
+      ? urlStatus?.split(" ")?.[0]?.toUpperCase()
+      : null;
     if (tehsilId || districtId) {
       apiCallQueue.push(
         getAddressData(
@@ -522,9 +523,16 @@ function Header({
         handleFilterChange({ type: "dateType", value: dateType || null });
       }
     }
-    if (printMode) {
+    if (printMode || clearnedStatus) {
       // setPrintModeDateTime();
-      setFilterValues((p) => ({ ...p, isPrintMode: printMode }));
+      setFilterValues((p) => ({
+        ...p,
+        ...(printMode && { isPrintMode: printMode }),
+        ...(status && { status: clearnedStatus }),
+      }));
+    }
+    if (clearnedStatus) {
+      setStatus(clearnedStatus);
     }
     // if(searchParams.get("createdById")){
     apiCallQueue.push(getUsersList());
@@ -532,7 +540,7 @@ function Header({
     Promise.all(apiCallQueue).then(() => {
       setTimeout(
         () =>
-          callBackFunction().then(() => {
+          callBackFunction({ status: clearnedStatus }).then(() => {
             restoreScroll();
           }),
         1000
@@ -566,8 +574,6 @@ function Header({
     setFilterValues((p) => ({ ...p, search: value ? value : null }));
     callBackFunction({ search: value });
   };
-
-  console.log("Header component rendered with filterVlaues:", filterValues);
 
   return (
     <Grid container alignItems="center" sx={{ mx: 1, columnGap: "2px" }}>

@@ -605,12 +605,12 @@ function CardsTableByLocation({
                       page={
                         paginationDetailsBylLocation?.[expanationName]?.[
                           agentId
-                        ].page || 0
+                        ]?.page || 0
                       }
                       rowsPerPage={
                         paginationDetailsBylLocation?.[expanationName]?.[
                           agentId
-                        ].limit || 100
+                        ]?.limit || 100
                       }
                       rowsPerPageOptions={[]}
                       labelRowsPerPage={""}
