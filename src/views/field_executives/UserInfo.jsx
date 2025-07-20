@@ -54,6 +54,7 @@ const UserInfoCard = () => {
   const statupMap = {
     Verified: "suspend",
     "Verification Pending": "Verify",
+    Unverified: "Verify",
   };
 
   const fetchCardData = () => {
@@ -698,16 +699,13 @@ const UserInfoCard = () => {
                   send password
                 </Button>
                 <Button
-                  onClick={
-                    // () => handleUserSuspension()
-                    () => {
-                      if (userData?.status != "Suspended") {
-                        setIsSuspensionDialogOpened(true);
-                      } else {
-                        handleUserSuspension();
-                      }
+                  onClick={() => {
+                    if (statupMap[userData?.status] === "suspend") {
+                      setIsSuspensionDialogOpened(true);
+                    } else {
+                      handleUserSuspension();
                     }
-                  }
+                  }}
                 >
                   {statupMap[userData?.status]
                     ? statupMap[userData?.status]
