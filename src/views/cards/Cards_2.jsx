@@ -98,6 +98,8 @@ function CardsView() {
     isPageLoading,
     setIsPageLoading,
     setFilterValues,
+    openSections,
+    getCardsByLocation,
   } = useCardContext2();
 
   // ## USENAV
@@ -158,7 +160,6 @@ function CardsView() {
               return p;
             });
           });
-          console.log("getCardsData _filterValues", _filterValues);
           const data = await cards.getCardsData({
             selectedCard: selectedCard || selectedCardScreen,
             limit: limit || cardDetails.paginationDetails.rowPerPage,
@@ -191,6 +192,31 @@ function CardsView() {
       filterValues,
     ]
   );
+
+  const fetchCardsDataForToBePrinted = useCallback(async () => {
+    try {
+      const data = await getCardsLocationTags();
+      if (data?.groupedData?.length) {
+        Object.entries(openSections).forEach(([location, isOpen]) => {
+          const [district, tehsil] = location?.split("-") || [];
+          console.log("getCardsByLocation", data);
+          if (isOpen && district && tehsil) {
+            const locationData = data.groupedData.find(
+              (d) => d._id?.district === district && d._id?.tehsil === tehsil
+            );
+            getCardsByLocation({
+              location: locationData._id,
+              feList: locationData.createByUids,
+            });
+          }
+        });
+      }
+      return data;
+    } catch (error) {
+      console.error("Error fetching cards data for to be printed:", error);
+      throw error;
+    }
+  }, [getCardsLocationTags, openSections, getCardsByLocation]);
 
   // ## Dispatcher function
   function cardDataDispatcher(state, action) {
@@ -309,12 +335,32 @@ function CardsView() {
 
   const handleScoreCardClick = useCallback((type) => {
     if (type === "pendingCards") {
+      console.log("Pending cards clicked");
+
+      // setURLParams("status", "PENDING");
+      // setURLParams("tab", type);
       getTableData({ status: "pending", selectedCard: type });
+      setFilterValues((p) => ({ ...p, status: "PENDING" }));
     } else if (type === "toBePrinted") {
-      getCardsLocationTags({});
+      fetchCardsDataForToBePrinted({});
+      console.log("To be printed cards clicked");
+      // setURLParams("status", null);
+      // setURLParams("tab", type);
+      setFilterValues((p) => {
+        delete p.status;
+        return { ...p };
+      });
     } else {
+      setURLParams("status", null);
       getTableData({ selectedCard: type });
+      console.log(`${type} cards clicked`);
+      setURLParams("tab", type);
+      setFilterValues((p) => {
+        delete p.status;
+        return { ...p };
+      });
     }
+
     setSelectedCardScreen(type);
     storageUtil.removeItem("cards_ids");
   }, []);
@@ -416,7 +462,7 @@ function CardsView() {
             handleScoreCardClick={handleScoreCardClick}
             callBackFunction={
               selectedCardScreen === "toBePrinted"
-                ? getCardsLocationTags
+                ? fetchCardsDataForToBePrinted
                 : getTableData
             }
             statusOptions={Object.keys(cardDetails.statusCount).map((k) => ({

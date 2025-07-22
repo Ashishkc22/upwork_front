@@ -292,7 +292,24 @@ function Header({
       } else {
         newParams.set(name, value);
       }
-      console.log("ALL newParams", Object.fromEntries(prev.entries()));
+      return newParams;
+    });
+  }
+
+  function clearUrlParams(name, value) {
+    setSearchParams((prev) => {
+      const newParams = new URLSearchParams(prev);
+      if (value === "pendingCards") {
+        prev
+          .keys()
+          .forEach(
+            (key) => key !== name && key !== "status" && newParams.delete(key)
+          );
+        newParams.set("status", "PENDING");
+      } else {
+        prev.keys().forEach((key) => key !== name && newParams.delete(key));
+      }
+      newParams.set(name, value);
       return newParams;
     });
   }
@@ -435,7 +452,7 @@ function Header({
       handleFilterChange({ type: "status", value: "PENDING" });
       setStatus(statusOptions.find((s) => s?.label?.includes("PENDING")));
     }
-    setURLParams("tab", type);
+    clearUrlParams("tab", type);
     handleScoreCardClick(type);
   };
 
@@ -525,14 +542,24 @@ function Header({
     }
     if (printMode || clearnedStatus) {
       // setPrintModeDateTime();
+      console.log("clearnedStatus", clearnedStatus);
       setFilterValues((p) => ({
         ...p,
         ...(printMode && { isPrintMode: printMode }),
-        ...(status && { status: clearnedStatus }),
+        ...(clearnedStatus && { status: clearnedStatus }),
       }));
     }
     if (clearnedStatus) {
       setStatus(clearnedStatus);
+      setFilterChips((p) => {
+        const valueExists = p?.find((chip) => chip.type === "status");
+        if (valueExists) {
+          return p;
+        } else {
+          p.push({ type: "status", value: clearnedStatus });
+          return [...p];
+        }
+      });
     }
     // if(searchParams.get("createdById")){
     apiCallQueue.push(getUsersList());
