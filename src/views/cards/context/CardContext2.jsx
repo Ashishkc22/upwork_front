@@ -11,11 +11,11 @@ export const CardContextProvider2 = ({ children }) => {
 
   const [cardLocationTagData, setCardLocationTagData] = useState([]);
   const [cardsScoreDetails, setCardsScroreDetails] = useState({
-    totalCards: 0,
-    toBePrinted: 0,
+    totalCards: storageUtil.getStorageData("totalCards") || 0,
+    toBePrinted: storageUtil.getStorageData("totalPrintedCards") || 0,
     totalPrintCardsShowing: 0,
     totalShowing: 0,
-    pendingCardCount: 0,
+    pendingCardCount: storageUtil.getStorageData("pendingCardCount") || 0,
   });
   const [openSections, setOpenSections] = useState({});
   const [cardDataByLocations, setCardDataByLocations] = useState({});
@@ -27,7 +27,11 @@ export const CardContextProvider2 = ({ children }) => {
   const [cardsDownloadCount, setCardDownloadCount] = useState(0);
   const [cardsTableSelectedForDownload, setCardsTableSelectedForDownload] =
     useState(new Set());
-  const [markAsPrintedDetails, setMarkAsPrintedDetails] = useState(new Set());
+  const [markAsPrintedDetails, setMarkAsPrintedDetails] = useState(
+    storageUtil.getStorageData("marked_as_printed_cards")
+      ? new Set(storageUtil.getStorageData("marked_as_printed_cards"))
+      : new Set()
+  );
   const [filterValues, setFilterValues] = useState({});
   const [isSectionsLoading, setsectionLoading] = useState({});
   const [mode, setMode] = useState("table");
@@ -121,7 +125,6 @@ export const CardContextProvider2 = ({ children }) => {
       if (response?.status === "success" && !isEmpty(response.data)) {
         const newData = {};
         let cardIds = new Set(storageUtil.getStorageData("cards_ids") || []);
-        console.log("cardIds", cardIds);
         Object.keys(response.data).forEach((key) => {
           const res = findDuplicateValues(response.data[key], [
             "name",
@@ -293,6 +296,13 @@ export const CardContextProvider2 = ({ children }) => {
       toggleSection(firstSection._id, firstSection.createByUids);
     }
 
+    storageUtil.setStorageData(data?.totalCards || 0, "totalCards");
+    storageUtil.setStorageData(
+      data?.totalPrintedCards || 0,
+      "totalPrintedCards"
+    );
+    storageUtil.setStorageData(data?.pendingCardCount || 0, "pendingCardCount");
+
     setCardsScroreDetails((p) => ({
       ...p,
       ...(data?.totalCards && { totalCards: data.totalCards }),
@@ -417,7 +427,7 @@ export const CardContextProvider2 = ({ children }) => {
         if (!p?.[section]?.includes(agentId)) {
           p?.[section]?.push(agentId);
         } else {
-          p[section] = p?.[section]?.filterValues((id) => id !== agentId) || [];
+          p[section] = p?.[section]?.filter((id) => id !== agentId) || [];
         }
       } else {
         p[section] = agentIds;
@@ -476,6 +486,12 @@ export const CardContextProvider2 = ({ children }) => {
       keys.forEach((k) => (toRemove ? p.delete(k) : p.add(k)));
       return new Set(p);
     });
+    const updatedSet = new Set(
+      toRemove
+        ? [...markAsPrintedDetails].filter((k) => !keys.includes(k))
+        : [...markAsPrintedDetails, ...keys]
+    );
+    storageUtil.setStorageData([...updatedSet], "marked_as_printed_cards");
   };
 
   const afterMarkAsPrintedAPIIsCalled = ({

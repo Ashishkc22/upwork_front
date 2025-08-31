@@ -27,6 +27,7 @@ import CustomTable from "../../components/CustomTable";
 import cards from "../../services/cards";
 import bin from "../../services/bin";
 import LinearIndeterminate from "../../components/LinearProgress";
+import LeavePageDialog from "./LeaveDialog";
 import storageUtil from "../../utils/storage.util";
 import {
   ArrowForward as ArrowForwardIcon,
@@ -99,6 +100,7 @@ function CardsView() {
     setIsPageLoading,
     setFilterValues,
     openSections,
+    markAsPrintedDetails,
     getCardsByLocation,
   } = useCardContext2();
 
@@ -122,6 +124,7 @@ function CardsView() {
       markAsPrintPending: {},
     },
   });
+  const [isLeaveDialogOpned, setIsLeaveDialogOpned] = useState(false);
   const [selectedCardScreen, setSelectedCardScreen] = useState(() => {
     let tab = searchParams.get("tab");
     if (!tab) {
@@ -333,19 +336,13 @@ function CardsView() {
     });
   };
 
-  const handleScoreCardClick = useCallback((type) => {
+  const handlePageSwitch = useCallback((type) => {
     if (type === "pendingCards") {
-      console.log("Pending cards clicked");
-
-      // setURLParams("status", "PENDING");
-      // setURLParams("tab", type);
       getTableData({ status: "pending", selectedCard: type });
       setFilterValues((p) => ({ ...p, status: "PENDING" }));
+      setURLParams("tab", type);
     } else if (type === "toBePrinted") {
       fetchCardsDataForToBePrinted({});
-      console.log("To be printed cards clicked");
-      // setURLParams("status", null);
-      // setURLParams("tab", type);
       setFilterValues((p) => {
         delete p.status;
         return { ...p };
@@ -353,7 +350,6 @@ function CardsView() {
     } else {
       setURLParams("status", null);
       getTableData({ selectedCard: type });
-      console.log(`${type} cards clicked`);
       setURLParams("tab", type);
       setFilterValues((p) => {
         delete p.status;
@@ -364,6 +360,26 @@ function CardsView() {
     setSelectedCardScreen(type);
     storageUtil.removeItem("cards_ids");
   }, []);
+
+  const handlePageLeave = () => {
+    handlePageSwitch(isLeaveDialogOpned);
+    setIsLeaveDialogOpned(false);
+  };
+
+  const handleScoreCardClick = useCallback(
+    (type) => {
+      if (
+        selectedCardScreen === "toBePrinted" &&
+        markAsPrintedDetails.size > 0
+      ) {
+        setIsLeaveDialogOpned(type);
+        return;
+      } else {
+        handlePageSwitch(type);
+      }
+    },
+    [selectedCardScreen, markAsPrintedDetails, handlePageSwitch]
+  );
 
   const handleScroll = useCallback(() => {
     if (window.scrollY < lastScrollValue && window.scrollY > 12) {
@@ -490,6 +506,11 @@ function CardsView() {
           opacity: "0.4 !important",
         })}
         open={isPageLoading}
+      />
+      <LeavePageDialog
+        open={isLeaveDialogOpned}
+        handleClose={() => setIsLeaveDialogOpned(false)}
+        handleLeave={handlePageLeave}
       />
       {isPageLoading && <LinearIndeterminate />}
       <Fab

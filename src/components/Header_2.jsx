@@ -447,6 +447,10 @@ function Header({
     if (selectedCardType === type) {
       return;
     }
+    if (selectedCardType === "toBePrinted") {
+      handleScoreCardClick(type);
+      return;
+    }
     clearSelectedFilters();
     if (type === "pendingCards") {
       handleFilterChange({ type: "status", value: "PENDING" });

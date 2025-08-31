@@ -354,7 +354,9 @@ function CardsTableByLocation({
                   setTimeout(() => setIsPageLoading(false), 1000);
                 }
               }}
-            >{`${locationDetails.district} / ${locationDetails.tehsil} (Total: ${count})`}</Button>
+            >
+              {`${locationDetails.district} / ${locationDetails.tehsil} (Total: ${count})`}
+            </Button>
             <Tooltip title="Download full tehsil">
               <IconButton
                 aria-label="Download full tehsil"
@@ -402,128 +404,143 @@ function CardsTableByLocation({
         </Grid>
         <Grid item xs={12}>
           <Collapse in={openSections[expanationName] || false} timeout="auto">
-            {agentIds.map((agentId) => {
-              const agentDetails =
-                agentDetailsByLocation?.[expanationName]?.FEDetails?.[agentId];
+            {cardDataByLocations?.[expanationName] &&
+              Object.keys(cardDataByLocations[expanationName]).map(
+                (agentId) => {
+                  const agentDetails =
+                    agentDetailsByLocation?.[expanationName]?.FEDetails?.[
+                      agentId
+                    ];
 
-              return (
-                <Grid container>
-                  <Grid item xs={12}>
-                    <Button
-                      sx={{
-                        width: "100%",
-                        justifyContent: "start",
-                      }}
-                    >
-                      <Grid
-                        container
-                        justifyContent="space-between"
-                        onClick={() => {}}
-                      >
-                        <Grid item>
-                          <Checkbox
-                            checked={
-                              checkedSections?.[expanationName]?.includes(
-                                agentId
-                              ) || false
-                            }
-                            onClick={() => {
-                              const isAlreadyChecked =
-                                checkedSections?.[expanationName]?.includes(
-                                  agentId
-                                );
-                              setIsPageLoading(true);
-                              handleSectionCheck({
-                                section: expanationName,
-                                agentId,
-                              });
-                              handleCardsCount(
-                                isAlreadyChecked
-                                  ? -tableCountBylocation?.[expanationName]?.[
+                  return (
+                    <Grid container>
+                      <Grid item xs={12}>
+                        <Button
+                          sx={{
+                            width: "100%",
+                            justifyContent: "start",
+                          }}
+                        >
+                          <Grid
+                            container
+                            justifyContent="space-between"
+                            onClick={() => {}}
+                          >
+                            <Grid item>
+                              <Checkbox
+                                checked={
+                                  checkedSections?.[expanationName]?.includes(
+                                    agentId
+                                  ) || false
+                                }
+                                onClick={() => {
+                                  const isAlreadyChecked =
+                                    checkedSections?.[expanationName]?.includes(
                                       agentId
-                                    ]
-                                  : tableCountBylocation?.[expanationName]?.[
-                                      agentId
-                                    ],
-                                expanationName,
-                                agentId,
-                                null
-                              );
-                              setIsPageLoading(false);
-                            }}
-                          />
-                          <Link
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              navigate(``);
-                            }}
-                          >
-                            <Typography
-                              sx={{
-                                display: "inline-flex",
-                                mr: 1,
-                                color: "black",
-                              }}
-                            >
-                              {agentDetails && `${agentDetails.name || ""}`}
-                              {`(${agentDetails?.uid || ""})`}
-                            </Typography>
-                          </Link>
-                          <Typography
-                            variant="h6"
-                            sx={{
-                              display: "inline-flex",
-                              mr: 1,
-                              color: "black",
-                              fontWeight: 600,
-                            }}
-                          >
-                            {`#${
-                              tableCountBylocation?.[expanationName]?.[
-                                agentId
-                              ] || 0
-                            }`}
-                          </Typography>
-                        </Grid>
-                        <Grid item display="flex" alignItems="center">
-                          <Button
-                            sx={{}}
-                            startIcon={<DownloadIcon />}
-                            onClick={(e) =>
-                              handleCardsTableDownload({ agentId })
-                            }
-                          >
-                            Download
-                          </Button>
-
-                          {markAsPrintedDetails.has(
-                            `${expanationName}/${agentId}`
-                          ) && (
-                            <Button
-                              sx={{
-                                display: "inline-flex",
-                                paddingBottom: 0,
-                                color: colors.primary[500],
-                                alignItems: "center",
-                                py: 1,
-                              }}
-                              onClick={(e) => handleMarkAsPrinted({ agentId })}
-                            >
+                                    );
+                                  setIsPageLoading(true);
+                                  handleSectionCheck({
+                                    section: expanationName,
+                                    agentId,
+                                  });
+                                  handleCardsCount(
+                                    isAlreadyChecked
+                                      ? -tableCountBylocation?.[
+                                          expanationName
+                                        ]?.[agentId]
+                                      : tableCountBylocation?.[
+                                          expanationName
+                                        ]?.[agentId],
+                                    expanationName,
+                                    agentId,
+                                    null
+                                  );
+                                  setIsPageLoading(false);
+                                }}
+                              />
+                              <div
+                                style={{
+                                  display: "inline-flex",
+                                  cursor: "pointer",
+                                }}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  navigate(
+                                    `/field-executives/${agentDetails.uid}`
+                                  );
+                                }}
+                              >
+                                <Typography
+                                  sx={{
+                                    display: "inline-flex",
+                                    mr: 1,
+                                    color: "black",
+                                  }}
+                                >
+                                  {agentDetails && `${agentDetails.name || ""}`}
+                                  {`(${agentDetails?.uid || ""})`}
+                                </Typography>
+                              </div>
                               <Typography
                                 variant="h6"
-                                sx={{ display: "flex", alignItems: "center" }}
+                                sx={{
+                                  display: "inline-flex",
+                                  mr: 1,
+                                  color: "black",
+                                  fontWeight: 600,
+                                }}
                               >
-                                <CheckIcon />
-                                Mark Printed
+                                {`#${
+                                  tableCountBylocation?.[expanationName]?.[
+                                    agentId
+                                  ] || 0
+                                }`}
                               </Typography>
-                            </Button>
-                          )}
-                        </Grid>
-                      </Grid>
-                    </Button>
-                  </Grid>
+                            </Grid>
+                            <Grid item display="flex" alignItems="center">
+                              <Button
+                                sx={{}}
+                                startIcon={<DownloadIcon />}
+                                onClick={(e) =>
+                                  handleCardsTableDownload({ agentId })
+                                }
+                              >
+                                Download
+                              </Button>
 
-                  {/* //   <Box sx={{ display: "inline-flex", flexWrap: "wrap" }}>
+                              {markAsPrintedDetails.has(
+                                `${expanationName}/${agentId}`
+                              ) && (
+                                <Button
+                                  sx={{
+                                    display: "inline-flex",
+                                    paddingBottom: 0,
+                                    color: colors.primary[500],
+                                    alignItems: "center",
+                                    py: 1,
+                                  }}
+                                  onClick={(e) =>
+                                    handleMarkAsPrinted({ agentId })
+                                  }
+                                >
+                                  <Typography
+                                    variant="h6"
+                                    sx={{
+                                      display: "flex",
+                                      alignItems: "center",
+                                    }}
+                                  >
+                                    <CheckIcon />
+                                    Mark Printed
+                                  </Typography>
+                                </Button>
+                              )}
+                            </Grid>
+                          </Grid>
+                        </Button>
+                      </Grid>
+
+                      {/* //   <Box sx={{ display: "inline-flex", flexWrap: "wrap" }}>
             //     {groupedData.map((cardData, index) => {
             //       return (
             //         <div style={{ marginRight: 2 }}>
@@ -539,104 +556,109 @@ function CardsTableByLocation({
             //     })}
             //   </Box> */}
 
-                  <Grid item xs={12}>
-                    {mode === "table" ? (
-                      <CustomTable
-                        headers={tableHeaders}
-                        rows={
-                          cardDataByLocations?.[expanationName]?.[agentId] || []
-                        }
-                        actions={[]}
-                        rowClick={handleRowClick}
-                        handleMenuSelect={(...arg) =>
-                          handleCardStatusMenu(...arg, () =>
+                      <Grid item xs={12}>
+                        {mode === "table" ? (
+                          <CustomTable
+                            headers={tableHeaders}
+                            rows={
+                              cardDataByLocations?.[expanationName]?.[
+                                agentId
+                              ] || []
+                            }
+                            actions={[]}
+                            rowClick={handleRowClick}
+                            handleMenuSelect={(...arg) =>
+                              handleCardStatusMenu(...arg, () =>
+                                handlePaginationChangesByLocation({
+                                  section: locationDetails,
+                                  agentId,
+                                })
+                              )
+                            }
+                            highlightedRow={() => {}}
+                            handleSort={({ colName, type }) => {
+                              setURLParams(
+                                `${agentId}-sortType`,
+                                type === "des" ? "des" : null
+                              );
+                              getCardsForSingleTableByLocation({
+                                location: locationDetails,
+                                feUid: agentId,
+                                sortBy: type === "des" ? colName : null,
+                              });
+                            }}
+                            sortType={
+                              sortTypeDataByLocation?.[expanationName]?.[
+                                agentId
+                              ] || null
+                            }
+                            disableDefaultSortMethod={true}
+                            showActionMenu
+                            // sortType={urlDateType.get("sortType") === "des" ? "des" : null}
+                          />
+                        ) : (
+                          <Box sx={{ display: "flex", flexWrap: "wrap" }}>
+                            {cardDataByLocations?.[expanationName]?.[
+                              agentId
+                            ]?.map((cardData, index) => {
+                              return (
+                                <div style={{ marginRight: 2 }}>
+                                  <ArogyamComponent
+                                    key={cardData._id + index + "ImageMode"}
+                                    cardData={cardData}
+                                    enableClick={true}
+                                    images={images}
+                                    handleClick={() => {}}
+                                  />
+                                </div>
+                              );
+                            })}
+                          </Box>
+                        )}
+                      </Grid>
+                      <Card sx={{ width: "100vw", mb: 3 }}>
+                        <TablePagination
+                          component="div"
+                          count={
+                            tableCountBylocation?.[expanationName]?.[agentId] ||
+                            0
+                          }
+                          page={
+                            paginationDetailsBylLocation?.[expanationName]?.[
+                              agentId
+                            ]?.page || 0
+                          }
+                          rowsPerPage={
+                            paginationDetailsBylLocation?.[expanationName]?.[
+                              agentId
+                            ]?.limit || 100
+                          }
+                          rowsPerPageOptions={[]}
+                          labelRowsPerPage={""}
+                          labelDisplayedRows={({ from, to, count }) => {
+                            return `${to} of ${
+                              count !== -1 ? count : `more than ${to}`
+                            }`;
+                          }}
+                          onPageChange={(e, newPage) => {
                             handlePaginationChangesByLocation({
                               section: locationDetails,
                               agentId,
-                            })
-                          )
-                        }
-                        highlightedRow={() => {}}
-                        handleSort={({ colName, type }) => {
-                          setURLParams(
-                            `${agentId}-sortType`,
-                            type === "des" ? "des" : null
-                          );
-                          getCardsForSingleTableByLocation({
-                            location: locationDetails,
-                            feUid: agentId,
-                            sortBy: type === "des" ? colName : null,
-                          });
-                        }}
-                        sortType={
-                          sortTypeDataByLocation?.[expanationName]?.[agentId] ||
-                          null
-                        }
-                        disableDefaultSortMethod={true}
-                        showActionMenu
-                        // sortType={urlDateType.get("sortType") === "des" ? "des" : null}
-                      />
-                    ) : (
-                      <Box sx={{ display: "flex", flexWrap: "wrap" }}>
-                        {cardDataByLocations?.[expanationName]?.[agentId]?.map(
-                          (cardData, index) => {
-                            return (
-                              <div style={{ marginRight: 2 }}>
-                                <ArogyamComponent
-                                  key={cardData._id + index + "ImageMode"}
-                                  cardData={cardData}
-                                  enableClick={true}
-                                  images={images}
-                                  handleClick={() => {}}
-                                />
-                              </div>
-                            );
-                          }
-                        )}
-                      </Box>
-                    )}
-                  </Grid>
-                  <Card sx={{ width: "100vw", mb: 3 }}>
-                    <TablePagination
-                      component="div"
-                      count={
-                        tableCountBylocation?.[expanationName]?.[agentId] || 0
-                      }
-                      page={
-                        paginationDetailsBylLocation?.[expanationName]?.[
-                          agentId
-                        ]?.page || 0
-                      }
-                      rowsPerPage={
-                        paginationDetailsBylLocation?.[expanationName]?.[
-                          agentId
-                        ]?.limit || 100
-                      }
-                      rowsPerPageOptions={[]}
-                      labelRowsPerPage={""}
-                      labelDisplayedRows={({ from, to, count }) => {
-                        return `${to} of ${
-                          count !== -1 ? count : `more than ${to}`
-                        }`;
-                      }}
-                      onPageChange={(e, newPage) => {
-                        handlePaginationChangesByLocation({
-                          section: locationDetails,
-                          agentId,
-                          page: newPage,
-                        });
-                      }}
-                      slots={{
-                        actions: {
-                          nextButton: customNextButton,
-                          previousButton: customPrevioudButton,
-                        },
-                      }}
-                    />
-                  </Card>
-                </Grid>
-              );
-            })}
+                              page: newPage,
+                            });
+                          }}
+                          slots={{
+                            actions: {
+                              nextButton: customNextButton,
+                              previousButton: customPrevioudButton,
+                            },
+                          }}
+                        />
+                      </Card>
+                    </Grid>
+                  );
+                }
+              )}
           </Collapse>
         </Grid>
       </Grid>
