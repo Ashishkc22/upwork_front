@@ -166,7 +166,9 @@ const ArogyamComponent = ({
             <div style={{ color: "#666666", fontSize: "9px" }}>
               {isIndividual() ? "Name" : "Primary menber"}
             </div>
-            <div style={{ width: "max-content" }}>
+            <div 
+            // style={{ width: "max-content" }}
+            >
               {charLimit(cardData.name, 50)}
             </div>
           </div>
@@ -175,7 +177,9 @@ const ArogyamComponent = ({
               <div style={{ color: "#666666", fontSize: "9px" }}>
                 Father/Husband
               </div>
-              <div style={{ width: "max-content" }}>
+              <div 
+              // style={{ width: "max-content" }}
+              >
                 {charLimit(cardData.father_husband_name, 28)}
               </div>
             </div>
