@@ -8,10 +8,6 @@ import {
   FormControl,
   InputLabel,
   IconButton,
-  Tab,
-  Tabs,
-  AppBar,
-  Toolbar,
 } from "@mui/material";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import dashboard from "../../services/dashboard";
@@ -20,15 +16,50 @@ import CustomDatePicker from "../../components/CustomDatePicker";
 import moment from "moment";
 import { isEmpty } from "lodash";
 import DashboardCard from "./StatsCard";
-import PreDashboardCard from "./StatsCardWithPreviousData";
 import getCardStack from "../../components/ChipStack";
 import { useNavigate } from "react-router-dom";
-import ImageComponent from "../../components/ImageComponent";
-import CardViewer from "../../components/cardViewer";
 import LoadingScreen from "../../components/LoadingScreen";
-import TreeChartComponent from "./TreeChartComponent";
-import TreeMapChart from "./TreeChart";
-import SearchTextinput from "../../components/SearchTextInput";
+
+const keys = [
+  'active_users',
+  'availableToPrintTodayCount',
+  'availableToPrintYesterdayCount',
+  'available_to_print',
+  'deliveredCardsTodayCount',
+  'deliveredCardsYesterdayCount',
+  'delivered_cards',
+  'diagnostic_centers',
+  'discard_cards',
+  'discardedCardsTodayCount',
+  'discardedCardsYesterdayCount',
+  'hospitalTodayCount',
+  'hospitalYesterdayCount',
+  'hospitals',
+  'inactive_users',
+  'medicals',
+  'printed',
+  'printedTodayCount',
+  'printedYesterdayCount',
+  'rejected_users',
+  'suspended_users',
+  'todayTotalCards',
+  'totalDCTodayCount',
+  'totalDCYesterdayCount',
+  'totalHospitalTodayCount',
+  'totalHospitalYesterdayCount',
+  'totalMedicalTodayCount',
+  'totalMedicalYesterdayCount',
+  'total_cards',
+  'total_hospital',
+  'total_users',
+  'un_verified_users',
+  'undeliveredCardsTodayCount',
+  'undeliveredCardsYesterdayCount',
+  'undelivered_cards',
+  'verified_users',
+  'yesterdayTotalCards'
+];
+
 
 const defaultPercentages = {
   unverifiedUsersPercentage: 0.0,
@@ -49,26 +80,22 @@ const defaultPercentages = {
   diagnosticCentersPercentage: 0.0,
 };
 
-const TabPanel = (props) => {
-  const { children, value, index, ...other } = props;
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`simple-tabpanel-${index}`}
-      aria-labelledby={`simple-tab-${index}`}
-      {...other}
-    >
-      {value === index && <Box sx={{ px: 1 }}>{children}</Box>}
-    </div>
-  );
-};
+  function fetchDashboardData() {
+      const data = {};
+      keys.forEach(key => {
+        const value = localStorage.getItem(key);
+        // Convert to number if it's numeric
+        data[key] = value !== null && !isNaN(value) ? Number(value) : value;
+      });
+
+      return data;
+    }
 
 const Dashboard = () => {
   const [filter, setFilter] = useState("");
   const [date, setDate] = useState();
   const [openDialog, setOpenDialog] = useState(false);
-  const [dashboardData, setDashboardData] = useState({});
+  const [dashboardData, setDashboardData] = useState(fetchDashboardData());
   const [cardPercentage, setCardPercentage] = useState(defaultPercentages);
   const [isScreenLoading, setIsSreenLoading] = useState(false);
   const [selectedTab, setSelectedTab] = useState(0);
@@ -83,7 +110,7 @@ const Dashboard = () => {
 
   // Get dashboard data
   const getDashboardData = () => {
-    setIsSreenLoading(true);
+    // setIsSreenLoading(true);
     let data = {
       duration: filter,
     };
@@ -104,10 +131,19 @@ const Dashboard = () => {
       };
     }
 
+  
+
+    function storeDashboardData(data) {
+      for (const [key, value] of Object.entries(data)) {
+        localStorage.setItem(key, value);
+      }
+    }
+
     dashboard.getDashboardData(data).then((data) => {
       if (data?.error) {
       } else {
         setDashboardData(data);
+        storeDashboardData(data);
         setTimeout(() => {
           setIsSreenLoading(false);
         }, 50);
@@ -180,10 +216,10 @@ const Dashboard = () => {
         ),
         totalCardsPercentage: getPercentage(
           (parseInt(dashboardData?.available_to_print) || 0) +
-            (parseInt(dashboardData?.printed) || 0) +
-            (parseInt(dashboardData?.delivered_cards) || 0) +
-            (parseInt(dashboardData?.undelivered_cards) || 0) +
-            (parseInt(dashboardData?.discard_cards) || 0),
+          (parseInt(dashboardData?.printed) || 0) +
+          (parseInt(dashboardData?.delivered_cards) || 0) +
+          (parseInt(dashboardData?.undelivered_cards) || 0) +
+          (parseInt(dashboardData?.discard_cards) || 0),
           dashboardData?.total_cards || 0
         ),
         availableToPrintPercentage: getPercentage(
@@ -208,8 +244,8 @@ const Dashboard = () => {
         ),
         totalHospitalPercentage: getPercentage(
           (parseInt(dashboardData?.hospitals || 0) || 0) +
-            (parseInt(dashboardData?.medicals || 0) || 0) +
-            (parseInt(dashboardData?.diagnostic_centers || 0) || 0),
+          (parseInt(dashboardData?.medicals || 0) || 0) +
+          (parseInt(dashboardData?.diagnostic_centers || 0) || 0),
           dashboardData?.total_hospital || 0
         ),
         hospitalsPercentage: getPercentage(
