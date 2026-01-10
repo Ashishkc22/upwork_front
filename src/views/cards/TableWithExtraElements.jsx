@@ -4,7 +4,7 @@ import DownloadIcon from "@mui/icons-material/Download";
 import Checkbox from "@mui/material/Checkbox";
 import { tokens } from "../../theme";
 import IconButton from "@mui/material/IconButton";
-
+import { List as FixedSizeList } from 'react-window';
 import ArogyamComponent from "../../components/ArogyaCard_v2";
 import Tooltip from "@mui/material/Tooltip";
 import downloadCards from "../../utils/downloadCards";
@@ -113,15 +113,15 @@ const TableWithExtraElements = ({
                   isEmpty(locationFEUidList)
                     ? false
                     : allLocationUIDlist[
-                        `${groupName.district} ${groupName.tehsil}`
-                      ]?.every((k) => locationFEUidList.includes(k))
+                      `${groupName.district} ${groupName.tehsil}`
+                    ]?.every((k) => locationFEUidList.includes(k))
                 }
                 indeterminate={
                   isEmpty(locationFEUidList)
                     ? false
                     : !allLocationUIDlist[
-                        `${groupName.district} ${groupName.tehsil}`
-                      ]?.every((k) => locationFEUidList.includes(k))
+                      `${groupName.district} ${groupName.tehsil}`
+                    ]?.every((k) => locationFEUidList.includes(k))
                 }
               />
             }
@@ -147,7 +147,7 @@ const TableWithExtraElements = ({
               } else {
                 const allCurrentKey =
                   allLocationUIDlist[
-                    `${groupName.district} ${groupName.tehsil}`
+                  `${groupName.district} ${groupName.tehsil}`
                   ];
                 if (isEmpty(locationFEUidList)) {
                   setLocationFEUidList(allCurrentKey);
@@ -171,14 +171,14 @@ const TableWithExtraElements = ({
                 const downloadCardData = [];
                 Object.keys(
                   toBePrintedCards?.[
-                    `${groupName.district} ${groupName.tehsil}`
+                  `${groupName.district} ${groupName.tehsil}`
                   ] || {}
                 ).forEach((key) => {
                   const _FEDetails = FEDetails[key] || {};
                   const _TLDetails = TLDetails[_FEDetails.team_leader_id] || {};
                   const cards =
                     toBePrintedCards[
-                      `${groupName.district} ${groupName.tehsil}`
+                    `${groupName.district} ${groupName.tehsil}`
                     ][key] || [];
                   debugger;
                   downloadCardData.push({
@@ -215,60 +215,60 @@ const TableWithExtraElements = ({
 
           {Object.keys(
             toBePrintedCards?.[`${groupName.district} ${groupName.tehsil}`] ||
-              {}
+            {}
           ).every((feUiD) =>
             Object.keys(markAsPrintPending).includes(
               `${groupName.district} / ${groupName.tehsil}/${feUiD}`
             )
           ) && (
-            <Button
-              onClick={(e) => {
-                e.stopPropagation();
-                let ids = [];
-                let keys = [];
-                // keys.push(firsttableData._id.location);
-                Object.keys(
-                  toBePrintedCards?.[
-                    `${groupName.district} ${groupName.tehsil}`
-                  ] || {}
-                ).forEach((feUid) => {
-                  keys.push(
-                    `${groupName.district} / ${groupName.tehsil}/${feUid}`
-                  );
-                  const cards =
+              <Button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  let ids = [];
+                  let keys = [];
+                  // keys.push(firsttableData._id.location);
+                  Object.keys(
                     toBePrintedCards?.[
+                    `${groupName.district} ${groupName.tehsil}`
+                    ] || {}
+                  ).forEach((feUid) => {
+                    keys.push(
+                      `${groupName.district} / ${groupName.tehsil}/${feUid}`
+                    );
+                    const cards =
+                      toBePrintedCards?.[
                       `${groupName.district} ${groupName.tehsil}`
-                    ][feUid];
-                  ids = [...ids, ...cards.map((a) => a._id)];
-                });
-                setMarkAsPrintPending((pre) => {
-                  const newObj = { ...pre };
-                  keys.forEach((id) => {
-                    delete newObj[id];
+                      ][feUid];
+                    ids = [...ids, ...cards.map((a) => a._id)];
                   });
-                  return newObj;
-                });
-                markAsPrint({ ids }).then(() => {
-                  setIsDownloadCompleted({});
-                  getTobePrinntedCards();
-                  // storageUtil.removeItem("markAsPrintedData");
-                });
-              }}
-            >
-              <Typography
-                variant="h6"
-                sx={{
-                  display: "inline-flex",
-                  paddingBottom: 0,
-                  color: colors.primary[500],
-                  py: 1,
+                  setMarkAsPrintPending((pre) => {
+                    const newObj = { ...pre };
+                    keys.forEach((id) => {
+                      delete newObj[id];
+                    });
+                    return newObj;
+                  });
+                  markAsPrint({ ids }).then(() => {
+                    setIsDownloadCompleted({});
+                    getTobePrinntedCards();
+                    // storageUtil.removeItem("markAsPrintedData");
+                  });
                 }}
               >
-                <CheckIcon />
-                MARK PRINTED
-              </Typography>
-            </Button>
-          )}
+                <Typography
+                  variant="h6"
+                  sx={{
+                    display: "inline-flex",
+                    paddingBottom: 0,
+                    color: colors.primary[500],
+                    py: 1,
+                  }}
+                >
+                  <CheckIcon />
+                  MARK PRINTED
+                </Typography>
+              </Button>
+            )}
         </Box>
         <ListItemButton
           sx={{ mr: 4, justifyContent: "end" }}
@@ -288,7 +288,7 @@ const TableWithExtraElements = ({
         <Collapse in={isCurrentGroupOpen()} timeout="auto">
           {Object.keys(
             toBePrintedCards?.[`${groupName.district} ${groupName.tehsil}`] ||
-              {}
+            {}
           )?.map((feUidKey, index) => {
             // const groupByDistrict = groupedData[key];
 
@@ -310,7 +310,7 @@ const TableWithExtraElements = ({
                 colors={colors}
                 groupedData={
                   toBePrintedCards?.[
-                    `${groupName.district} ${groupName.tehsil}`
+                  `${groupName.district} ${groupName.tehsil}`
                   ][feUidKey]
                 }
                 id={feUidKey}

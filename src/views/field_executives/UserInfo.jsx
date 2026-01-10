@@ -7,19 +7,20 @@ import {
   Link,
   Grid,
   Typography,
-  Switch,
   CardMedia,
   Button,
-  Input,
   TextField,
-  FormControl,
-  InputLabel,
   Select,
   MenuItem,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  CircularProgress,
+  FormControl,
+  InputLabel
 } from "@mui/material";
 import Dialog from "@mui/material/Dialog";
 import PersonIcon from "@mui/icons-material/Person";
-import MedicalServicesIcon from "@mui/icons-material/MedicalServices";
 import ToggleButton from "@mui/material/ToggleButton";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 import fieldExecutives from "../../services/field_executives";
@@ -27,8 +28,6 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import EditIcon from "@mui/icons-material/Edit";
 import moment from "moment";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
-import { isEmpty } from "lodash";
-import CroppingDialog from "./ImageCropDialog"; // Adjust path as necessary
 import EditCardDialog from "./EditCardDialog";
 import LocalPhoneIcon from "@mui/icons-material/LocalPhone";
 import EmailIcon from "@mui/icons-material/Email";
@@ -46,10 +45,14 @@ const UserInfoCard = () => {
   const [teamLeaderDetails, setTeamLeaderDetails] = useState({});
   const [imageListDialog, setImageListDialog] = useState(false);
   const [isEditDialogOpened, setIsEditDialogOpened] = useState(false);
-  const [role, setRole] = useState();
+  const [role, setRole] = useState(null);
   const [suspensionReason, setSuspensionReason] = useState("");
   const [isSuspensionDialogOpened, setIsSuspensionDialogOpened] =
     useState(false);
+  const [isRoleDialogOpened, setIsRoleDialogOpened] = useState(false);
+  const [tlList, setTLList] = useState([])
+  const [isTLLoading, setIsTLLoading] = useState(false)
+  const [selectedNewTL, setSelectedNewTL] = useState("")
 
   const statupMap = {
     Verified: "suspend",
@@ -84,6 +87,17 @@ const UserInfoCard = () => {
     }
   };
 
+  function getTLusers() {
+    try {
+      fieldExecutives.getUsers({ params: { role: "TL" } }).then((res) => {
+        console.log("TL USERS", res);
+        setTLList(res.data)
+      })
+    } catch (error) {
+
+    }
+  }
+
   useEffect(() => {
     // Fetch the data from the API
     fetchCardData();
@@ -116,10 +130,11 @@ const UserInfoCard = () => {
 
   const updateUserRole = ({ role }) => {
     const formData = new FormData();
-    formData.append("role", role);
     setRole(role);
+    setIsTLLoading(false)
+    setIsRoleDialogOpened(false)
     fieldExecutives
-      .updateUserRole({ formData: { role }, id: userData._id })
+      .updateUserRole({ formData: { role, ...(selectedNewTL && { team_leader_id: selectedNewTL }) }, id: userData._id })
       .then(fetchCardData);
   };
 
@@ -136,6 +151,12 @@ const UserInfoCard = () => {
     setIsSuspensionDialogOpened(false);
   };
 
+  const handleSetSelectNewTL = (e) => {
+    // if (e !== selectedNewTL) {
+      setSelectedNewTL(e)
+    // }
+  }
+
   return (
     <Box
       display="flex"
@@ -143,6 +164,53 @@ const UserInfoCard = () => {
       alignItems="center"
       sx={{ width: "100%", p: 2 }}
     >
+      <Dialog open={isRoleDialogOpened} onClose={() => { setIsRoleDialogOpened(false); setSelectedNewTL(null) }}>
+        <DialogTitle>Are you sure?</DialogTitle>
+        <DialogContent>
+          {/* Conditionally Render Select Dropdown */}
+          {isRoleDialogOpened === "FE" ? (
+            <div>
+              <FormControl variant="standard" sx={{ minWidth: 120 }}>
+                <InputLabel id="TL-select-label">Select Team Leader</InputLabel>
+                <Select
+                  value={selectedNewTL || ""}
+                  style={{ width: 280 }}
+                  label="Select Team Leader"
+                  labelId="TL-select-label"
+                >
+                  <MenuItem value="" onClick={(e) => handleSetSelectNewTL(null)}>
+                    <em>None</em>
+                  </MenuItem>
+                  {isTLLoading ? (
+                    <MenuItem value="" disabled>
+                      <Box display="flex" alignItems="center" gap={1}>
+                        <CircularProgress size={18} />
+                        Loading...
+                      </Box>
+                    </MenuItem>) :
+                    tlList.map(tl => (<MenuItem
+                      key={tl._id + "TL_id"}
+                      value={tl._id}
+                      onClick={(e) => handleSetSelectNewTL(tl._id)}
+                      selected={selectedNewTL == tl._id}
+                    >
+                      {tl.name}
+                    </MenuItem>))
+                  } 
+                </Select>
+              </FormControl>
+            </div>
+          ) : "This action requires confirmation."}
+
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => { setIsRoleDialogOpened(false); setSelectedNewTL(null) }}>Cancel</Button>
+          <Button variant="contained" onClick={() => updateUserRole({ role: isRoleDialogOpened })}>
+            Confirm
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       <Box
         onClick={() => navigate(-1)}
         sx={{
@@ -305,7 +373,11 @@ const UserInfoCard = () => {
                           value={role}
                           onChange={(e) => {
                             if (e.target.value != "ADMIN") {
-                              updateUserRole({ role: e.target.value });
+                              //   updateUserRole({ role: e.target.value });
+                              if (e.target.value === "FE") {
+                                getTLusers();
+                              }
+                              setIsRoleDialogOpened(e.target.value)
                             }
                           }}
                           aria-label="Platform"
@@ -511,8 +583,7 @@ const UserInfoCard = () => {
                       <Link
                         onClick={() => {
                           window.open(
-                            `https://www.google.com/maps?q=${
-                              userData?.lat || 0
+                            `https://www.google.com/maps?q=${userData?.lat || 0
                             },${userData?.lon || 0}`
                           );
                         }}

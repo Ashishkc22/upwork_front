@@ -303,6 +303,7 @@ const EditProfileDialog = ({
   }, [data, stateOptions, districtOption]);
 
   function handleSaveFormData() {
+    alert("Save clicked");
     if (addTLMode) {
       field_executives
         .saveTLDetails({
@@ -355,6 +356,8 @@ const EditProfileDialog = ({
           signatureDataUrl,
           updatedImagesNames,
           images: imagesToUpload,
+          legalName,
+          alternate_phone: alternatePhone || data.alternatePhone
         })
         .then(() => {
           onClose(true);
@@ -420,7 +423,7 @@ const EditProfileDialog = ({
           type: "district",
           params: { stateId: draftData.state._id },
         }).then(() => {
-          setDistrict(draftData.district);
+          setDistrict(draftData?.district || "");
           if (draftData.janPanchayat) {
             getAddressData({
               type: "janPanchayat",
@@ -444,6 +447,23 @@ const EditProfileDialog = ({
   }, []);
 
   formEvents.disableWheelIncrAndDicr();
+
+  function clearFormData() {
+    try {
+      setName("");
+      setPhone("");
+      setEmail("");
+      setAddress("");
+      setAlternatePhone("");
+      setLegalName("");
+      setEmergencyNumber("");
+      setState("");
+      setDistrict("");
+      setJanPanchayat("");
+    } catch (error) {
+      
+    }
+  }
 
   return (
     <Dialog
@@ -487,6 +507,7 @@ const EditProfileDialog = ({
                 onClick={() => {
                   setDraftDataCleared(true);
                   storageUtil.removeItem("TL-draft-data");
+                  clearFormData();
                 }}
                 endIcon={<CancelPresentationIcon />}
               >
@@ -553,7 +574,7 @@ const EditProfileDialog = ({
               margin="normal"
               variant="standard"
               defaultValue={data?.legalName}
-              value={legalName}
+              value={data?.legalName || legalName}
               onChange={(e) => setLegalName(e.target.value)}
             />
             <TextField
